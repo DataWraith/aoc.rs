@@ -1,113 +1,60 @@
 use crate::structs::*;
 
-use utility_belt::prelude::*;
+use utility_belt::prelude::{Grid2D, HashSet};
 
 pub fn part1(input: &PuzzleInput) -> String {
-    find_symbols(&input.grid)
-        .iter()
-        .map(|c| find_adjacent_numbers(&input.grid, *c))
-        .map(|coords| filter_adjacent_numbers(&coords))
-        .flat_map(|coords| {
-            coords
-                .iter()
-                .map(|c| parse_number_at(&input.grid, *c))
-                .collect::<Vec<_>>()
-        })
-        .sum::<usize>()
-        .to_string()
-}
+    let (symbols, numbers) = split_grid(&input.grid);
 
-fn find_symbols(grid: &Grid2D<char>) -> Vec<Coordinate> {
-    let mut symbols = Vec::new();
+    let mut sum = 0;
 
-    for (coord, c) in grid.iter() {
-        if *c != '.' && !c.is_ascii_digit() {
-            symbols.push(coord);
-        }
-    }
+    symbols.iter().for_each(|(coord, c)| {
+        if *c != '.' {
+            let mut found = HashSet::new();
 
-    symbols
-}
-
-pub fn find_adjacent_numbers(grid: &Grid2D<char>, coord: Coordinate) -> Vec<Coordinate> {
-    let mut number_coords = Vec::new();
-
-    for n in coord.moore_neighbors() {
-        if let Some(c) = grid.get(n) {
-            if c.is_ascii_digit() {
-                number_coords.push(n);
+            for n in coord.moore_neighbors() {
+                if let Some((number, id)) = numbers.get(n) {
+                    if *id != usize::MAX && !found.contains(id) {
+                        found.insert(*id);
+                        sum += number;
+                    }
+                }
             }
         }
-    }
+    });
 
-    number_coords
+    sum.to_string()
 }
 
-pub fn filter_adjacent_numbers(coords: &[Coordinate]) -> Vec<Coordinate> {
-    let mut result = Vec::new();
-    let mut added = false;
+pub fn split_grid(grid: &Grid2D<char>) -> (Grid2D<char>, Grid2D<(usize, usize)>) {
+    let symbol_grid = grid.map(|c| if c.is_ascii_digit() { '.' } else { *c });
+    let mut numbers_grid = grid.map(|_| (0, usize::MAX));
 
-    if coords.len() == 1 {
-        return coords.to_vec();
-    }
+    let mut cur = "".to_string();
+    let mut coords = Vec::new();
+    let mut id = 0;
 
-    let mut coords = coords.to_vec();
-    coords.sort_by_key(|c| (c.y(), c.x()));
-
-    for w in coords.windows(2) {
-        let c1 = w[0];
-        let c2 = w[1];
-
-        if !added {
-            added = true;
-            result.push(c1);
-        }
-
-        if c1.y() == c2.y() && c1.x() + 1 == c2.x() {
-            continue;
-        }
-
-        added = false;
-    }
-
-    if !added {
-        result.push(*coords.last().unwrap());
-    }
-
-    result
-}
-
-pub fn parse_number_at(grid: &Grid2D<char>, start: Coordinate) -> usize {
-    let mut digits = String::new();
-    let mut coord = start;
-
-    loop {
-        let c = grid[coord];
-
+    grid.iter().for_each(|(coord, c)| {
         if c.is_ascii_digit() {
-            if coord.x() == 0 {
-                break;
+            cur.push(*c);
+            coords.push(coord);
+        }
+
+        // End of a number or end of the line
+        if (!c.is_ascii_digit() || coord.x() as usize == symbol_grid.width() - 1) && !cur.is_empty()
+        {
+            let n = cur.parse::<usize>().unwrap();
+
+            for coord in coords.iter() {
+                numbers_grid[*coord] = (n, id);
             }
 
-            coord += Direction::Left.into();
-        } else {
-            coord += Direction::Right.into();
-            break;
+            cur.clear();
+            coords.clear();
+            id += 1;
         }
-    }
+    });
 
-    while coord.x() < grid.width() as i32 {
-        let c = grid[coord];
-
-        if c.is_ascii_digit() {
-            digits.push(c);
-            coord += Direction::Right.into();
-        } else {
-            break;
-        }
-    }
-
-    digits.parse().unwrap()
+    (symbol_grid, numbers_grid)
 }
 
 #[cfg(test)]

@@ -1,36 +1,33 @@
-use crate::{
-    part1::{filter_adjacent_numbers, find_adjacent_numbers, parse_number_at},
-    structs::*,
-};
+use crate::{part1::split_grid, structs::*};
 
-use utility_belt::prelude::*;
+use utility_belt::prelude::HashSet;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    find_potential_gears(&input.grid)
-        .iter()
-        .map(|c| find_adjacent_numbers(&input.grid, *c))
-        .map(|coords| filter_adjacent_numbers(&coords))
-        .filter(|coords| coords.len() == 2)
-        .map(|coords| {
-            coords
-                .into_iter()
-                .map(|coord| dbg!(parse_number_at(&input.grid, coord)))
-                .product::<usize>()
-        })
-        .sum::<usize>()
-        .to_string()
-}
+    let (symbols, numbers) = split_grid(&input.grid);
 
-fn find_potential_gears(grid: &Grid2D<char>) -> Vec<Coordinate> {
-    let mut gears = Vec::new();
+    let mut sum = 0;
 
-    for (coord, c) in grid.iter() {
+    symbols.iter().for_each(|(coord, c)| {
         if *c == '*' {
-            gears.push(coord);
-        }
-    }
+            let mut nums = Vec::new();
+            let mut found = HashSet::new();
 
-    gears
+            for n in coord.moore_neighbors() {
+                if let Some((number, id)) = numbers.get(n) {
+                    if *id != usize::MAX && !found.contains(id) {
+                        found.insert(*id);
+                        nums.push(*number);
+                    }
+                }
+            }
+
+            if nums.len() == 2 {
+                sum += nums.iter().product::<usize>();
+            }
+        }
+    });
+
+    sum.to_string()
 }
 
 #[cfg(test)]
