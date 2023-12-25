@@ -1,6 +1,6 @@
 use crate::structs::*;
 
-pub fn part1(input: PuzzleInput) -> String {
+pub fn part1(input: &PuzzleInput) -> String {
     todo!();
 }
 
