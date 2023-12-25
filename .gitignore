@@ -1,0 +1,8 @@
+.direnv/
+.vscode/
+
+# Apparently you're not supposed to commit your puzzle input
+input.txt
+
+# Added by cargo
+/target
