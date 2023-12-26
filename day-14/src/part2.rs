@@ -13,9 +13,8 @@ pub fn cycle(input: &PuzzleInput) -> PuzzleInput {
     let north = tilt(input, Direction::Up);
     let west = tilt(&north, Direction::Left);
     let south = tilt(&west, Direction::Down);
-    let east = tilt(&south, Direction::Right);
 
-    east
+    tilt(&south, Direction::Right)
 }
 
 #[cfg(test)]

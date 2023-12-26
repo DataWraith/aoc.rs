@@ -2,7 +2,6 @@ use crate::structs::*;
 
 use petgraph::{
     algo::all_simple_paths,
-    dot::Dot,
     graph::{DiGraph, NodeIndex},
 };
 use utility_belt::prelude::*;
@@ -81,7 +80,7 @@ pub fn contract_graph(grid: &Grid2D<char>) -> (DiGraph<Coordinate, usize>, NodeI
     let mut graph = DiGraph::<Coordinate, usize>::new();
     let mut ids = HashMap::default();
 
-    for (cur, edges) in adjacencies.iter().sorted_by_key(|(k, v)| (k.y(), k.x())) {
+    for (cur, edges) in adjacencies.iter().sorted_by_key(|(k, _v)| (k.y(), k.x())) {
         let cur = *ids.entry(cur).or_insert_with(|| graph.add_node(*cur));
 
         for (succ, length) in edges {
@@ -111,14 +110,15 @@ fn valid_directions(cur: Coordinate, prev: Coordinate, grid: &Grid2D<char>) -> V
                 return false;
             }
 
-            match (dir, grid.get(neighbor)) {
-                (Direction::Up, Some('v')) => false,
-                (Direction::Down, Some('^')) => false,
-                (Direction::Left, Some('>')) => false,
-                (Direction::Right, Some('<')) => false,
-                (_, None) | (_, Some('#')) => false,
-                _ => true,
-            }
+            !matches!(
+                (dir, grid.get(neighbor)),
+                (Direction::Up, Some('v'))
+                    | (Direction::Down, Some('^'))
+                    | (Direction::Left, Some('>'))
+                    | (Direction::Right, Some('<'))
+                    | (_, None)
+                    | (_, Some('#')),
+            )
         })
         .collect_vec()
 }

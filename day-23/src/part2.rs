@@ -4,7 +4,6 @@ use petgraph::{
     algo::all_simple_paths,
     graph::NodeIndex,
     graph::UnGraph,
-    visit::{EdgeRef, IntoEdges},
 };
 use utility_belt::prelude::*;
 
@@ -82,7 +81,7 @@ pub fn contract_graph(grid: &Grid2D<char>) -> (UnGraph<Coordinate, usize>, NodeI
     let mut graph = UnGraph::<Coordinate, usize>::new_undirected();
     let mut ids = HashMap::default();
 
-    for (cur, edges) in adjacencies.iter().sorted_by_key(|(k, v)| (k.y(), k.x())) {
+    for (cur, edges) in adjacencies.iter().sorted_by_key(|(k, _v)| (k.y(), k.x())) {
         let cur = *ids.entry(cur).or_insert_with(|| graph.add_node(*cur));
 
         for (succ, length) in edges {
