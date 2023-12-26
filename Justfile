@@ -1,5 +1,5 @@
 test:
-     cargo nextest run
+     cargo nextest run --release
 
 generate day:
      cargo generate --vcs none -p template --name day-{{day}}
