@@ -1,11 +1,7 @@
-use std::borrow::{Borrow, Cow};
-
 use crate::structs::*;
 
 use petgraph::{
     algo::all_simple_paths,
-    data::Build,
-    dot::Dot,
     graph::NodeIndex,
     graph::UnGraph,
     visit::{EdgeRef, IntoEdges},
@@ -14,7 +10,10 @@ use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
     let (graph, start, goal) = contract_graph(&input.grid);
+    solve(graph, start, goal)
+}
 
+pub fn solve(graph: UnGraph<Coordinate, usize>, start: NodeIndex, goal: NodeIndex) -> String {
     let max_len = all_simple_paths(&graph, start, goal, 0, None)
         .map(|p: Vec<_>| {
             let mut sum = 0;
@@ -121,7 +120,7 @@ fn valid_directions(cur: Coordinate, prev: Coordinate, grid: &Grid2D<char>) -> V
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    use utility_belt::prelude::indoc;
 
     const TEST_INPUT: &str = indoc! {"
         #.#####################
