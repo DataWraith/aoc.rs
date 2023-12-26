@@ -1,105 +1,47 @@
-use std::collections::VecDeque;
-
 use crate::structs::*;
 
 use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let loop_lengths = input
+    let positions = input
         .nodes
-        .keys()
-        .filter(|node| node.ends_with('A'))
-        .map(|node| single_loop(input, node.clone()))
-        .map(|(cycle_starts_at, cycle)| cycle_times(&cycle, cycle_starts_at))
-        .collect::<Vec<_>>();
+        .iter()
+        .filter(|n| n.0.ends_with('A'))
+        .map(|n| n.0.clone())
+        .collect_vec();
 
-    (loop_lengths.into_iter().fold(HashSet::default(), |acc, x| {
-        let mut result = HashSet::default();
-
-        if acc.is_empty() {
-            for x in x.iter() {
-                result.insert(*x);
-            }
-            return result;
-        }
-
-        for a in acc.iter() {
-            for b in x.iter() {
-                result.insert(lcm(*a, *b));
-            }
-        }
-
-        result
-    }))
-    .into_iter()
-    .min()
-    .unwrap()
-    .to_string()
+    nsteps(input, &positions)
+        .iter()
+        .fold(1, |acc, x| lcm(acc, *x))
+        .to_string()
 }
 
-fn single_loop(input: &PuzzleInput, from: String) -> (usize, Vec<GraphNode>) {
-    let instr_len = input.instructions.len();
+// NOTE: This won't work in general, but the input is benign here.
+pub fn nsteps(input: &PuzzleInput, positions: &[String]) -> Vec<usize> {
+    let mut results = Vec::new();
 
-    let mut current = from;
-    let mut instrs = input.instructions();
-    let mut index = 0;
-    let cycle_start;
+    for p in positions.iter() {
+        let mut steps = 0;
+        let mut cur = p.clone();
 
-    let mut result = VecDeque::new();
-    let mut seen = HashSet::default();
+        for instr in input.instructions() {
+            if cur.ends_with('Z') {
+                break;
+            }
 
-    let mut node = GraphNode {
-        node: current.clone(),
-        index,
-    };
+            cur = if instr == 'L' {
+                input.nodes[&cur].0.clone()
+            } else {
+                input.nodes[&cur].1.clone()
+            };
 
-    loop {
-        result.push_back(node.clone());
-
-        if !seen.insert(node.clone()) {
-            cycle_start = node;
-            break;
+            steps += 1;
         }
 
-        let go_left = instrs.next().unwrap() == 'L';
-
-        if go_left {
-            let (left, _) = input.nodes.get(&current).unwrap();
-            current = left.clone()
-        } else {
-            let (_, right) = input.nodes.get(&current).unwrap();
-            current = right.clone()
-        }
-
-        index = (index + 1) % instr_len;
-
-        node = GraphNode {
-            node: current.clone(),
-            index,
-        };
+        results.push(steps);
     }
 
-    let mut cycle_starts_at = 0;
-    while result.front() != Some(&cycle_start) {
-        result.pop_front();
-        cycle_starts_at += 1;
-    }
-
-    result.pop_back();
-
-    (cycle_starts_at, result.into())
-}
-
-fn cycle_times(cycle: &[GraphNode], cycle_starts_at: usize) -> Vec<usize> {
-    let mut result = Vec::new();
-
-    for (i, node) in cycle.iter().enumerate() {
-        if node.node.ends_with('Z') {
-            result.push(cycle_starts_at + i);
-        }
-    }
-
-    result
+    results
 }
 
 #[cfg(test)]

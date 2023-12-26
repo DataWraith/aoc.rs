@@ -27,8 +27,16 @@ impl PuzzleInput {
     }
 }
 
-#[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Clone, Hash)]
+#[derive(Debug, Clone)]
 pub struct GraphNode {
     pub node: String,
     pub index: usize,
 }
+
+impl PartialEq for GraphNode {
+    fn eq(&self, other: &Self) -> bool {
+        self.node == other.node
+    }
+}
+
+impl Eq for GraphNode {}
