@@ -11,7 +11,7 @@ pub fn part1(input: &PuzzleInput) -> String {
         .to_string()
 }
 
-pub fn count_arrangements(input: &str, broken: &Vec<usize>) -> usize {
+pub fn count_arrangements(input: &str, broken: &[usize]) -> usize {
     let automaton = Automaton::new(broken);
 
     let start = State::ColumnStart(0);
@@ -44,7 +44,6 @@ mod tests {
     #[case("?###???????? 3,2,1", 10)]
     fn test_part1(#[case] input: &str, #[case] expected: usize) {
         let input = crate::parser::parse(input);
-        dbg!(&input);
         assert_eq!(part1(&input), expected.to_string());
     }
 }

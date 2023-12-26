@@ -15,8 +15,8 @@ pub struct Automaton {
 }
 
 impl Automaton {
-    pub fn new(columns: &Vec<usize>) -> Self {
-        let mut columns = columns.clone();
+    pub fn new(columns: &[usize]) -> Self {
+        let mut columns = columns.to_vec();
         columns.push(1);
 
         Automaton { columns }
@@ -46,8 +46,7 @@ impl Automaton {
                 }
             }
 
-            // When a broken spring appears, we advance in the column or to the
-            // next column if the current one has been exhausted.
+            // When a broken spring appears, we advance in the column
             (Column((i, j)), '#') => {
                 if self.columns[*i] > *j {
                     vec![Column((*i, *j + 1))]
