@@ -3,45 +3,55 @@ use crate::structs::*;
 use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let positions = input
+    let start_positions = input
         .nodes
         .iter()
         .filter(|n| n.0.ends_with('A'))
         .map(|n| n.0.clone())
         .collect_vec();
 
-    nsteps(input, &positions)
-        .iter()
-        .fold(1, |acc, x| lcm(acc, *x))
-        .to_string()
-}
+    // NOTE: I'm not sure if this will work in general, or if the input is just
+    // benign here.
+    //
+    // The idea is to step through the instructions, and for each step, update
+    // the current positions of all ghosts in parallel. Once all ghosts have
+    // reached a destination tile, we can calculate the LCM of all the steps it
+    // took to get there to find the first time they will all be on a tile with
+    // a Z.
+    //
+    // However, I think this assumes that the 'rendevous' node is the very first
+    // one each ghost reaches, and I'm not sure if this works in the general
+    // case.
+    let mut results = start_positions.iter().map(|_| None).collect_vec();
+    let mut cur = start_positions;
 
-// NOTE: This won't work in general, but the input is benign here.
-pub fn nsteps(input: &PuzzleInput, positions: &[String]) -> Vec<usize> {
-    let mut results = Vec::new();
+    for (step, instr) in input.instructions().enumerate() {
+        cur = cur
+            .iter()
+            .map(|p| {
+                if instr == 'L' {
+                    input.nodes[p].0.clone()
+                } else {
+                    input.nodes[p].1.clone()
+                }
+            })
+            .collect_vec();
 
-    for p in positions.iter() {
-        let mut steps = 0;
-        let mut cur = p.clone();
-
-        for instr in input.instructions() {
-            if cur.ends_with('Z') {
-                break;
+        cur.iter().enumerate().for_each(|(i, p)| {
+            if p.ends_with('Z') {
+                results[i].get_or_insert(step + 1);
             }
+        });
 
-            cur = if instr == 'L' {
-                input.nodes[&cur].0.clone()
-            } else {
-                input.nodes[&cur].1.clone()
-            };
-
-            steps += 1;
+        if results.iter().all(Option::is_some) {
+            break;
         }
-
-        results.push(steps);
     }
 
     results
+        .iter()
+        .fold(1, |acc, r| lcm(acc, r.unwrap()))
+        .to_string()
 }
 
 #[cfg(test)]
