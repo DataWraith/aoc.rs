@@ -1,3 +1,5 @@
+#![feature(iter_array_chunks)]
+
 mod parser;
 mod part1;
 mod part2;
@@ -16,12 +18,12 @@ mod tests {
     #[test]
     fn test_part1() {
         let puzzle_input = parser::parse(include_str!("../input.txt"));
-        assert_eq!(part1::part1(&puzzle_input), "TODO");
+        assert_eq!(part1::part1(&puzzle_input), "29213");
     }
 
     #[test]
     fn test_part2() {
         let puzzle_input = parser::parse(include_str!("../input.txt"));
-        assert_eq!(part2::part2(&puzzle_input), "TODO");
+        assert_eq!(part2::part2(&puzzle_input), "37453");
     }
 }

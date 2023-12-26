@@ -209,6 +209,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "day-13"
+version = "0.1.0"
+dependencies = [
+ "nom",
+ "utility-belt",
+]
+
+[[package]]
 name = "deprecate-until"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -883,7 +891,7 @@ checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
 [[package]]
 name = "utility-belt"
 version = "0.1.0"
-source = "git+https://github.com/DataWraith/utility-belt.git#7051280b4a76c97be170bb0cd1957f8aa4494bbb"
+source = "git+https://github.com/DataWraith/utility-belt.git#b8e609d5c03de759c0c00ff9e93624970b310c1a"
 dependencies = [
  "ahash",
  "derive_more",

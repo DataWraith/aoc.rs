@@ -1,9 +1,7 @@
-use crate::structs::*;
-
-use utility_belt::prelude::*;
+use crate::{part1::solve, structs::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
-    todo!();
+    solve(input, 1)
 }
 
 #[cfg(test)]
@@ -12,12 +10,26 @@ mod tests {
     use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
-        TODO;
+        #.##..##.
+        ..#.##.#.
+        ##......#
+        ##......#
+        ..#.##.#.
+        ..##..##.
+        #.#.##.#.
+
+        #...##..#
+        #....#..#
+        ..##..###
+        #####.##.
+        #####.##.
+        ..##..###
+        #....#..#
     "};
 
     #[test]
     fn test_part2() {
         let input = crate::parser::parse(TEST_INPUT);
-        assert_eq!(part2(&input), "TODO");
+        assert_eq!(part2(&input), "400");
     }
 }
