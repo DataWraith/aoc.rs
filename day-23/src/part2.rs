@@ -15,46 +15,21 @@ use utility_belt::prelude::*;
 pub fn part2(input: &PuzzleInput) -> String {
     let (graph, start, goal) = contract_graph(&input.grid);
 
-    #[derive(Clone, Debug, Eq, PartialEq)]
-    struct State {
-        node_idx: NodeIndex,
-        path: Vec<Coordinate>,
-        plen: usize,
-    }
+    let max_len = all_simple_paths(&graph, start, goal, 0, None)
+        .map(|p: Vec<_>| {
+            let mut sum = 0;
 
-    let start = State {
-        node_idx: start,
-        path: vec![graph[start]],
-        plen: 0,
-    };
+            for (n1, n2) in p.iter().tuple_windows() {
+                let edge = graph.find_edge(*n1, *n2).unwrap();
+                let weight = graph[edge];
 
-    let mut max_len = 0;
-    let mut queue = VecDeque::from(vec![start]);
-
-    while let Some(state) = queue.pop_front() {
-        if state.node_idx == goal {
-            max_len = max_len.max(state.plen);
-            continue;
-        }
-
-        for edge in graph.edges(state.node_idx) {
-            let neighbor = edge.target();
-            let plen = edge.weight();
-
-            if state.path.contains(&graph[neighbor]) {
-                continue;
+                sum += weight;
             }
 
-            let mut v = state.path.clone();
-            v.push(graph[neighbor]);
-
-            queue.push_back(State {
-                node_idx: neighbor,
-                path: v,
-                plen: state.plen + plen,
-            });
-        }
-    }
+            sum
+        })
+        .max()
+        .unwrap();
 
     (max_len - 1).to_string()
 }
