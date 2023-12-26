@@ -1,4 +1,10 @@
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
-    // Remember to make the fields pub
+    pub races: Vec<Race>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Race {
+    pub time: usize,
+    pub distance: usize,
 }
