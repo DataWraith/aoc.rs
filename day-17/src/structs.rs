@@ -24,7 +24,7 @@ pub struct Crucible {
 }
 
 impl Ord for Crucible {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    fn cmp(&self, _other: &Self) -> std::cmp::Ordering {
         std::cmp::Ordering::Equal
     }
 }

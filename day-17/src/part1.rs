@@ -151,7 +151,6 @@ pub fn successors(input: &PuzzleInput, crucible: &Crucible) -> ArrayVec<[(Crucib
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
         2413432311323

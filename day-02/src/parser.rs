@@ -2,7 +2,7 @@ use nom::{
     bytes::complete::tag,
     character::complete::{digit1, newline, space0},
     combinator::eof,
-    multi::{separated_list1, many1},
+    multi::{many1, separated_list1},
     IResult,
 };
 
