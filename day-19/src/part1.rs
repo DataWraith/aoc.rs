@@ -39,17 +39,15 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 fn transition(workflows: &HashMap<String, Workflow>, from: &Flow) -> Vec<Flow> {
-    let mut result = Vec::default();
-
     let workflow = workflows.get(&from.current_workflow).unwrap();
     let rule = workflow.rules.get(from.current_index);
 
     if rule.is_none() {
-        let mut new_flow = from.clone();
-        new_flow.current_workflow = workflow.default.clone();
-        new_flow.current_index = 0;
-        result.push(new_flow);
-        return result;
+        return vec![Flow {
+            current_workflow: workflow.default.clone(),
+            current_index: 0,
+            ..from.clone()
+        }];
     }
 
     let rule = rule.unwrap();

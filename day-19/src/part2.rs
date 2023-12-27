@@ -5,14 +5,15 @@ use crate::structs::*;
 use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
+    let mut accepted = 0;
     let mut flows = HashMap::default();
-    let mut accepted = Vec::new();
 
-    let mut initial_part_range = BTreeMap::new();
-    initial_part_range.insert('x', 1..4001);
-    initial_part_range.insert('m', 1..4001);
-    initial_part_range.insert('a', 1..4001);
-    initial_part_range.insert('s', 1..4001);
+    let initial_part_range = BTreeMap::from_iter(vec![
+        ('x', 1..4001),
+        ('m', 1..4001),
+        ('a', 1..4001),
+        ('s', 1..4001),
+    ]);
 
     let flow = RangeFlow {
         part: initial_part_range,
@@ -29,7 +30,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
         for (flow, _count) in new_flows.iter_mut() {
             if flow.current_workflow == "A" {
-                accepted.push(flow.clone());
+                accepted += flow.accepted;
             }
         }
 
@@ -42,11 +43,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         flows = new_flows;
     }
 
-    accepted
-        .iter()
-        .map(|x| x.accepted)
-        .sum::<usize>()
-        .to_string()
+    accepted.to_string()
 }
 
 fn transition(workflows: &HashMap<String, Workflow>, from: &RangeFlow) -> Vec<RangeFlow> {
@@ -56,11 +53,11 @@ fn transition(workflows: &HashMap<String, Workflow>, from: &RangeFlow) -> Vec<Ra
     let rule = workflow.rules.get(from.current_index);
 
     if rule.is_none() {
-        let mut new_flow = from.clone();
-        new_flow.current_workflow = workflow.default.clone();
-        new_flow.current_index = 0;
-        result.push(new_flow);
-        return result;
+        return vec![RangeFlow {
+            current_workflow: workflow.default.clone(),
+            current_index: 0,
+            ..from.clone()
+        }];
     }
 
     let rule = rule.unwrap();
@@ -91,13 +88,13 @@ fn transition(workflows: &HashMap<String, Workflow>, from: &RangeFlow) -> Vec<Ra
         _ => unreachable!("Invalid comparison"),
     };
 
+    let full_count = from.part[&rule.category].end - from.part[&rule.category].start;
+
     let mut part_range_lower = from.part.clone();
     part_range_lower.insert(rule.category, lower_range.clone());
 
     let mut part_range_upper = from.part.clone();
     part_range_upper.insert(rule.category, upper_range.clone());
-
-    let full_count = from.part[&rule.category].end - from.part[&rule.category].start;
 
     if !lower_range.is_empty() {
         let lower_count = lower_range.end - lower_range.start;
