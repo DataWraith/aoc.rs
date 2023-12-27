@@ -22,6 +22,6 @@ mod tests {
     #[test]
     fn test_part2() {
         let puzzle_input = parser::parse(include_str!("../input.txt"));
-        assert_eq!(part2::part2(&puzzle_input), "TODO");
+        assert_eq!(part2::part2(&puzzle_input), "669042940632377");
     }
 }

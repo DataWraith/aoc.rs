@@ -1,10 +1,10 @@
-
 use std::ops::RangeInclusive;
 
 use glam::I64Vec2;
 use glam::Vec3Swizzles;
 use num::BigRational;
 use num::FromPrimitive;
+use num::Signed;
 use num::ToPrimitive;
 use utility_belt::prelude::Itertools;
 
@@ -13,16 +13,18 @@ use crate::structs::*;
 pub fn part1(input: &PuzzleInput) -> String {
     solve(
         input,
-        200000000000000.0..=400000000000000.0,
-        200000000000000.0..=400000000000000.0,
+        (BigRational::from_u64(200000000000000).unwrap())
+            ..=(BigRational::from_u64(400000000000000).unwrap()),
+        (BigRational::from_u64(200000000000000).unwrap())
+            ..=(BigRational::from_u64(400000000000000).unwrap()),
     )
     .to_string()
 }
 
 pub fn solve(
     input: &PuzzleInput,
-    x_envelope: RangeInclusive<f64>,
-    y_envelope: RangeInclusive<f64>,
+    x_envelope: RangeInclusive<BigRational>,
+    y_envelope: RangeInclusive<BigRational>,
 ) -> usize {
     input
         .hailstones
@@ -30,58 +32,71 @@ pub fn solve(
         .combinations(2)
         .filter_map(|c| {
             let a = (c[0].position.xy(), c[0].position.xy() + c[0].velocity.xy());
+            let a_x = (
+                BigRational::from_i64(a.0.x).unwrap(),
+                BigRational::from_i64(a.0.y).unwrap(),
+            );
+            let a_y = (
+                BigRational::from_i64(a.1.x).unwrap(),
+                BigRational::from_i64(a.1.y).unwrap(),
+            );
 
             let b = (c[1].position.xy(), c[1].position.xy() + c[1].velocity.xy());
+            let b_x = (
+                BigRational::from_i64(b.0.x).unwrap(),
+                BigRational::from_i64(b.0.y).unwrap(),
+            );
+            let b_y = (
+                BigRational::from_i64(b.1.x).unwrap(),
+                BigRational::from_i64(b.1.y).unwrap(),
+            );
 
-            future_line_intersection(a, b)
+            future_line_intersection((a_x, a_y), (b_x, b_y))
         })
-        .filter(|p| x_envelope.contains(&p.x) && y_envelope.contains(&p.y))
+        .filter(|p| x_envelope.contains(&p.0) && y_envelope.contains(&p.1))
         .count()
 }
 
 // This returns the intersection point of two lines, a and b, defined by two points each.
-//
-// https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
 pub fn line_intersection_point(
-    a: (I64Vec2, I64Vec2),
-    b: (I64Vec2, I64Vec2),
-) -> Option<glam::DVec2> {
-    let x1 = BigRational::from_i64(a.0.x).unwrap();
-    let x2 = BigRational::from_i64(a.1.x).unwrap();
-    let x3 = BigRational::from_i64(b.0.x).unwrap();
-    let x4 = BigRational::from_i64(b.1.x).unwrap();
+    a: ((BigRational, BigRational), (BigRational, BigRational)),
+    b: ((BigRational, BigRational), (BigRational, BigRational)),
+) -> Option<(BigRational, BigRational)> {
+    let x1 = (a.0).0;
+    let y1 = (a.0).1;
+    let dx1 = (a.1).0 - x1.clone();
+    let dy1 = (a.1).1 - y1.clone();
 
-    let y1 = BigRational::from_i64(a.0.y).unwrap();
-    let y2 = BigRational::from_i64(a.1.y).unwrap();
-    let y3 = BigRational::from_i64(b.0.y).unwrap();
-    let y4 = BigRational::from_i64(b.1.y).unwrap();
+    let x2 = (b.0).0;
+    let y2 = (b.0).1;
+    let dx2 = (b.1).0 - x2.clone();
+    let dy2 = (b.1).1 - y2.clone();
 
-    let denominator = (x1.clone() - x2.clone()) * (y3.clone() - y4.clone())
-        - (y1.clone() - y2.clone()) * (x3.clone() - x4.clone());
+    let zero = BigRational::from_i64(0).unwrap();
 
-    if denominator == BigRational::from_i64(0).unwrap() {
+    if dx1 == zero || dx2 == zero {
         return None;
     }
 
-    let numerator_x = (x1.clone() * y2.clone() - y1.clone() * x2.clone())
-        * (x3.clone() - x4.clone())
-        - (x1.clone() - x2.clone()) * (x3.clone() * y4.clone() - y3.clone() * x4.clone());
+    let m1 = dy1.clone() / dx1.clone();
+    let m2 = dy2.clone() / dx2.clone();
 
-    let numerator_y = (x1.clone() * y2.clone() - y1.clone() * x2.clone())
-        * (y3.clone() - y4.clone())
-        - (y1.clone() - y2.clone()) * (x3.clone() * y4.clone() - y3.clone() * x4.clone());
+    if m1 == m2 {
+        return None;
+    }
 
-    Some(glam::DVec2::new(
-        (numerator_x / denominator.clone()).to_f64().unwrap(),
-        (numerator_y / denominator).to_f64().unwrap(),
-    ))
+    let x = (m1.clone() * x1.clone() - m2.clone() * x2.clone() + y2.clone() - y1.clone())
+        / (m1.clone() - m2.clone());
+    let y = m1.clone() * (x.clone() - x1.clone()) + y1.clone();
+
+    Some((x, y))
 }
 
 pub fn future_line_intersection(
-    a: (I64Vec2, I64Vec2),
-    b: (I64Vec2, I64Vec2),
-) -> Option<glam::DVec2> {
-    let intersection_point = line_intersection_point(a, b);
+    a: ((BigRational, BigRational), (BigRational, BigRational)),
+    b: ((BigRational, BigRational), (BigRational, BigRational)),
+) -> Option<(BigRational, BigRational)> {
+    let intersection_point = line_intersection_point(a.clone(), b.clone());
 
     if let Some(p) = intersection_point {
         let mut in_future = true;
@@ -89,17 +104,16 @@ pub fn future_line_intersection(
         // The crossing is in the future if both hailstones move towards the intersection point,
         // that is, the distance before taking a step along their trajectory is larger than the
         // distance after taking a step along their trajectory.
-        let va = a.1.x - a.0.x;
-        let vb = b.1.x - b.0.x;
+        let va = (a.1).0.clone() - (a.0).0.clone();
+        let vb = (b.1).0.clone() - (b.0).0.clone();
 
-        in_future =
-            in_future && (p.x - a.0.x as f64).abs() > (p.x - (a.0.x as f64 + va as f64)).abs();
-
-        in_future =
-            in_future && (p.x - b.0.x as f64).abs() > (p.x - (b.0.x as f64 + vb as f64)).abs();
+        in_future = in_future
+            && (p.0.clone() - a.0.clone().0).abs() > (p.0.clone() - (a.0.clone().0 + va)).abs();
+        in_future = in_future
+            && (p.0.clone() - b.0.clone().0).abs() > (p.0.clone() - (b.0.clone().0 + vb)).abs();
 
         if in_future {
-            return intersection_point;
+            return Some(p);
         }
     }
 
@@ -123,7 +137,8 @@ mod tests {
     #[test]
     fn test_part1() {
         let input = crate::parser::parse(TEST_INPUT);
-        assert_eq!(solve(&input, 7f64..=27.0, 7f64..=27.0), 2);
+        let range = BigRational::from_u64(7).unwrap()..=BigRational::from_u64(27).unwrap();
+        assert_eq!(solve(&input, range.clone(), range.clone()), 2);
     }
 
     #[rstest]
@@ -145,9 +160,31 @@ mod tests {
             input.hailstones[indices.0].position.xy() + input.hailstones[indices.0].velocity.xy(),
         );
 
+        let a = (
+            (
+                BigRational::from_i64(a.0.x).unwrap(),
+                BigRational::from_i64(a.0.y).unwrap(),
+            ),
+            (
+                BigRational::from_i64(a.1.x).unwrap(),
+                BigRational::from_i64(a.1.y).unwrap(),
+            ),
+        );
+
         let b = (
             input.hailstones[indices.1].position.xy(),
             input.hailstones[indices.1].position.xy() + input.hailstones[indices.1].velocity.xy(),
+        );
+
+        let b = (
+            (
+                BigRational::from_i64(b.0.x).unwrap(),
+                BigRational::from_i64(b.0.y).unwrap(),
+            ),
+            (
+                BigRational::from_i64(b.1.x).unwrap(),
+                BigRational::from_i64(b.1.y).unwrap(),
+            ),
         );
 
         let intersection_point = future_line_intersection(a, b);
@@ -155,8 +192,8 @@ mod tests {
         assert_eq!(intersection_point.is_some(), expected.is_some());
         assert_eq!(
             intersection_point.map(|p| (
-                (p.x * 1000.0).round() / 1000.0,
-                (p.y * 1000.0).round() / 1000.0
+                (p.0.to_f64().unwrap() * 1000.0).round() / 1000.0,
+                (p.1.to_f64().unwrap() * 1000.0).round() / 1000.0
             )),
             expected.map(|p| (
                 (p.0 * 1000.0).round() / 1000.0,
