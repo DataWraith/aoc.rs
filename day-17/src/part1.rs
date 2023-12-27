@@ -61,8 +61,7 @@ pub fn successors(input: &PuzzleInput, crucible: &Crucible) -> ArrayVec<[(Crucib
                 direction: Some(Direction::Right),
                 position: right,
                 cur_straight: 1,
-                min_straight: 1,
-                max_straight: 3,
+                ..crucible.clone()
             },
             input.grid[right].0 as usize,
         ));
@@ -74,8 +73,7 @@ pub fn successors(input: &PuzzleInput, crucible: &Crucible) -> ArrayVec<[(Crucib
                 direction: Some(Direction::Down),
                 position: down,
                 cur_straight: 1,
-                min_straight: 1,
-                max_straight: 3,
+                ..crucible.clone()
             },
             input.grid[down].0 as usize,
         ));
