@@ -1,10 +1,6 @@
-use crate::structs::*;
+use crate::{part1::follow_path, structs::*};
 
-use petgraph::{
-    algo::all_simple_paths,
-    graph::NodeIndex,
-    graph::UnGraph,
-};
+use petgraph::{algo::all_simple_paths, graph::NodeIndex, graph::UnGraph, visit::EdgeRef};
 use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
@@ -33,63 +29,28 @@ pub fn solve(graph: UnGraph<Coordinate, usize>, start: NodeIndex, goal: NodeInde
 }
 
 pub fn contract_graph(grid: &Grid2D<char>) -> (UnGraph<Coordinate, usize>, NodeIndex, NodeIndex) {
-    fn follow_path(
-        cur: Coordinate,
-        prev: Coordinate,
-        grid: &Grid2D<char>,
-    ) -> (Coordinate, Coordinate, usize) {
-        let mut cur = cur;
-        let mut prev = prev;
-        let mut len = 1;
-
-        loop {
-            let directions = valid_directions(cur, prev, grid);
-
-            if directions.len() == 1 {
-                prev = cur;
-                cur += directions[0].into();
-                len += 1;
-            } else {
-                break (cur, prev, len);
-            }
-        }
-    }
-
-    let mut adjacencies = HashMap::new();
+    let mut graph = UnGraph::<Coordinate, usize>::new_undirected();
+    let mut node_ids = HashMap::default();
 
     let mut queue = VecDeque::new();
     queue.push_back((Coordinate::new(1, 0), Coordinate::new(1, 0)));
 
-    while let Some((cur, prev)) = queue.pop_front() {
-        let (next, next_pred, len) = follow_path(cur, prev, grid);
+    'bfs: while let Some((cur, prev)) = queue.pop_front() {
+        let (next, next_pred, len) = follow_path(cur, prev, grid, valid_directions);
 
-        let adj = adjacencies.entry(prev).or_insert_with(Vec::new);
+        let prev_node = *node_ids.entry(prev).or_insert_with(|| graph.add_node(prev));
+        let next_node = *node_ids.entry(next).or_insert_with(|| graph.add_node(next));
 
-        if adj.iter().any(|(c, _)| *c == next) {
-            continue;
-        }
-
-        adj.push((next, len));
-
-        let directions = valid_directions(next, next_pred, grid);
-
-        for dir in directions {
-            queue.push_back((next + dir.into(), next));
-        }
-    }
-
-    let mut graph = UnGraph::<Coordinate, usize>::new_undirected();
-    let mut ids = HashMap::default();
-
-    for (cur, edges) in adjacencies.iter().sorted_by_key(|(k, _v)| (k.y(), k.x())) {
-        let cur = *ids.entry(cur).or_insert_with(|| graph.add_node(*cur));
-
-        for (succ, length) in edges {
-            let next = *ids.entry(succ).or_insert_with(|| graph.add_node(*succ));
-
-            if !graph.contains_edge(cur, next) {
-                graph.add_edge(cur, next, *length);
+        for edge in graph.edges(prev_node) {
+            if edge.target() == next_node {
+                continue 'bfs;
             }
+        }
+
+        graph.add_edge(prev_node, next_node, len);
+
+        for dir in valid_directions(next, next_pred, grid) {
+            queue.push_back((next + dir.into(), next));
         }
     }
 
