@@ -25,9 +25,11 @@ pub fn solve(input: &PuzzleInput, start: Crucible) -> usize {
         input.grid.height() as i32 - 1,
     );
 
-    queue.push(Reverse((0, start)));
+    let h = |c: &Coordinate| (goal.x().abs_diff(c.x()) + goal.y().abs_diff(c.y())) as usize;
 
-    while let Some(Reverse((cost, crucible))) = queue.pop() {
+    queue.push(Reverse((h(&start.position), 0, start)));
+
+    while let Some(Reverse((_f, cost, crucible))) = queue.pop() {
         if crucible.position == goal && (crucible.cur_straight >= crucible.min_straight) {
             return cost;
         }
@@ -39,7 +41,10 @@ pub fn solve(input: &PuzzleInput, start: Crucible) -> usize {
         visited.insert(crucible.clone());
 
         for (next_crucible, next_cost) in successors(input, &crucible) {
-            queue.push(Reverse((cost + next_cost, next_crucible)));
+            let h = h(&next_crucible.position);
+            let g = cost + next_cost;
+
+            queue.push(Reverse((g + h, g, next_crucible)));
         }
     }
 
