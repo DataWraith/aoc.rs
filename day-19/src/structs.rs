@@ -1,4 +1,4 @@
-use std::ops::Range;
+use std::{collections::BTreeMap, ops::Range};
 
 use utility_belt::prelude::*;
 
@@ -43,13 +43,7 @@ impl Part {
     }
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct PartRange {
-    pub x: Range<usize>,
-    pub m: Range<usize>,
-    pub a: Range<usize>,
-    pub s: Range<usize>,
-}
+pub type PartRange = BTreeMap<char, Range<usize>>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct RangeFlow {

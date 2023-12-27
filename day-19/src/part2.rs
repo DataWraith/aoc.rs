@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use crate::structs::*;
 
 use utility_belt::prelude::*;
@@ -6,13 +8,14 @@ pub fn part2(input: &PuzzleInput) -> String {
     let mut flows = HashMap::default();
     let mut accepted = Vec::new();
 
+    let mut initial_part_range = BTreeMap::new();
+    initial_part_range.insert('x', 1..4001);
+    initial_part_range.insert('m', 1..4001);
+    initial_part_range.insert('a', 1..4001);
+    initial_part_range.insert('s', 1..4001);
+
     let flow = RangeFlow {
-        part: PartRange {
-            x: 1..4001,
-            m: 1..4001,
-            a: 1..4001,
-            s: 1..4001,
-        },
+        part: initial_part_range,
         current_workflow: "in".to_string(),
         current_index: 0,
         accepted: 4000 * 4000 * 4000 * 4000,
@@ -74,83 +77,27 @@ fn transition(workflows: &HashMap<String, Workflow>, from: &RangeFlow) -> Vec<Ra
         _ => unreachable!("Invalid comparison"),
     };
 
-    let (lower_range, upper_range) = match (rule.category, rule.comparison) {
-        ('x', '<') => (from.part.x.start..rule.value, rule.value..from.part.x.end),
-        ('x', '>') => (
-            from.part.x.start..(rule.value + 1),
-            (rule.value + 1)..from.part.x.end,
-        ),
-        ('m', '<') => (from.part.m.start..rule.value, rule.value..from.part.m.end),
-        ('m', '>') => (
-            from.part.m.start..(rule.value + 1),
-            (rule.value + 1)..from.part.m.end,
-        ),
-        ('a', '<') => (from.part.a.start..rule.value, rule.value..from.part.a.end),
-        ('a', '>') => (
-            from.part.a.start..(rule.value + 1),
-            (rule.value + 1)..from.part.a.end,
-        ),
-        ('s', '<') => (from.part.s.start..rule.value, rule.value..from.part.s.end),
-        ('s', '>') => (
-            from.part.s.start..(rule.value + 1),
-            (rule.value + 1)..from.part.s.end,
+    let (lower_range, upper_range) = match rule.comparison {
+        '<' => (
+            from.part[&rule.category].start..rule.value,
+            rule.value..from.part[&rule.category].end,
         ),
 
-        _ => unreachable!("Invalid comparison/comparison"),
+        '>' => (
+            from.part[&rule.category].start..(rule.value + 1),
+            (rule.value + 1)..from.part[&rule.category].end,
+        ),
+
+        _ => unreachable!("Invalid comparison"),
     };
 
-    let (part_range_lower, part_range_upper) = match rule.category {
-        'x' => (
-            PartRange {
-                x: lower_range.clone(),
-                ..from.part.clone()
-            },
-            PartRange {
-                x: upper_range.clone(),
-                ..from.part.clone()
-            },
-        ),
-        'm' => (
-            PartRange {
-                m: lower_range.clone(),
-                ..from.part.clone()
-            },
-            PartRange {
-                m: upper_range.clone(),
-                ..from.part.clone()
-            },
-        ),
-        'a' => (
-            PartRange {
-                a: lower_range.clone(),
-                ..from.part.clone()
-            },
-            PartRange {
-                a: upper_range.clone(),
-                ..from.part.clone()
-            },
-        ),
-        's' => (
-            PartRange {
-                s: lower_range.clone(),
-                ..from.part.clone()
-            },
-            PartRange {
-                s: upper_range.clone(),
-                ..from.part.clone()
-            },
-        ),
-        _ => unreachable!("Invalid category"),
-    };
+    let mut part_range_lower = from.part.clone();
+    part_range_lower.insert(rule.category, lower_range.clone());
 
-    let full_count = match rule.category {
-        'x' => from.part.x.end - from.part.x.start,
-        'm' => from.part.m.end - from.part.m.start,
-        'a' => from.part.a.end - from.part.a.start,
-        's' => from.part.s.end - from.part.s.start,
+    let mut part_range_upper = from.part.clone();
+    part_range_upper.insert(rule.category, upper_range.clone());
 
-        _ => unreachable!("Invalid category"),
-    };
+    let full_count = from.part[&rule.category].end - from.part[&rule.category].start;
 
     if !lower_range.is_empty() {
         let lower_count = lower_range.end - lower_range.start;
