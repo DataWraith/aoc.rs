@@ -1,11 +1,10 @@
 use std::ops::RangeInclusive;
 
-use glam::I64Vec2;
 use glam::Vec3Swizzles;
 use num::BigRational;
-use num::FromPrimitive;
 use num::Signed;
-use num::ToPrimitive;
+use num::{FromPrimitive, ToPrimitive};
+
 use utility_belt::prelude::Itertools;
 
 use crate::structs::*;

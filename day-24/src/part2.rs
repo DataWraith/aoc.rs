@@ -1,11 +1,11 @@
 use glam::I64Vec2;
 use glam::Vec3Swizzles;
-use num::iter::RangeInclusive;
+
 use num::traits::FromPrimitive;
 use num::BigRational;
 use utility_belt::prelude::*;
 
-use crate::part1::line_intersection_point;
+
 use crate::{part1::future_line_intersection, structs::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
