@@ -56,7 +56,7 @@ fn parse_direction(input: &str) -> IResult<&str, Direction> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    use utility_belt::prelude::indoc;
 
     const TEST_INPUT: &str = indoc! {"
         R 6 (#70c710)
