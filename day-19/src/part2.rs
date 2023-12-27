@@ -24,7 +24,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         let mut new_flows =
             utility_belt::misc::state_iteration(&flows, |f, _| transition(&input.workflows, f), ());
 
-        for (flow, count) in new_flows.iter_mut() {
+        for (flow, _count) in new_flows.iter_mut() {
             if flow.current_workflow == "A" {
                 accepted.push(flow.clone());
             }
@@ -101,7 +101,6 @@ fn transition(workflows: &HashMap<String, Workflow>, from: &RangeFlow) -> Vec<Ra
                     current_workflow: lower_next,
                     current_index: lower_next_index,
                     accepted: from.accepted * lower_count / full_count,
-                    ..from.clone()
                 });
             };
 
@@ -117,7 +116,6 @@ fn transition(workflows: &HashMap<String, Workflow>, from: &RangeFlow) -> Vec<Ra
                     current_workflow: upper_next,
                     current_index: upper_next_index,
                     accepted: from.accepted * upper_count / full_count,
-                    ..from.clone()
                 });
             };
         }
@@ -147,7 +145,6 @@ fn transition(workflows: &HashMap<String, Workflow>, from: &RangeFlow) -> Vec<Ra
                     current_workflow: lower_next,
                     current_index: lower_next_index,
                     accepted: from.accepted * lower_count / full_count,
-                    ..from.clone()
                 })
             };
 
@@ -163,7 +160,6 @@ fn transition(workflows: &HashMap<String, Workflow>, from: &RangeFlow) -> Vec<Ra
                     current_workflow: upper_next,
                     current_index: upper_next_index,
                     accepted: from.accepted * upper_count / full_count,
-                    ..from.clone()
                 });
             };
         }
@@ -265,7 +261,6 @@ fn transition(workflows: &HashMap<String, Workflow>, from: &RangeFlow) -> Vec<Ra
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
         px{a<2006:qkq,m>2090:A,rfg}

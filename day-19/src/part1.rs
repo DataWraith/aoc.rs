@@ -157,7 +157,6 @@ fn transition(workflows: &HashMap<String, Workflow>, from: &Flow) -> Vec<Flow> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
         px{a<2006:qkq,m>2090:A,rfg}
