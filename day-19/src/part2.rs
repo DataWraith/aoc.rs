@@ -74,186 +74,105 @@ fn transition(workflows: &HashMap<String, Workflow>, from: &RangeFlow) -> Vec<Ra
         _ => unreachable!("Invalid comparison"),
     };
 
-    match rule.category {
-        'x' => {
-            let full_count = from.part.x.end - from.part.x.start;
+    let (lower_range, upper_range) = match (rule.category, rule.comparison) {
+        ('x', '<') => (from.part.x.start..rule.value, rule.value..from.part.x.end),
+        ('x', '>') => (
+            from.part.x.start..(rule.value + 1),
+            (rule.value + 1)..from.part.x.end,
+        ),
+        ('m', '<') => (from.part.m.start..rule.value, rule.value..from.part.m.end),
+        ('m', '>') => (
+            from.part.m.start..(rule.value + 1),
+            (rule.value + 1)..from.part.m.end,
+        ),
+        ('a', '<') => (from.part.a.start..rule.value, rule.value..from.part.a.end),
+        ('a', '>') => (
+            from.part.a.start..(rule.value + 1),
+            (rule.value + 1)..from.part.a.end,
+        ),
+        ('s', '<') => (from.part.s.start..rule.value, rule.value..from.part.s.end),
+        ('s', '>') => (
+            from.part.s.start..(rule.value + 1),
+            (rule.value + 1)..from.part.s.end,
+        ),
 
-            let (lower_range, upper_range) = match rule.comparison {
-                '<' => (from.part.x.start..rule.value, rule.value..from.part.x.end),
+        _ => unreachable!("Invalid comparison/comparison"),
+    };
 
-                '>' => (
-                    from.part.x.start..(rule.value + 1),
-                    (rule.value + 1)..from.part.x.end,
-                ),
+    let (part_range_lower, part_range_upper) = match rule.category {
+        'x' => (
+            PartRange {
+                x: lower_range.clone(),
+                ..from.part.clone()
+            },
+            PartRange {
+                x: upper_range.clone(),
+                ..from.part.clone()
+            },
+        ),
+        'm' => (
+            PartRange {
+                m: lower_range.clone(),
+                ..from.part.clone()
+            },
+            PartRange {
+                m: upper_range.clone(),
+                ..from.part.clone()
+            },
+        ),
+        'a' => (
+            PartRange {
+                a: lower_range.clone(),
+                ..from.part.clone()
+            },
+            PartRange {
+                a: upper_range.clone(),
+                ..from.part.clone()
+            },
+        ),
+        's' => (
+            PartRange {
+                s: lower_range.clone(),
+                ..from.part.clone()
+            },
+            PartRange {
+                s: upper_range.clone(),
+                ..from.part.clone()
+            },
+        ),
+        _ => unreachable!("Invalid category"),
+    };
 
-                _ => unreachable!("Invalid comparison"),
-            };
-
-            if !lower_range.is_empty() {
-                let lower_count = lower_range.end - lower_range.start;
-                result.push(RangeFlow {
-                    part: PartRange {
-                        x: lower_range,
-                        m: from.part.m.clone(),
-                        a: from.part.a.clone(),
-                        s: from.part.s.clone(),
-                    },
-                    current_workflow: lower_next,
-                    current_index: lower_next_index,
-                    accepted: from.accepted * lower_count / full_count,
-                });
-            };
-
-            if !upper_range.is_empty() {
-                let upper_count = upper_range.end - upper_range.start;
-                result.push(RangeFlow {
-                    part: PartRange {
-                        x: upper_range,
-                        m: from.part.m.clone(),
-                        a: from.part.a.clone(),
-                        s: from.part.s.clone(),
-                    },
-                    current_workflow: upper_next,
-                    current_index: upper_next_index,
-                    accepted: from.accepted * upper_count / full_count,
-                });
-            };
-        }
-
-        'm' => {
-            let full_count = from.part.m.end - from.part.m.start;
-
-            let (lower_range, upper_range) = match rule.comparison {
-                '<' => (from.part.m.start..rule.value, rule.value..from.part.m.end),
-
-                '>' => (
-                    from.part.m.start..(rule.value + 1),
-                    (rule.value + 1)..from.part.m.end,
-                ),
-                _ => unreachable!("Invalid comparison"),
-            };
-
-            if !lower_range.is_empty() {
-                let lower_count = lower_range.end - lower_range.start;
-                result.push(RangeFlow {
-                    part: PartRange {
-                        x: from.part.x.clone(),
-                        m: lower_range,
-                        a: from.part.a.clone(),
-                        s: from.part.s.clone(),
-                    },
-                    current_workflow: lower_next,
-                    current_index: lower_next_index,
-                    accepted: from.accepted * lower_count / full_count,
-                })
-            };
-
-            if !upper_range.is_empty() {
-                let upper_count = upper_range.end - upper_range.start;
-                result.push(RangeFlow {
-                    part: PartRange {
-                        x: from.part.x.clone(),
-                        m: upper_range,
-                        a: from.part.a.clone(),
-                        s: from.part.s.clone(),
-                    },
-                    current_workflow: upper_next,
-                    current_index: upper_next_index,
-                    accepted: from.accepted * upper_count / full_count,
-                });
-            };
-        }
-
-        'a' => {
-            let full_count = from.part.a.end - from.part.a.start;
-
-            let (lower_range, upper_range) = match rule.comparison {
-                '<' => (from.part.a.start..rule.value, rule.value..from.part.a.end),
-
-                '>' => (
-                    from.part.a.start..(rule.value + 1),
-                    (rule.value + 1)..from.part.a.end,
-                ),
-                _ => unreachable!("Invalid comparison"),
-            };
-
-            if !lower_range.is_empty() {
-                let lower_count = lower_range.end - lower_range.start;
-                result.push(RangeFlow {
-                    part: PartRange {
-                        x: from.part.x.clone(),
-                        m: from.part.m.clone(),
-                        a: lower_range,
-                        s: from.part.s.clone(),
-                    },
-                    current_workflow: lower_next,
-                    current_index: lower_next_index,
-                    accepted: from.accepted * lower_count / full_count,
-                })
-            };
-
-            if !upper_range.is_empty() {
-                let upper_count = upper_range.end - upper_range.start;
-                result.push(RangeFlow {
-                    part: PartRange {
-                        x: from.part.x.clone(),
-                        m: from.part.m.clone(),
-                        a: upper_range,
-                        s: from.part.s.clone(),
-                    },
-                    current_workflow: upper_next,
-                    current_index: upper_next_index,
-                    accepted: from.accepted * upper_count / full_count,
-                });
-            }
-        }
-
-        's' => {
-            let full_count = from.part.s.end - from.part.s.start;
-
-            let (lower_range, upper_range) = match rule.comparison {
-                '<' => (from.part.s.start..rule.value, rule.value..from.part.s.end),
-
-                '>' => (
-                    from.part.s.start..(rule.value + 1),
-                    (rule.value + 1)..from.part.s.end,
-                ),
-                _ => unreachable!("Invalid comparison"),
-            };
-
-            if !lower_range.is_empty() {
-                let lower_count = lower_range.end - lower_range.start;
-                result.push(RangeFlow {
-                    part: PartRange {
-                        x: from.part.x.clone(),
-                        m: from.part.m.clone(),
-                        a: from.part.a.clone(),
-                        s: lower_range,
-                    },
-                    current_workflow: lower_next,
-                    current_index: lower_next_index,
-                    accepted: from.accepted * lower_count / full_count,
-                });
-            }
-
-            if !upper_range.is_empty() {
-                let upper_count = upper_range.end - upper_range.start;
-                result.push(RangeFlow {
-                    part: PartRange {
-                        x: from.part.x.clone(),
-                        m: from.part.m.clone(),
-                        a: from.part.a.clone(),
-                        s: upper_range,
-                    },
-                    current_workflow: upper_next,
-                    current_index: upper_next_index,
-                    accepted: from.accepted * upper_count / full_count,
-                });
-            }
-        }
+    let full_count = match rule.category {
+        'x' => from.part.x.end - from.part.x.start,
+        'm' => from.part.m.end - from.part.m.start,
+        'a' => from.part.a.end - from.part.a.start,
+        's' => from.part.s.end - from.part.s.start,
 
         _ => unreachable!("Invalid category"),
-    }
+    };
+
+    if !lower_range.is_empty() {
+        let lower_count = lower_range.end - lower_range.start;
+
+        result.push(RangeFlow {
+            part: part_range_lower,
+            current_workflow: lower_next,
+            current_index: lower_next_index,
+            accepted: from.accepted * lower_count / full_count,
+        });
+    };
+
+    if !upper_range.is_empty() {
+        let upper_count = upper_range.end - upper_range.start;
+
+        result.push(RangeFlow {
+            part: part_range_upper,
+            current_workflow: upper_next,
+            current_index: upper_next_index,
+            accepted: from.accepted * upper_count / full_count,
+        });
+    };
 
     result
 }
