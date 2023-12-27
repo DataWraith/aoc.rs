@@ -1,23 +1,27 @@
-use crate::structs::*;
+
+
+
+use crate::{part1::press_button, structs::*};
 
 use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    todo!();
-}
+    let mut state = State::new(input);
+    let necessary_conjunctions = ["tx", "dd", "nz", "ph"];
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use utility_belt::prelude::*;
+    loop {
+        let (s, _low, _high) = press_button(input, state);
+        state = s;
 
-    const TEST_INPUT: &str = indoc! {"
-        TODO;
-    "};
-
-    #[test]
-    fn test_part2() {
-        let input = crate::parser::parse(TEST_INPUT);
-        assert_eq!(part2(&input), "TODO");
+        if necessary_conjunctions
+            .iter()
+            .all(|&c| state.conjunction_cycles.contains_key(c))
+        {
+            return necessary_conjunctions
+                .iter()
+                .map(|&c| state.conjunction_cycles[c])
+                .fold(1, lcm)
+                .to_string();
+        }
     }
 }
