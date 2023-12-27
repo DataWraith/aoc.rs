@@ -110,7 +110,6 @@ pub fn press_button(input: &PuzzleInput, state: State) -> (State, usize, usize) 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     const TEST_INPUT1: &str = indoc! {"
         broadcaster -> a, b, c

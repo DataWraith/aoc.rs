@@ -1,4 +1,6 @@
+use petgraph::graph::UnGraph;
+
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
-    // Remember to make the fields pub
+    pub graph: UnGraph<String, ()>,
 }
