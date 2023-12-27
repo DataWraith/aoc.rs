@@ -54,104 +54,37 @@ fn transition(workflows: &HashMap<String, Workflow>, from: &Flow) -> Vec<Flow> {
 
     let rule = rule.unwrap();
 
-    match rule.category {
-        'x' => match rule.comparison {
-            '<' => {
-                if from.part.x < rule.value {
-                    let mut new_flow = from.clone();
-                    new_flow.current_index = 0;
-                    new_flow.current_workflow = rule.next.clone();
-                    result.push(new_flow);
-                    return result;
-                }
-            }
-            '>' => {
-                if from.part.x > rule.value {
-                    let mut new_flow = from.clone();
-                    new_flow.current_index = 0;
-                    new_flow.current_workflow = rule.next.clone();
-                    result.push(new_flow);
-                    return result;
-                }
-            }
-
-            _ => unreachable!(),
-        },
-
-        'm' => match rule.comparison {
-            '<' => {
-                if from.part.m < rule.value {
-                    let mut new_flow = from.clone();
-                    new_flow.current_index = 0;
-                    new_flow.current_workflow = rule.next.clone();
-                    result.push(new_flow);
-                    return result;
-                }
-            }
-            '>' => {
-                if from.part.m > rule.value {
-                    let mut new_flow = from.clone();
-                    new_flow.current_index = 0;
-                    new_flow.current_workflow = rule.next.clone();
-                    result.push(new_flow);
-                    return result;
-                }
-            }
-            _ => unreachable!(),
-        },
-
-        'a' => match rule.comparison {
-            '<' => {
-                if from.part.a < rule.value {
-                    let mut new_flow = from.clone();
-                    new_flow.current_index = 0;
-                    new_flow.current_workflow = rule.next.clone();
-                    result.push(new_flow);
-                    return result;
-                }
-            }
-            '>' => {
-                if from.part.a > rule.value {
-                    let mut new_flow = from.clone();
-                    new_flow.current_index = 0;
-                    new_flow.current_workflow = rule.next.clone();
-                    result.push(new_flow);
-                    return result;
-                }
-            }
-            _ => unreachable!(),
-        },
-        's' => match rule.comparison {
-            '<' => {
-                if from.part.s < rule.value {
-                    let mut new_flow = from.clone();
-                    new_flow.current_index = 0;
-                    new_flow.current_workflow = rule.next.clone();
-                    result.push(new_flow);
-                    return result;
-                }
-            }
-            '>' => {
-                if from.part.s > rule.value {
-                    let mut new_flow = from.clone();
-                    new_flow.current_index = 0;
-                    new_flow.current_workflow = rule.next.clone();
-                    result.push(new_flow);
-                    return result;
-                }
-            }
-            _ => unreachable!(),
-        },
-
-        _ => unreachable!(),
-    }
-
-    result.push(Flow {
+    let advance_current_workflow = vec![Flow {
         current_index: from.current_index + 1,
         ..from.clone()
-    });
+    }];
 
-    result
+    let next_workflow = vec![Flow {
+        current_index: 0,
+        current_workflow: rule.next.clone(),
+        ..from.clone()
+    }];
+
+    use std::cmp::Ordering::*;
+
+    match (
+        rule.category,
+        rule.comparison,
+        from.part.x.cmp(&rule.value),
+        from.part.m.cmp(&rule.value),
+        from.part.a.cmp(&rule.value),
+        from.part.s.cmp(&rule.value),
+    ) {
+        ('x', '<', Less, _, _, _) => next_workflow,
+        ('x', '>', Greater, _, _, _) => next_workflow,
+        ('m', '<', _, Less, _, _) => next_workflow,
+        ('m', '>', _, Greater, _, _) => next_workflow,
+        ('a', '<', _, _, Less, _) => next_workflow,
+        ('a', '>', _, _, Greater, _) => next_workflow,
+        ('s', '<', _, _, _, Less) => next_workflow,
+        ('s', '>', _, _, _, Greater) => next_workflow,
+        _ => advance_current_workflow,
+    }
 }
 
 #[cfg(test)]
