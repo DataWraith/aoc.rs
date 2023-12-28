@@ -83,6 +83,7 @@ impl std::fmt::Debug for AABB {
     }
 }
 
+#[derive(Clone)]
 pub struct BVH {
     arena: Arena<AABB>,
     root: Option<NodeId>,

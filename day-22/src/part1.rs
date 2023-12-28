@@ -1,5 +1,5 @@
 use crate::{
-    bvh::{self, AABB, BVH},
+    bvh::{AABB, BVH},
     structs::*,
 };
 
@@ -12,12 +12,15 @@ pub fn part1(input: &PuzzleInput) -> String {
         bvh.insert(brick.clone());
     }
 
-    let bricks = apply_gravity(&input.bricks, &mut bvh);
+    let bricks = apply_gravity(
+        &input.bricks.iter().cloned().enumerate().collect::<Vec<_>>(),
+        &mut bvh,
+    );
 
     let mut supporting_bricks = Vec::new();
 
     for brick in bricks.iter() {
-        let resting = find_bricks_supported_by(&bvh, brick);
+        let resting = find_bricks_supported_by(&bvh, &brick.1);
 
         if resting.is_empty() {
             continue;
@@ -29,7 +32,8 @@ pub fn part1(input: &PuzzleInput) -> String {
     (bricks.len() - supporting_bricks.len()).to_string()
 }
 
-fn find_bricks_supported_by(bvh: &BVH, brick: &AABB) -> Vec<AABB> {
+// This checks for intersection with the given brick translated one unit higher in the z direction.
+pub fn find_bricks_supported_by(bvh: &BVH, brick: &AABB) -> Vec<AABB> {
     let mut bricks = Vec::new();
 
     let intersector = AABB {
@@ -63,14 +67,14 @@ fn find_bricks_supported_by(bvh: &BVH, brick: &AABB) -> Vec<AABB> {
     bricks
 }
 
-fn apply_gravity(bricks: &Vec<AABB>, bvh: &mut BVH) -> Vec<AABB> {
+pub fn apply_gravity(bricks: &[(usize, AABB)], bvh: &mut BVH) -> Vec<(usize, AABB)> {
     let mut result = Vec::new();
 
-    let mut bricks = bricks.clone();
-    bricks.sort_by_key(|b| b.lower_bound.z);
+    let mut bricks = bricks.to_vec();
+    bricks.sort_by_key(|b| b.1.lower_bound.z);
 
     for brick in bricks.iter() {
-        if brick.lower_bound.z == 1 {
+        if brick.1.lower_bound.z == 1 {
             result.push(brick.clone());
             continue;
         }
@@ -78,8 +82,8 @@ fn apply_gravity(bricks: &Vec<AABB>, bvh: &mut BVH) -> Vec<AABB> {
         let mut z_offset = -1;
 
         loop {
-            let intersect_lower = brick.lower_bound + IVec3::new(0, 0, z_offset);
-            let mut intersect_upper = brick.upper_bound;
+            let intersect_lower = brick.1.lower_bound + IVec3::new(0, 0, z_offset);
+            let mut intersect_upper = brick.1.upper_bound;
             intersect_upper.z = intersect_lower.z;
 
             let aabb = AABB {
@@ -101,13 +105,13 @@ fn apply_gravity(bricks: &Vec<AABB>, bvh: &mut BVH) -> Vec<AABB> {
         z_offset += 1;
 
         let new_brick = AABB {
-            lower_bound: brick.lower_bound + IVec3::new(0, 0, z_offset),
-            upper_bound: brick.upper_bound + IVec3::new(0, 0, z_offset),
+            lower_bound: brick.1.lower_bound + IVec3::new(0, 0, z_offset),
+            upper_bound: brick.1.upper_bound + IVec3::new(0, 0, z_offset),
         };
 
-        if brick != &new_brick {
-            result.push(new_brick.clone());
-            let _ = bvh.remove(brick);
+        if brick.1 != new_brick {
+            result.push((brick.0, new_brick.clone()));
+            let _ = bvh.remove(&brick.1);
             bvh.insert(new_brick);
         } else {
             result.push(brick.clone());
