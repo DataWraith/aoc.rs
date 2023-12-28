@@ -33,7 +33,7 @@ pub fn count_arrangements(input: &str, broken: &[usize]) -> usize {
 mod tests {
     use super::*;
 
-    use utility_belt::prelude::rstest::*;
+    use utility_belt::prelude::rstest;
 
     #[rstest]
     #[case("???.### 1,1,3", 1)]

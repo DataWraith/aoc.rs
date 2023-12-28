@@ -5,12 +5,12 @@ use indextree::{Arena, NodeId};
 use utility_belt::prelude::*;
 
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct AABB {
+pub struct BBox {
     pub lower_bound: IVec3,
     pub upper_bound: IVec3,
 }
 
-impl AABB {
+impl BBox {
     pub fn union(&self, other: &Self) -> Self {
         let lower_bound = IVec3::new(
             self.lower_bound.x.min(other.lower_bound.x),
@@ -68,7 +68,7 @@ impl AABB {
     }
 }
 
-impl std::fmt::Debug for AABB {
+impl std::fmt::Debug for BBox {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -84,12 +84,12 @@ impl std::fmt::Debug for AABB {
 }
 
 #[derive(Clone)]
-pub struct BVH {
-    arena: Arena<AABB>,
+pub struct BoundedVolumeHierarchy {
+    arena: Arena<BBox>,
     root: Option<NodeId>,
 }
 
-impl BVH {
+impl BoundedVolumeHierarchy {
     pub fn new() -> Self {
         Self {
             arena: Arena::new(),
@@ -97,7 +97,7 @@ impl BVH {
         }
     }
 
-    pub fn insert(&mut self, aabb: AABB) -> NodeId {
+    pub fn insert(&mut self, aabb: BBox) -> NodeId {
         // If the tree is empty, the new node becomes the root
         if self.root.is_none() {
             let node = self.arena.new_node(aabb.clone());
@@ -159,7 +159,7 @@ impl BVH {
         }
     }
 
-    fn find_best_sibling(&self, aabb: &AABB) -> NodeId {
+    fn find_best_sibling(&self, aabb: &BBox) -> NodeId {
         let mut q = BinaryHeap::new();
 
         let mut best_candidate = self.root.unwrap();
@@ -198,11 +198,11 @@ impl BVH {
             .unwrap()
             .descendants(&self.arena)
             .map(|n| {
-                self.arena[n].get().union(aabb).volume() as i32
+                self.arena[n].get().union(aabb).volume()
                     + n.ancestors(&self.arena)
                         .skip(1)
                         .map(|a| {
-                            self.arena[a].get().union(&aabb).volume() - self.arena[a].get().volume()
+                            self.arena[a].get().union(aabb).volume() - self.arena[a].get().volume()
                         })
                         .sum::<i32>()
             })
@@ -214,19 +214,20 @@ impl BVH {
         best_candidate
     }
 
-    pub fn get(&self, aabb: &AABB) -> Option<AABB> {
-        if let Some(node_id) = self.get_f(aabb, |leaf: &AABB| leaf == aabb) {
+    #[allow(dead_code)]
+    pub fn get(&self, aabb: &BBox) -> Option<BBox> {
+        if let Some(node_id) = self.get_f(aabb, |leaf: &BBox| leaf == aabb) {
             return self.arena[node_id].get().clone().into();
         }
 
         None
     }
 
-    pub fn intersects_any(&self, aabb: &AABB) -> bool {
+    pub fn intersects_any(&self, aabb: &BBox) -> bool {
         !self.all_intersecting_leaves(aabb).is_empty()
     }
 
-    pub fn all_intersecting_leaves(&self, aabb: &AABB) -> Vec<AABB> {
+    pub fn all_intersecting_leaves(&self, aabb: &BBox) -> Vec<BBox> {
         let mut leaves = Vec::new();
         let mut queue = VecDeque::new();
 
@@ -263,7 +264,7 @@ impl BVH {
     // This walks the tree from the root until a leaf is found. The given test function
     // is applied to the leaf's AABB. If the test function returns true, the node ID
     // of the leaf is returned. Otherwise, None is returned.
-    fn get_f(&self, aabb: &AABB, test: impl Fn(&AABB) -> bool) -> Option<NodeId> {
+    fn get_f(&self, aabb: &BBox, test: impl Fn(&BBox) -> bool) -> Option<NodeId> {
         let cur = self.root?;
         let mut queue = VecDeque::from(vec![cur]);
 
@@ -297,8 +298,8 @@ impl BVH {
         None
     }
 
-    pub fn remove(&mut self, aabb: &AABB) -> bool {
-        let node_id = self.get_f(aabb, |leaf: &AABB| leaf == aabb);
+    pub fn remove(&mut self, aabb: &BBox) -> bool {
+        let node_id = self.get_f(aabb, |leaf: &BBox| leaf == aabb);
 
         if node_id.is_none() {
             return false;
@@ -325,12 +326,13 @@ impl BVH {
         true
     }
 
+    #[allow(dead_code)]
     pub fn root(&self) -> Option<NodeId> {
         self.root
     }
 }
 
-impl std::fmt::Debug for BVH {
+impl std::fmt::Debug for BoundedVolumeHierarchy {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.root.is_none() {
             return write!(f, "Empty BVH");

@@ -1,12 +1,12 @@
 use crate::{
-    bvh::{AABB, BVH},
+    bvh::{BBox, BoundedVolumeHierarchy},
     structs::*,
 };
 
 use utility_belt::prelude::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let mut bvh = BVH::new();
+    let mut bvh = BoundedVolumeHierarchy::new();
 
     for brick in input.bricks.iter() {
         bvh.insert(brick.clone());
@@ -33,10 +33,10 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 // This checks for intersection with the given brick translated one unit higher in the z direction.
-pub fn find_bricks_supported_by(bvh: &BVH, brick: &AABB) -> Vec<AABB> {
+pub fn find_bricks_supported_by(bvh: &BoundedVolumeHierarchy, brick: &BBox) -> Vec<BBox> {
     let mut bricks = Vec::new();
 
-    let intersector = AABB {
+    let intersector = BBox {
         lower_bound: brick.lower_bound + IVec3::new(0, 0, 1),
         upper_bound: brick.upper_bound + IVec3::new(0, 0, 1),
     };
@@ -67,7 +67,10 @@ pub fn find_bricks_supported_by(bvh: &BVH, brick: &AABB) -> Vec<AABB> {
     bricks
 }
 
-pub fn apply_gravity(bricks: &[(usize, AABB)], bvh: &mut BVH) -> Vec<(usize, AABB)> {
+pub fn apply_gravity(
+    bricks: &[(usize, BBox)],
+    bvh: &mut BoundedVolumeHierarchy,
+) -> Vec<(usize, BBox)> {
     let mut result = Vec::new();
 
     let mut bricks = bricks.to_vec();
@@ -86,7 +89,7 @@ pub fn apply_gravity(bricks: &[(usize, AABB)], bvh: &mut BVH) -> Vec<(usize, AAB
             let mut intersect_upper = brick.1.upper_bound;
             intersect_upper.z = intersect_lower.z;
 
-            let aabb = AABB {
+            let aabb = BBox {
                 lower_bound: intersect_lower,
                 upper_bound: intersect_upper,
             };
@@ -104,7 +107,7 @@ pub fn apply_gravity(bricks: &[(usize, AABB)], bvh: &mut BVH) -> Vec<(usize, AAB
 
         z_offset += 1;
 
-        let new_brick = AABB {
+        let new_brick = BBox {
             lower_bound: brick.1.lower_bound + IVec3::new(0, 0, z_offset),
             upper_bound: brick.1.upper_bound + IVec3::new(0, 0, z_offset),
         };

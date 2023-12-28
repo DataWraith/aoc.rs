@@ -19,7 +19,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 mod tests {
     use super::*;
 
-    use utility_belt::prelude::rstest::*;
+    use utility_belt::prelude::rstest;
 
     #[rstest]
     #[case("???.### 1,1,3", 1)]

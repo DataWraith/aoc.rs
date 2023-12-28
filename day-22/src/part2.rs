@@ -1,13 +1,9 @@
-use crate::{
-    bvh::{AABB, BVH},
-    part1::{apply_gravity, find_bricks_supported_by},
-    structs::*,
-};
+use crate::{bvh::BoundedVolumeHierarchy, part1::apply_gravity, structs::*};
 
 use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let mut bvh = BVH::new();
+    let mut bvh = BoundedVolumeHierarchy::new();
 
     for brick in input.bricks.iter() {
         bvh.insert(brick.clone());
@@ -26,7 +22,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         prev.insert(b);
     }
 
-    for (i, brick) in bricks.iter() {
+    for (_i, brick) in bricks.iter() {
         let mut b = bvh.clone();
 
         b.remove(brick);

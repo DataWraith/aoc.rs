@@ -1,8 +1,6 @@
-use utility_belt::prelude::*;
-
-use crate::bvh::{AABB, BVH};
+use crate::bvh::BBox;
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
-    pub bricks: Vec<AABB>,
+    pub bricks: Vec<BBox>,
 }

@@ -8,7 +8,7 @@ use nom::{
 };
 use utility_belt::prelude::*;
 
-use crate::{bvh::AABB, structs::*};
+use crate::{bvh::BBox, structs::*};
 
 pub fn parse(input: &str) -> PuzzleInput {
     nom_parser(input).unwrap().1
@@ -44,12 +44,12 @@ fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
     Ok((input, PuzzleInput { bricks }))
 }
 
-pub fn parse_brick(input: &str) -> IResult<&str, AABB> {
+pub fn parse_brick(input: &str) -> IResult<&str, BBox> {
     let (input, coords) = separated_pair(parse_coordinate, tag("~"), parse_coordinate)(input)?;
     let (input, _) = newline(input)?;
     Ok((
         input,
-        AABB {
+        BBox {
             lower_bound: coords.0,
             upper_bound: coords.1,
         },
