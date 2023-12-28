@@ -1,5 +1,5 @@
-use std::cmp::Reverse;
 use std::collections::BinaryHeap;
+use std::{cmp::Reverse, ops::Range};
 
 use indextree::{Arena, NodeId};
 use utility_belt::prelude::*;
@@ -12,9 +12,21 @@ pub struct AABB {
 
 impl AABB {
     pub fn union(&self, other: &Self) -> Self {
+        let lower_bound = IVec3::new(
+            self.lower_bound.x.min(other.lower_bound.x),
+            self.lower_bound.y.min(other.lower_bound.y),
+            self.lower_bound.z.min(other.lower_bound.z),
+        );
+
+        let upper_bound = IVec3::new(
+            self.upper_bound.x.max(other.upper_bound.x),
+            self.upper_bound.y.max(other.upper_bound.y),
+            self.upper_bound.z.max(other.upper_bound.z),
+        );
+
         Self {
-            lower_bound: self.lower_bound.min(other.lower_bound),
-            upper_bound: self.upper_bound.max(other.upper_bound),
+            lower_bound,
+            upper_bound,
         }
     }
 
@@ -28,17 +40,31 @@ impl AABB {
     }
 
     pub fn intersects(&self, other: &Self) -> bool {
-        self.lower_bound.x <= other.upper_bound.x
-            && self.lower_bound.y <= other.upper_bound.y
-            && self.lower_bound.z <= other.upper_bound.z
-            && self.upper_bound.x >= other.lower_bound.x
-            && self.upper_bound.y >= other.lower_bound.y
-            && self.upper_bound.z >= other.lower_bound.z
+        fn range_intersects(r1: Range<i32>, r2: Range<i32>) -> bool {
+            r1.start >= r2.start && r1.start <= r2.end || r2.start >= r1.start && r2.start <= r1.end
+        }
+
+        let x_intersects = range_intersects(
+            self.lower_bound.x..self.upper_bound.x,
+            other.lower_bound.x..other.upper_bound.x,
+        );
+
+        let y_intersects = range_intersects(
+            self.lower_bound.y..self.upper_bound.y,
+            other.lower_bound.y..other.upper_bound.y,
+        );
+
+        let z_intersects = range_intersects(
+            self.lower_bound.z..self.upper_bound.z,
+            other.lower_bound.z..other.upper_bound.z,
+        );
+
+        x_intersects && y_intersects && z_intersects
     }
 
     pub fn volume(&self) -> i32 {
-        let diff = self.upper_bound - self.lower_bound;
-        diff.x * diff.y * diff.z
+        let diff = self.upper_bound - self.lower_bound + IVec3::new(1, 1, 1);
+        (diff.x * diff.y * diff.z).abs()
     }
 }
 
@@ -71,16 +97,15 @@ impl BVH {
     }
 
     pub fn insert(&mut self, aabb: AABB) -> NodeId {
-        let node = self.arena.new_node(aabb.clone());
-
         // If the tree is empty, the new node becomes the root
         if self.root.is_none() {
+            let node = self.arena.new_node(aabb.clone());
             self.root = Some(node);
             return node;
         }
 
         // Otherwise, we look for the best sibling for the new node.
-        let best_sibling = self.find_best_sibling(node);
+        let best_sibling = self.find_best_sibling(&aabb);
 
         // If the best sibling is the same as the node we're inserting, we're done.
         if self.arena[best_sibling].get() == &aabb {
@@ -92,7 +117,7 @@ impl BVH {
         // a child of the new node.
         let new_node = self
             .arena
-            .new_node(self.arena[node].get().union(self.arena[best_sibling].get()));
+            .new_node(aabb.union(self.arena[best_sibling].get()));
 
         let parent = self.arena[best_sibling].parent();
 
@@ -100,18 +125,24 @@ impl BVH {
         best_sibling.detach(&mut self.arena);
 
         new_node.append(best_sibling, &mut self.arena);
-        new_node.append(node, &mut self.arena);
+        new_node.append(self.arena.new_node(aabb.clone()), &mut self.arena);
 
         if let Some(parent) = parent {
             parent.append(new_node, &mut self.arena);
+            self.update_bounding_boxes(new_node);
         } else {
             self.root = Some(new_node);
-            return new_node;
         }
 
-        let cur = new_node;
+        new_node
+    }
 
-        while let Some(cur) = self.arena[cur].parent() {
+    fn update_bounding_boxes(&mut self, start: NodeId) {
+        let mut start = start;
+
+        while let Some(cur) = self.arena[start].parent() {
+            assert_eq!(cur.children(&self.arena).count(), 2);
+
             let child1 = self.arena[cur].first_child().unwrap();
             let child2 = self.arena[cur].last_child().unwrap();
 
@@ -122,47 +153,62 @@ impl BVH {
             }
 
             *self.arena[cur].get_mut() = new_aabb;
-        }
 
-        new_node
+            start = cur;
+        }
     }
 
-    fn find_best_sibling(&self, node: NodeId) -> NodeId {
+    fn find_best_sibling(&self, aabb: &AABB) -> NodeId {
         let mut q = BinaryHeap::new();
 
         let mut best_candidate = self.root.unwrap();
-        let mut best_cost = self.arena[best_candidate]
-            .get()
-            .union(self.arena[node].get())
-            .volume();
-        let delta_cost = best_cost - self.arena[best_candidate].get().volume();
+        let mut best_cost = aabb.union(self.arena[best_candidate].get()).volume();
 
-        q.push((Reverse(best_cost), delta_cost, best_candidate));
+        q.push((Reverse(best_cost), 0, best_candidate));
 
-        while let Some((Reverse(cost), inherited_cost, candidate)) = q.pop() {
-            let direct_cost = self.arena[candidate]
-                .get()
-                .union(self.arena[node].get())
-                .volume();
-            let new_cost = inherited_cost + direct_cost;
-            let delta_cost = new_cost - self.arena[candidate].get().volume();
-            let lower_bound = self.arena[node].get().volume() + inherited_cost + delta_cost;
-
-            if new_cost < best_cost {
-                best_cost = new_cost;
+        while let Some((Reverse(cost), delta_cost, candidate)) = q.pop() {
+            if cost < best_cost {
+                best_cost = cost;
                 best_candidate = candidate;
             }
 
+            let direct_cost = self.arena[candidate].get().union(aabb).volume();
+            let cur_delta = direct_cost - self.arena[candidate].get().volume();
+
+            let lower_bound = aabb.volume() + cur_delta + delta_cost;
+
             if lower_bound < best_cost {
                 if let Some(left) = self.arena[candidate].first_child() {
-                    q.push((Reverse(new_cost), inherited_cost + delta_cost, left));
+                    let left_cost =
+                        self.arena[left].get().union(aabb).volume() + delta_cost + cur_delta;
+                    q.push((Reverse(left_cost), delta_cost + cur_delta, left));
                 }
 
                 if let Some(right) = self.arena[candidate].last_child() {
-                    q.push((Reverse(new_cost), delta_cost, right));
+                    let right_cost =
+                        self.arena[right].get().union(aabb).volume() + delta_cost + cur_delta;
+                    q.push((Reverse(right_cost), delta_cost + cur_delta, right));
                 }
             }
         }
+
+        let actual_best = self
+            .root
+            .unwrap()
+            .descendants(&self.arena)
+            .map(|n| {
+                self.arena[n].get().union(aabb).volume() as i32
+                    + n.ancestors(&self.arena)
+                        .skip(1)
+                        .map(|a| {
+                            self.arena[a].get().union(&aabb).volume() - self.arena[a].get().volume()
+                        })
+                        .sum::<i32>()
+            })
+            .min()
+            .unwrap();
+
+        assert_eq!(best_cost, actual_best);
 
         best_candidate
     }
@@ -176,28 +222,60 @@ impl BVH {
     }
 
     pub fn intersects_any(&self, aabb: &AABB) -> bool {
-        self.get_f(aabb, |leaf: &AABB| leaf.intersects(&aabb))
-            .is_some()
+        !self.all_intersecting_leaves(aabb).is_empty()
+    }
+
+    pub fn all_intersecting_leaves(&self, aabb: &AABB) -> Vec<AABB> {
+        let mut leaves = Vec::new();
+        let mut queue = VecDeque::new();
+
+        if self.root.is_none() {
+            return leaves;
+        }
+
+        queue.push_back(self.root.unwrap());
+
+        while let Some(cur) = queue.pop_front() {
+            let child1 = self.arena[cur].first_child();
+            let child2 = self.arena[cur].last_child();
+
+            if child1.is_none() || child2.is_none() {
+                leaves.push(self.arena[cur].get().clone());
+                continue;
+            }
+
+            let child1 = child1.unwrap();
+            let child2 = child2.unwrap();
+
+            if self.arena[child1].get().intersects(aabb) {
+                queue.push_back(child1);
+            }
+
+            if self.arena[child2].get().intersects(aabb) {
+                queue.push_back(child2);
+            }
+        }
+
+        leaves
     }
 
     // This walks the tree from the root until a leaf is found. The given test function
     // is applied to the leaf's AABB. If the test function returns true, the node ID
     // of the leaf is returned. Otherwise, None is returned.
     fn get_f(&self, aabb: &AABB, test: impl Fn(&AABB) -> bool) -> Option<NodeId> {
-        let mut cur = self.root?;
+        let cur = self.root?;
+        let mut queue = VecDeque::from(vec![cur]);
 
-        loop {
+        while let Some(cur) = queue.pop_front() {
             let child1 = self.arena[cur].first_child();
             let child2 = self.arena[cur].last_child();
 
-            // All interior nodes in the tree should have two children, so we
-            // can check for just one of them here
-            if child1.is_none() {
+            if child1.is_none() || child2.is_none() {
                 if test(self.arena[cur].get()) {
                     return Some(cur);
-                } else {
-                    return None;
                 }
+
+                return None;
             }
 
             let child1 = child1.unwrap();
@@ -206,21 +284,16 @@ impl BVH {
             let child1_aabb = self.arena[child1].get();
             let child2_aabb = self.arena[child2].get();
 
-            // Descend into the child with the smaller enclosing bounding box
-            if child1_aabb.contains(aabb) && !child2_aabb.contains(aabb) {
-                cur = child1;
-            } else if !child1_aabb.contains(aabb) && child2_aabb.contains(aabb) {
-                cur = child2;
-            } else if child1_aabb.contains(aabb) && child2_aabb.contains(aabb) {
-                if child1_aabb.volume() < child2_aabb.volume() {
-                    cur = child1;
-                } else {
-                    cur = child2;
-                }
-            } else {
-                return None;
+            if child1_aabb.contains(aabb) {
+                queue.push_back(child1);
+            }
+
+            if child2_aabb.contains(aabb) {
+                queue.push_back(child2);
             }
         }
+
+        None
     }
 
     pub fn remove(&mut self, aabb: &AABB) -> bool {
@@ -245,6 +318,8 @@ impl BVH {
 
         sibling.remove(&mut self.arena);
         node_id.remove(&mut self.arena);
+
+        self.update_bounding_boxes(parent);
 
         true
     }

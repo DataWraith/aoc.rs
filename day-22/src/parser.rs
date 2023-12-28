@@ -8,10 +8,7 @@ use nom::{
 };
 use utility_belt::prelude::*;
 
-use crate::{
-    bvh::{AABB, BVH},
-    structs::*,
-};
+use crate::{bvh::AABB, structs::*};
 
 pub fn parse(input: &str) -> PuzzleInput {
     nom_parser(input).unwrap().1
