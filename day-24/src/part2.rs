@@ -5,10 +5,13 @@ use num::traits::FromPrimitive;
 use num::BigRational;
 use utility_belt::prelude::*;
 
-
 use crate::{part1::future_line_intersection, structs::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
+    // See https://www.youtube.com/watch?v=guOyA7Ijqgk for a really elegant solution to this problem.
+    // Unfortunately, it appears that there is no equivalent symbolic Algebra library for Rust, so we're stuck
+    // with a slow grid search.
+
     let (final_x, final_y) = solve_2d(input).unwrap();
 
     let input2 = PuzzleInput {
