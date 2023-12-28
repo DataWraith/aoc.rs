@@ -1,4 +1,8 @@
+use utility_belt::prelude::*;
+
+use crate::bvh::{AABB, BVH};
+
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
-    // Remember to make the fields pub
+    pub bricks: Vec<AABB>,
 }

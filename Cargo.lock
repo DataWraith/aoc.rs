@@ -280,6 +280,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "day-22"
+version = "0.1.0"
+dependencies = [
+ "indextree",
+ "nom",
+ "utility-belt",
+]
+
+[[package]]
 name = "day-23"
 version = "0.1.0"
 dependencies = [
@@ -539,6 +548,12 @@ dependencies = [
  "hashbrown 0.14.3",
  "rayon",
 ]
+
+[[package]]
+name = "indextree"
+version = "4.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c40411d0e5c63ef1323c3d09ce5ec6d84d71531e18daed0743fccea279d7deb6"
 
 [[package]]
 name = "indoc"
