@@ -10,7 +10,9 @@ use crate::{part1::future_line_intersection, structs::*};
 pub fn part2(input: &PuzzleInput) -> String {
     // See https://www.youtube.com/watch?v=guOyA7Ijqgk for a really elegant solution to this problem.
     // Unfortunately, it appears that there is no equivalent symbolic Algebra library for Rust, so we're stuck
-    // with a slow grid search.
+    // with a slow grid search. I've tried various rust crates. `gomez` comes the closest, but it is limited
+    // to 64-bit floating point numbers and can't seem to use Rational numbers, which are apparently necessary
+    // for this problem.
 
     let (final_x, final_y) = solve_2d(input).unwrap();
 
