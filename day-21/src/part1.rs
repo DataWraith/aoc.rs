@@ -39,6 +39,10 @@ pub fn floodfill(input: &PuzzleInput, max_dist: usize, wrap: bool) -> HashMap<Co
                     continue;
                 }
 
+                if input.grid[c] == 'S' {
+                    println!("Found S at {}: {}", c, dist);
+                }
+
                 if input.grid[c] == '#' || result.contains_key(&neighbor) {
                     continue;
                 }

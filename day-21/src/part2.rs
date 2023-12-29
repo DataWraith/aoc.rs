@@ -4,44 +4,48 @@ use gomez::{Domain, Problem, SolverDriver, System};
 use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    solve(
-        input,
-        ((65..(65 + 131 * 15)).step_by(131))
-            .collect::<Vec<_>>()
-            .as_slice(),
-    );
-    todo!();
+    //let polynomial = solve(input, (500..=500).collect::<Vec<_>>().as_slice());
+    let polynomial = solve(input, &[65, 65 + 131, 65 + 2 * 131]);
+
+    let a = polynomial[0];
+    let b = polynomial[1];
+    let c = polynomial[2];
+    let x = 26501300.0;
+
+    let result = a * x * x + b * x + c;
+
+    dbg!(result);
+
+    result.to_string()
 }
 
-pub fn solve(input: &PuzzleInput, num_steps: &[usize]) -> usize {
+pub fn solve(input: &PuzzleInput, num_steps: &[usize]) -> [f64; 3] {
     let mut dataset = Vec::new();
 
     for steps in num_steps {
         dbg!(steps);
         let result = walk(input, *steps, true);
-        dataset.push((*steps, result));
+        dataset.push((1 + *steps, result));
     }
 
-    opt(dataset.clone());
-
-    dbg!(&dataset);
-
-    todo!();
+    opt(dataset.clone())
 }
 
-pub fn opt(dataset: Vec<(usize, usize)>) {
+pub fn opt(dataset: Vec<(usize, usize)>) -> [f64; 3] {
     let problem = ReachableTilesProblem { dataset };
     let mut solver = SolverDriver::builder(&problem).build();
+    let mut x = [0.0; 3];
 
-    let (x, norm) = solver
-        .find(|s| {
-            dbg!(s.x());
-            dbg!(s.rx());
-            dbg!(s.norm()) < 1e-6
-        })
-        .unwrap();
+    while let Ok((cur_x, rx)) = solver.next() {
+        dbg!(&cur_x);
+        dbg!(&rx);
 
-    dbg!(x, norm);
+        x[0] = cur_x[0];
+        x[1] = cur_x[1];
+        x[2] = cur_x[2];
+    }
+
+    x
 }
 
 struct ReachableTilesProblem {
@@ -52,7 +56,7 @@ impl Problem for ReachableTilesProblem {
     type Field = f64;
 
     fn domain(&self) -> Domain<Self::Field> {
-        Domain::unconstrained(self.dataset.len())
+        Domain::unconstrained(self.dataset.len() + 3)
     }
 }
 
@@ -75,11 +79,15 @@ impl System for ReachableTilesProblem {
         //let c = 3699.0;
 
         for (i, (x_i, y_i)) in self.dataset.iter().enumerate() {
-            let x_i = *x_i as f64 / 131.0;
+            let x_i = *x_i as f64;
             let y_i = *y_i as f64;
 
-            rx[i] = (a * x_i * x_i + b * x_i + c - y_i)
+            rx[i] = (a * x_i * x_i + b * x_i + c - y_i);
         }
+
+        rx[self.dataset.len()] = (a - a.round()).abs();
+        rx[self.dataset.len() + 1] = (b - b.round()).abs();
+        rx[self.dataset.len() + 2] = (c - c.round()).abs();
     }
 }
 
@@ -102,23 +110,34 @@ mod tests {
         ...........
     "};
 
+    const MINIGRID: &str = indoc! {"
+        ...
+        .S.
+        ...
+    "};
+
     #[test]
     fn test_part2() {
         let input = crate::parser::parse(TEST_INPUT);
-        assert_eq!(solve(&input, &[5, 5 + 11, 5 + 22]), usize::MAX);
+        assert_eq!(
+            solve(&input, (1..100).collect_vec().as_slice()),
+            [1.0, 1.0, 1.0]
+        );
     }
 
     #[test]
     fn test_gomez() {
-        let dataset = vec![
-            (6, 16),
-            (10, 50),
-            (50, 1594),
-            (100, 6536),
-            (500, 167004),
-            (1000, 668697),
-        ];
+        let input = crate::parser::parse(MINIGRID);
+        let mut dataset = Vec::new();
 
-        opt(dataset)
+        for step in 1..=50 {
+            dbg!(step);
+            let tiles = walk(&input, step, true);
+            dataset.push((1 + step, tiles));
+        }
+
+        dbg!(&dataset);
+
+        opt(dataset);
     }
 }
