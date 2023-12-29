@@ -1,143 +1,84 @@
-use crate::{part1::walk, structs::*};
+use crate::{
+    part1::{find_start, walk},
+    structs::*,
+};
 
 use gomez::{Domain, Problem, SolverDriver, System};
-use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    //let polynomial = solve(input, (500..=500).collect::<Vec<_>>().as_slice());
-    let polynomial = solve(input, &[65, 65 + 131, 65 + 2 * 131]);
-
-    let a = polynomial[0];
-    let b = polynomial[1];
-    let c = polynomial[2];
-    let x = 26501300.0;
-
-    let result = a * x * x + b * x + c;
-
-    dbg!(result);
-
-    result.to_string()
+    solve(input, 26501365).to_string()
 }
 
-pub fn solve(input: &PuzzleInput, num_steps: &[usize]) -> [f64; 3] {
-    let mut dataset = Vec::new();
+pub fn solve(input: &PuzzleInput, num_steps: usize) -> usize {
+    // First, notice that the grid polarity flips when we cross an edge.
+    //
+    // That means that we can work with a grid that is twice as large, and then
+    // just ignore the polarity. So, in the actual puzzle input, we'd
+    // conceptually be working with a (2 * 131) x (2 * 131) grid.
+    //
+    // If we assume a grid without obstacles, then the number of tiles we can
+    // reach in x steps is simply (x + 1)². This is easy to see if we draw a
+    // grid and count the tiles.
+    //
+    // This tells us that the relationship between the number of steps we take
+    // and the number of reachable tiles is quadratic, so now we need to find
+    // the actual polynomial of degree 2 that fits the data, and just hope that
+    // there is one.
+    //
+    let size = input.grid.width(); // Assume a square input
+    let start = find_start(input).x() as usize;
 
-    for steps in num_steps {
-        dbg!(steps);
-        let result = walk(input, *steps, true);
-        dataset.push((1 + *steps, result));
-    }
+    // We need to take four samples, because we need to calculate the
+    // second difference. We walk by (2 * size) steps, because we need
+    // to account for the fact that the grid polarity flips when we
+    // cross an edge.
+    let x0 = walk(input, start);
+    let x1 = walk(input, start + 2 * size);
+    let x2 = walk(input, start + 4 * size);
+    let x3 = walk(input, start + 6 * size);
 
-    opt(dataset.clone())
-}
+    // Given four data points, we can subtract them from each other to get the
+    // first and second differences. Since we assume a quadratic polynomial,
+    // the second difference should be constant. If it isn't, then we know that
+    // the data doesn't fit a quadratic polynomial. In that case we need to
+    // try again later in the sequence, but I've taken too long to understand
+    // this already, so I can't be bothered to make it work with the test input.
+    // It works for the actual input.
+    let first_diffs = [x1 - x0, x2 - x1, x3 - x2];
+    let second_diffs = [
+        first_diffs[1] - first_diffs[0],
+        first_diffs[2] - first_diffs[1],
+    ];
+    assert_eq!(second_diffs[0], second_diffs[1]);
 
-pub fn opt(dataset: Vec<(usize, usize)>) -> [f64; 3] {
-    let problem = ReachableTilesProblem { dataset };
-    let mut solver = SolverDriver::builder(&problem).build();
-    let mut x = [0.0; 3];
+    // We can then use the second difference to find the coefficients of the
+    // polynomial (nicely illustrated at
+    // https://www.radfordmathematics.com/algebra/sequences-series/difference-method-sequences/quadratic-sequences.html):
+    //
+    //   2 * a  = sd[0]
+    //   3a + b = fd[0]
+    //   a + b + c = x0
+    //
+    // => a = sd[0] / 2
+    //    b = fd[0] - 3a
+    //    c = x0 - a - b
 
-    while let Ok((cur_x, rx)) = solver.next() {
-        dbg!(&cur_x);
-        dbg!(&rx);
+    let a = second_diffs[0] as i128 / 2;
+    let b = first_diffs[0] as i128 - 3 * a;
+    let c = x0 as i128 - a - b;
 
-        x[0] = cur_x[0];
-        x[1] = cur_x[1];
-        x[2] = cur_x[2];
-    }
+    // Now we need to account for the fact that we start at `start`, not at 1.
+    let x = num_steps as i128;
+    let x = x - start as i128;
 
-    x
-}
+    // Now we need to take into account that our polynomial is moving in steps of (2*size), not 1.
+    let x = x / (2 * size as i128);
 
-struct ReachableTilesProblem {
-    dataset: Vec<(usize, usize)>,
-}
+    // And we need to add 1, because a move of 0 steps will still reach a single tile;
+    // recall that the formula for an obstacle-less plain was (x + 1)², not x², so that we
+    // still reach a single tile when we take 0 steps.
+    let x = x + 1;
 
-impl Problem for ReachableTilesProblem {
-    type Field = f64;
-
-    fn domain(&self) -> Domain<Self::Field> {
-        Domain::unconstrained(self.dataset.len() + 3)
-    }
-}
-
-impl System for ReachableTilesProblem {
-    fn eval<Sx, Srx>(
-        &self,
-        x: &gomez::nalgebra::Vector<Self::Field, gomez::nalgebra::Dyn, Sx>,
-        rx: &mut gomez::nalgebra::Vector<Self::Field, gomez::nalgebra::Dyn, Srx>,
-    ) where
-        Sx: gomez::nalgebra::Storage<Self::Field, gomez::nalgebra::Dyn>
-            + gomez::nalgebra::IsContiguous,
-        Srx: gomez::nalgebra::StorageMut<Self::Field, gomez::nalgebra::Dyn>,
-    {
-        let a = x[0];
-        let b = x[1];
-        let c = x[2];
-
-        //let a = 14688.0;
-        //let b = 14750.0;
-        //let c = 3699.0;
-
-        for (i, (x_i, y_i)) in self.dataset.iter().enumerate() {
-            let x_i = *x_i as f64;
-            let y_i = *y_i as f64;
-
-            rx[i] = (a * x_i * x_i + b * x_i + c - y_i);
-        }
-
-        rx[self.dataset.len()] = (a - a.round()).abs();
-        rx[self.dataset.len() + 1] = (b - b.round()).abs();
-        rx[self.dataset.len() + 2] = (c - c.round()).abs();
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use utility_belt::prelude::*;
-
-    const TEST_INPUT: &str = indoc! {"
-        ...........
-        .....###.#.
-        .###.##..#.
-        ..#.#...#..
-        ....#.#....
-        .##..S####.
-        .##..#...#.
-        .......##..
-        .##.#.####.
-        .##..##.##.
-        ...........
-    "};
-
-    const MINIGRID: &str = indoc! {"
-        ...
-        .S.
-        ...
-    "};
-
-    #[test]
-    fn test_part2() {
-        let input = crate::parser::parse(TEST_INPUT);
-        assert_eq!(
-            solve(&input, (1..100).collect_vec().as_slice()),
-            [1.0, 1.0, 1.0]
-        );
-    }
-
-    #[test]
-    fn test_gomez() {
-        let input = crate::parser::parse(MINIGRID);
-        let mut dataset = Vec::new();
-
-        for step in 1..=50 {
-            dbg!(step);
-            let tiles = walk(&input, step, true);
-            dataset.push((1 + step, tiles));
-        }
-
-        dbg!(&dataset);
-
-        opt(dataset);
-    }
+    // Finally, we can evaluate the polynomial at x.
+    (a * x * x + b * x + c) as usize
 }

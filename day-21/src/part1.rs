@@ -3,7 +3,7 @@ use crate::structs::*;
 use utility_belt::prelude::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    walk(input, 64, false).to_string()
+    walk(input, 64).to_string()
 }
 
 pub fn find_start(input: &PuzzleInput) -> Coordinate {
@@ -15,7 +15,7 @@ pub fn find_start(input: &PuzzleInput) -> Coordinate {
         .unwrap()
 }
 
-pub fn floodfill(input: &PuzzleInput, max_dist: usize, wrap: bool) -> HashMap<Coordinate, usize> {
+pub fn floodfill(input: &PuzzleInput, max_dist: usize) -> HashMap<Coordinate, usize> {
     let start = find_start(input);
     let mut dist = 0;
 
@@ -35,14 +35,6 @@ pub fn floodfill(input: &PuzzleInput, max_dist: usize, wrap: bool) -> HashMap<Co
                 let y = neighbor.y().rem_euclid(input.grid.height() as i32);
                 let c = Coordinate::new(x, y);
 
-                if !wrap && c != neighbor {
-                    continue;
-                }
-
-                if input.grid[c] == 'S' {
-                    println!("Found S at {}: {}", c, dist);
-                }
-
                 if input.grid[c] == '#' || result.contains_key(&neighbor) {
                     continue;
                 }
@@ -56,8 +48,8 @@ pub fn floodfill(input: &PuzzleInput, max_dist: usize, wrap: bool) -> HashMap<Co
     result
 }
 
-pub fn walk(input: &PuzzleInput, steps: usize, wrap: bool) -> usize {
-    let distances = floodfill(input, steps, wrap);
+pub fn walk(input: &PuzzleInput, steps: usize) -> usize {
+    let distances = floodfill(input, steps);
 
     // If the distance is e.g. even, then we neeed an even number of steps
     // to get there, and we don't count the odd numbered tiles, and vice
@@ -68,7 +60,7 @@ pub fn walk(input: &PuzzleInput, steps: usize, wrap: bool) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    use utility_belt::prelude::indoc;
 
     const TEST_INPUT: &str = indoc! {"
         ...........
@@ -87,9 +79,9 @@ mod tests {
     #[test]
     fn test_part1() {
         let input = crate::parser::parse(TEST_INPUT);
-        assert_eq!(walk(&input, 1, false), 2);
-        assert_eq!(walk(&input, 2, false), 4);
-        assert_eq!(walk(&input, 3, false), 6);
-        assert_eq!(walk(&input, 6, false), 16);
+        assert_eq!(walk(&input, 1,), 2);
+        assert_eq!(walk(&input, 2,), 4);
+        assert_eq!(walk(&input, 3,), 6);
+        assert_eq!(walk(&input, 6,), 16);
     }
 }
