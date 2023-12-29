@@ -6,4 +6,4 @@ default-members = ["day-*"]
 
 [workspace.dependencies]
 nom = "7"
-utility-belt = { git = "https://github.com/DataWraith/utility-belt.git" }
+utility-belt = { git = "https://github.com/DataWraith/utility-belt.git", rev="cd6e6da" }
