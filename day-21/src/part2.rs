@@ -3,8 +3,6 @@ use crate::{
     structs::*,
 };
 
-
-
 pub fn part2(input: &PuzzleInput) -> String {
     solve(input, 26501365).to_string()
 }
