@@ -1,6 +1,4 @@
-use utility_belt::prelude::*;
-
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
-    // Remember to make the fields pub
+    pub calories: Vec<Vec<usize>>,
 }
