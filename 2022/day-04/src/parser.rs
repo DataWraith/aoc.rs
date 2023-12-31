@@ -1,27 +1,31 @@
+use std::ops::RangeInclusive;
+
 use utility_belt::prelude::*;
 
 use crate::structs::*;
 
-fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
-    todo!();
-    let (input, _) = eof(input)?;
-
-    Ok((input, PuzzleInput {}))
-}
-
 pub fn parse(input: &str) -> PuzzleInput {
-    nom_parser(input).unwrap().1
-}
+    let mut pair_assignments = Vec::new();
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use utility_belt::prelude::*;
+    for line in input.lines() {
+        let assignments = line
+            .replace('-', ",")
+            .split(',')
+            .map(String::from)
+            .collect::<Vec<String>>();
 
-    const TEST_INPUT: &str = include_str!("../test.txt");
+        let start1 = assignments[0].parse::<usize>().unwrap();
+        let end1 = assignments[1].parse::<usize>().unwrap();
+        let start2 = assignments[2].parse::<usize>().unwrap();
+        let end2 = assignments[3].parse::<usize>().unwrap();
 
-    #[test]
-    fn test_parse() {
-        assert!(nom_parser(TEST_INPUT).is_ok());
+        pair_assignments.push((
+            RangeInclusive::new(start1, end1),
+            RangeInclusive::new(start2, end2),
+        ))
+    }
+
+    PuzzleInput {
+        assignments: pair_assignments,
     }
 }

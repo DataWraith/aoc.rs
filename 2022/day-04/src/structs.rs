@@ -1,6 +1,6 @@
-use utility_belt::prelude::*;
+use std::ops::RangeInclusive;
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
-    // Remember to make the fields pub
+    pub assignments: Vec<(RangeInclusive<usize>, RangeInclusive<usize>)>,
 }
