@@ -1,8 +1,10 @@
+use std::path::PathBuf;
+
 use crate::{part1::directory_sizes, structs::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
     let sizes = directory_sizes(input);
-    let free_space = 70000000 - sizes["/"];
+    let free_space = 70000000 - sizes[&PathBuf::from("/")];
     let space_to_free = 30000000 - free_space;
 
     sizes

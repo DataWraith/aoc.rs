@@ -1,14 +1,12 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, path::PathBuf};
 
 use crate::structs::*;
-
-use utility_belt::prelude::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
     let sizes = directory_sizes(input);
     let mut sum = 0;
 
-    for (_dir, size) in sizes.iter() {
+    for size in sizes.values() {
         if *size <= 100_000 {
             sum += size;
         }
@@ -17,8 +15,8 @@ pub fn part1(input: &PuzzleInput) -> String {
     sum.to_string()
 }
 
-pub fn directory_sizes(input: &PuzzleInput) -> BTreeMap<String, usize> {
-    let mut directories = input
+pub fn directory_sizes(input: &PuzzleInput) -> BTreeMap<PathBuf, usize> {
+    let directories = input
         .filesystem
         .iter()
         .filter(|(_path, size)| **size == 0)
@@ -26,16 +24,15 @@ pub fn directory_sizes(input: &PuzzleInput) -> BTreeMap<String, usize> {
         .cloned()
         .collect::<Vec<_>>();
 
-    directories.push("/".to_string());
-
     let mut directory_sizes = BTreeMap::new();
 
     for dir in directories.iter() {
         let mut size = 0;
 
+        // This is inefficient, but whatever. It still runs fast enough.
         for (path, file_size) in input.filesystem.iter() {
             if path.starts_with(dir) {
-                size += file_size.saturating_sub(1);
+                size += file_size;
             }
         }
 
