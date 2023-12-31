@@ -65,10 +65,35 @@ impl Rps {
         }
     }
 
-    pub fn score_vs(self, other: Self) -> usize {
+    pub fn round_score(self, other: Self) -> usize {
+        self.outcome_score(other) + self.choice_score()
+    }
+
+    pub fn part1_score(self, other: Self) -> usize {
         let myself = self.convert();
         let opponent = other.convert();
 
-        myself.outcome_score(opponent) + myself.choice_score() 
+        myself.round_score(opponent)
+    }
+
+    pub fn part2_score(self, other: Self) -> usize {
+        let opponent_choice = other;
+        let outcome = self;
+
+        match (opponent_choice, outcome) {
+            (Rps::R, Rps::X) => Rps::S.round_score(Rps::R),
+            (Rps::R, Rps::Y) => Rps::R.round_score(Rps::R),
+            (Rps::R, Rps::Z) => Rps::P.round_score(Rps::R),
+
+            (Rps::P, Rps::X) => Rps::R.round_score(Rps::P),
+            (Rps::P, Rps::Y) => Rps::P.round_score(Rps::P),
+            (Rps::P, Rps::Z) => Rps::S.round_score(Rps::P),
+
+            (Rps::S, Rps::X) => Rps::P.round_score(Rps::S),
+            (Rps::S, Rps::Y) => Rps::S.round_score(Rps::S),
+            (Rps::S, Rps::Z) => Rps::R.round_score(Rps::S),
+
+            _ => panic!("Invalid RPS game"),
+        }
     }
 }

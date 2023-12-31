@@ -6,7 +6,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     input
         .guide
         .iter()
-        .map(|guide| guide.1.score_vs(guide.0))
+        .map(|guide| guide.1.part1_score(guide.0))
         .sum::<usize>()
         .to_string()
 }
