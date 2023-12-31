@@ -31,7 +31,7 @@ impl Automaton {
             // There can be arbitrary many '.'s at the start of a column
             (ColumnStart(i), '.') => vec![ColumnStart(*i)],
 
-            // A broken spring transitions to a column start
+            // A broken spring transitions to the beginning of a column
             (ColumnStart(i), '#') => vec![Column((*i, 1))],
 
             // A ? may do either
