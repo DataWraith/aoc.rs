@@ -2,5 +2,6 @@ use utility_belt::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
-    // Remember to make the fields pub
+    pub crates: Vec<Vec<char>>,
+    pub instructions : Vec<(usize, usize, usize)>
 }
