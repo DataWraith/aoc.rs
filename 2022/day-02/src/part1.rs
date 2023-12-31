@@ -1,7 +1,5 @@
 use crate::structs::*;
 
-use utility_belt::prelude::*;
-
 pub fn part1(input: &PuzzleInput) -> String {
     input
         .guide
