@@ -3,7 +3,12 @@ use crate::structs::*;
 use utility_belt::prelude::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    todo!();
+    input
+        .guide
+        .iter()
+        .map(|guide| guide.1.score_vs(guide.0))
+        .sum::<usize>()
+        .to_string()
 }
 
 #[cfg(test)]
@@ -16,6 +21,6 @@ mod tests {
     #[test]
     fn test_part1() {
         let input = crate::parser::parse(TEST_INPUT);
-        assert_eq!(part1(&input), "TODO");
+        assert_eq!(part1(&input), "15");
     }
 }

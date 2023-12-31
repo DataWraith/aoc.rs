@@ -2,26 +2,13 @@ use utility_belt::prelude::*;
 
 use crate::structs::*;
 
-fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
-    todo!();
-    let (input, _) = eof(input)?;
-
-    Ok((input, PuzzleInput {}))
-}
-
 pub fn parse(input: &str) -> PuzzleInput {
-    nom_parser(input).unwrap().1
-}
+    let mut result = Vec::new();
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use utility_belt::prelude::*;
-
-    const TEST_INPUT: &str = include_str!("../test.txt");
-
-    #[test]
-    fn test_parse() {
-        assert!(nom_parser(TEST_INPUT).is_ok());
+    for line in input.lines() {
+        let chars: Vec<char> = line.chars().collect();
+        result.push((chars[0].into(), chars[2].into()));
     }
+
+    PuzzleInput { guide: result }
 }
