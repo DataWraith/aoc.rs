@@ -6,15 +6,9 @@ pub fn part2(input: &PuzzleInput) -> String {
     let mut crates = input.crates.clone();
 
     for (n, from, to) in input.instructions.iter() {
-        let mut stack = Vec::new();
-
-        for _ in 0..*n {
-            stack.push(crates[*from].pop().unwrap());
-        }
-
-        while let Some(c) = stack.pop() {
-            crates[*to].push(c);
-        }
+        let stack_size = crates[*from].len();
+        let claw = crates[*from].split_off(stack_size - n);
+        crates[*to].extend(claw);
     }
 
     crates.iter().filter_map(|c| c.last()).join("")
