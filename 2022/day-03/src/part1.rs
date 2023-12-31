@@ -1,7 +1,5 @@
 use crate::structs::*;
 
-use utility_belt::prelude::*;
-
 pub fn part1(input: &PuzzleInput) -> String {
     input
         .rucksacks
@@ -12,10 +10,7 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 pub fn duplicate_item(r: &Rucksack) -> char {
-    let left = HashSet::from_iter(r.left_compartment.iter().cloned());
-    let right = HashSet::from_iter(r.right_compartment.iter().cloned());
-
-    let mut intersection = left.intersection(&right);
+    let mut intersection = r.left_compartment.intersection(&r.right_compartment);
     let item = intersection.next().unwrap();
 
     assert_eq!(intersection.next(), None);

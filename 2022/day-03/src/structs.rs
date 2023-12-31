@@ -1,3 +1,5 @@
+use utility_belt::prelude::*;
+
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
     pub rucksacks: Vec<Rucksack>,
@@ -5,6 +7,6 @@ pub struct PuzzleInput {
 
 #[derive(Clone, Debug)]
 pub struct Rucksack {
-    pub left_compartment: Vec<char>,
-    pub right_compartment: Vec<char>,
+    pub left_compartment: HashSet<char>,
+    pub right_compartment: HashSet<char>,
 }

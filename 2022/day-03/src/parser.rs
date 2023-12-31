@@ -1,3 +1,5 @@
+use utility_belt::prelude::*;
+
 use crate::structs::*;
 
 pub fn parse(input: &str) -> PuzzleInput {
@@ -7,9 +9,12 @@ pub fn parse(input: &str) -> PuzzleInput {
         let chars = line.chars().collect::<Vec<char>>();
         assert!(chars.len() % 2 == 0);
 
+        let left_compartment = 0..(chars.len() / 2);
+        let right_compartment = (chars.len() / 2)..chars.len();
+
         rucksacks.push(Rucksack {
-            left_compartment: chars[0..(chars.len() / 2)].to_vec(),
-            right_compartment: chars[(chars.len() / 2)..chars.len()].to_vec(),
+            left_compartment: HashSet::from_iter(chars[left_compartment].iter().cloned()),
+            right_compartment: HashSet::from_iter(chars[right_compartment].iter().cloned()),
         });
     }
 

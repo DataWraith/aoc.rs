@@ -6,25 +6,21 @@ pub fn part2(input: &PuzzleInput) -> String {
     let mut sum = 0;
 
     for group in input.rucksacks.chunks(3) {
-        let itemsets = group
+        let badge = group
             .iter()
             .map(|r| {
                 r.left_compartment
-                    .iter()
-                    .chain(r.right_compartment.iter())
-                    .fold(HashSet::default(), |mut acc, c| {
-                        acc.insert(*c);
-                        acc
-                    })
+                    .union(&r.right_compartment)
+                    .cloned()
+                    .collect::<HashSet<char>>()
             })
-            .collect::<Vec<HashSet<char>>>();
-
-        let badge_set = itemsets
+            .reduce(|a, b| a.intersection(&b).cloned().collect())
+            .unwrap()
             .into_iter()
-            .reduce(|acc, c| acc.intersection(&c).cloned().collect())
+            .next()
             .unwrap();
 
-        sum += priority(badge_set.into_iter().next().unwrap())
+        sum += priority(badge)
     }
 
     sum.to_string()
