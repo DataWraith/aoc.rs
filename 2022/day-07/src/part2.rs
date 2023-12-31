@@ -1,9 +1,26 @@
-use crate::structs::*;
+use crate::{part1::directory_sizes, structs::*};
 
 use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    todo!();
+    let sizes = directory_sizes(input);
+    let free_space = 70000000 - sizes["/"];
+    let space_to_free = 30000000 - free_space;
+
+    sizes
+        .iter()
+        .fold(usize::MAX, |acc, (_, &size)| {
+            if size < space_to_free {
+                return acc;
+            }
+
+            if size < acc {
+                return size;
+            }
+
+            acc
+        })
+        .to_string()
 }
 
 #[cfg(test)]
@@ -16,6 +33,6 @@ mod tests {
     #[test]
     fn test_part2() {
         let input = crate::parser::parse(TEST_INPUT);
-        assert_eq!(part2(&input), "TODO");
+        assert_eq!(part2(&input), "24933642");
     }
 }
