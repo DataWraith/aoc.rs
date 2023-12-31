@@ -8,7 +8,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     let sizes = directory_sizes(input);
     let mut sum = 0;
 
-    for (dir, size) in sizes.iter() {
+    for (_dir, size) in sizes.iter() {
         if *size <= 100_000 {
             sum += size;
         }
@@ -48,7 +48,6 @@ pub fn directory_sizes(input: &PuzzleInput) -> BTreeMap<String, usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 

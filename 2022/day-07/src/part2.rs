@@ -1,7 +1,5 @@
 use crate::{part1::directory_sizes, structs::*};
 
-use utility_belt::prelude::*;
-
 pub fn part2(input: &PuzzleInput) -> String {
     let sizes = directory_sizes(input);
     let free_space = 70000000 - sizes["/"];
@@ -26,7 +24,6 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 
