@@ -10,53 +10,26 @@ pub fn part1(input: &PuzzleInput) -> String {
 
 fn calculate_visibility(input: &PuzzleInput) -> Grid2D<bool> {
     let mut visible = Grid2D::new(input.grid.width(), input.grid.height(), false);
+    let mut grid = input.grid.clone();
 
-    let visibility_fn = |state: &mut char, tree: &char| {
-        let result = *tree > *state;
-        *state = (*state).max(*tree);
-        Some(result)
-    };
+    for _ in 0..4 {
+        for (y, row) in grid.row_iter().enumerate() {
+            // Must be smaller than '0', so 0 fits the bill.
+            let mut tallest_tree = 0 as char;
 
-    for (x, col) in input.grid.col_iter().enumerate() {
-        let top_to_bottom_visibility = col.iter().scan('/', visibility_fn);
-        let bottom_to_top_visibility = col.iter().rev().scan('/', visibility_fn);
-
-        for (y, v) in top_to_bottom_visibility.enumerate() {
-            let c = Coordinate::new(x as i32, y as i32);
-
-            if v {
-                visible.set(c, true);
+            for (x, tree) in row.iter().enumerate() {
+                if *tree > tallest_tree {
+                    visible[Coordinate::new(x as i32, y as i32)] = true;
+                    tallest_tree = *tree;
+                }
             }
         }
 
-        for (y, v) in bottom_to_top_visibility.enumerate() {
-            let c = Coordinate::new(x as i32, input.grid.height() as i32 - 1 - y as i32);
-
-            if v {
-                visible.set(c, true);
-            }
-        }
-    }
-
-    for (y, row) in input.grid.row_iter().enumerate() {
-        let left_to_right_visibility = row.iter().scan('/', visibility_fn);
-        let right_to_left_visibility = row.iter().rev().scan('/', visibility_fn);
-
-        for (x, v) in left_to_right_visibility.enumerate() {
-            let c = Coordinate::new(x as i32, y as i32);
-
-            if v {
-                visible.set(c, true);
-            }
-        }
-
-        for (x, v) in right_to_left_visibility.enumerate() {
-            let c = Coordinate::new(input.grid.width() as i32 - 1 - x as i32, y as i32);
-
-            if v {
-                visible.set(c, true);
-            }
-        }
+        // Rotating the grids is cheap, because it just involves the
+        // manipulation of the axes (transpose, mirror), we're not actually
+        // moving any data around.
+        grid.rotate_right();
+        visible.rotate_right();
     }
 
     visible
