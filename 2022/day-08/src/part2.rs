@@ -10,6 +10,7 @@ pub fn part2(input: &PuzzleInput) -> String {
             let h = c;
             let mut score = 1;
 
+            // Not sure if this is sound, but it works.
             if coord.x() == 0 || coord.y() == 0 {
                 return 0;
             }
@@ -20,7 +21,7 @@ pub fn part2(input: &PuzzleInput) -> String {
                 return 0;
             }
 
-            'outer: for direction in DirectionSet::all().iter() {
+            for direction in DirectionSet::all().iter() {
                 let mut c = coord;
                 let mut d = 0;
 
