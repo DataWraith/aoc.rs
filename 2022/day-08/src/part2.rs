@@ -21,7 +21,7 @@ pub fn part2(input: &PuzzleInput) -> String {
                 return 0;
             }
 
-            for direction in DirectionSet::all().iter() {
+            for direction in Direction::all() {
                 let mut c = coord;
                 let mut d = 0;
 
