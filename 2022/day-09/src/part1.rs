@@ -30,6 +30,7 @@ pub fn visited_tiles(input: &PuzzleInput) -> HashSet<Coordinate> {
     visited.insert(cur_tail);
 
     for (direction, length) in input.moves.iter() {
+
         for _ in 0..*length {
             let (new_head, new_tail) = step(cur_head, cur_tail, *direction);
 
