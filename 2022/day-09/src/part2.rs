@@ -1,41 +1,35 @@
-use crate::{part1::step, structs::*};
+use crate::structs::*;
 
 use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    visited_tiles(input).len().to_string()
+    visited_tiles(input, 10).len().to_string()
 }
 
-pub fn visited_tiles(input: &PuzzleInput) -> HashSet<Coordinate> {
+pub fn visited_tiles(input: &PuzzleInput, rope_length: usize) -> HashSet<Coordinate> {
     let mut visited = HashSet::default();
 
-    let mut rope = [Coordinate::new(0, 0); 10];
+    let mut rope = vec![];
+    rope.resize(rope_length, Coordinate::new(0, 0));
 
-    visited.insert(rope[9]);
+    visited.insert(rope[rope_length - 1]);
 
     for (direction, length) in input.moves.iter() {
         for _ in 0..*length {
-            let mut prev_rope = rope[0];
-
             rope[0] += (*direction).into();
 
-            for i in 1..10 {
+            for i in 1..rope_length {
                 if rope[i] == rope[i - 1] || rope[i - 1].moore_neighbors().contains(&rope[i]) {
                     break;
                 }
 
-                if rope[i].x() == rope[i - 1].x() || rope[i].y() == rope[i - 1].y() {
-                    rope[i] += rope[i].towards(rope[i - 1]).into();
-                } else {
-                    rope[i] = rope[i]
-                        .moore_neighbors()
-                        .min_by_key(|c| c.manhattan_distance(rope[i - 1]))
-                        .unwrap()
-                        .clone();
-                }
+                rope[i] = rope[i]
+                    .moore_neighbors()
+                    .min_by_key(|c| c.manhattan_distance(rope[i - 1]))
+                    .unwrap()
             }
 
-            visited.insert(rope[9]);
+            visited.insert(rope[rope_length - 1]);
         }
     }
 
