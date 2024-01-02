@@ -39,7 +39,6 @@ pub fn visited_tiles(input: &PuzzleInput, rope_length: usize) -> HashSet<Coordin
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test2.txt");
 

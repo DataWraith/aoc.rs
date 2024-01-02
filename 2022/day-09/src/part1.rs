@@ -1,6 +1,4 @@
-use crate::{structs::*, part2::visited_tiles};
-
-use utility_belt::prelude::*;
+use crate::{part2::visited_tiles, structs::*};
 
 pub fn part1(input: &PuzzleInput) -> String {
     visited_tiles(input, 2).len().to_string()
@@ -9,7 +7,6 @@ pub fn part1(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 
