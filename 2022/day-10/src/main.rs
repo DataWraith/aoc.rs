@@ -11,6 +11,8 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use utility_belt::prelude::indoc;
+
     use super::*;
 
     #[test]
@@ -22,6 +24,16 @@ mod tests {
     #[test]
     fn test_part2() {
         let puzzle_input = parser::parse(include_str!("../input.txt"));
-        assert_eq!(part2::part2(&puzzle_input), "TODO");
+
+        let expected = indoc! {"
+            ###..#....###...##..####.###...##..#....
+            #..#.#....#..#.#..#.#....#..#.#..#.#....
+            #..#.#....#..#.#..#.###..###..#....#....
+            ###..#....###..####.#....#..#.#....#....
+            #....#....#....#..#.#....#..#.#..#.#....
+            #....####.#....#..#.#....###...##..####.
+        "};
+
+        assert_eq!(part2::part2(&puzzle_input).trim(), expected.trim());
     }
 }

@@ -3,29 +3,36 @@ use crate::structs::*;
 use utility_belt::prelude::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let xs = input
-        .instructions
-        .iter()
-        .scan((0, 1), |mut acc, (cycles, delta)| {
-            acc.0 += cycles;
-            acc.1 += delta;
-            Some(acc.clone())
-        })
-        .collect::<Vec<_>>();
+    let xs = register_sequence(input);
 
     let mut signal_strength = 0;
 
-    for check_cycle in (20..).step_by(40) {
-        let idx = bisect(0, xs.len(), |i| xs[i].0 >= check_cycle);
-
-        if idx == xs.len() {
-            break;
-        }
-
-        signal_strength += check_cycle as isize * xs[idx - 1].1;
+    for check_cycle in (20..xs.len()).step_by(40) {
+        signal_strength += check_cycle as isize * xs[check_cycle - 1];
     }
 
     signal_strength.to_string()
+}
+
+pub fn register_sequence(input: &PuzzleInput) -> Vec<isize> {
+    let mut prev_x = 1;
+
+    let xs = std::iter::once(1)
+        .chain(input.instructions.iter().flat_map(|(cycles, delta)| {
+            let mut v = Vec::new();
+
+            for _ in 1..*cycles {
+                v.push(prev_x);
+            }
+
+            v.push(prev_x + delta);
+            prev_x += delta;
+
+            v
+        }))
+        .collect_vec();
+
+    xs
 }
 
 #[cfg(test)]

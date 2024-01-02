@@ -14,9 +14,10 @@ pub fn parse(input: &str) -> PuzzleInput {
             continue;
         }
 
-        let (op, arg) = instr.unwrap();
-
-        let delta = arg.parse::<isize>().unwrap();
+        // The only other instruction is addx, which takes 2 cycles and adds the
+        // given delta
+        let (_op, delta) = instr.unwrap();
+        let delta = delta.parse::<isize>().unwrap();
 
         instructions.push((2, delta));
     }
