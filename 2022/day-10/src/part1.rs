@@ -38,7 +38,6 @@ pub fn register_sequence(input: &PuzzleInput) -> Vec<isize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 
