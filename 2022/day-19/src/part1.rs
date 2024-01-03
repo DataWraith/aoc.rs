@@ -84,25 +84,32 @@ pub fn prune_resources(blueprint: &Blueprint, state: &State, time_limit: usize) 
 }
 
 pub fn wait_time(cost: &Resources, state: &State) -> usize {
-    if cost.obsidian > 0 && state.robots.obsidian == 0 {
-        return usize::MAX;
+    fn ceil_divide(a: isize, b: isize) -> isize {
+        if a == 0 {
+            return 0;
+        }
+
+        if b == 0 {
+            return isize::MAX;
+        }
+
+        (a + b - 1) / b
     }
 
-    if cost.clay > 0 && state.robots.clay == 0 {
-        return usize::MAX;
-    }
+    let obsidian_wait = ceil_divide(
+        cost.obsidian.saturating_sub(state.resources.obsidian),
+        state.robots.obsidian,
+    );
 
-    let obsidian_wait = (cost.obsidian.saturating_sub(state.resources.obsidian)
-        + state.robots.obsidian.saturating_sub(1))
-        / state.robots.obsidian.max(1);
+    let clay_wait = ceil_divide(
+        cost.clay.saturating_sub(state.resources.clay),
+        state.robots.clay,
+    );
 
-    let clay_wait = (cost.clay.saturating_sub(state.resources.clay)
-        + state.robots.clay.saturating_sub(1))
-        / state.robots.clay.max(1);
-
-    let ore_wait = (cost.ore.saturating_sub(state.resources.ore)
-        + state.robots.ore.saturating_sub(1))
-        / state.robots.ore.max(1);
+    let ore_wait = ceil_divide(
+        cost.ore.saturating_sub(state.resources.ore),
+        state.robots.ore,
+    );
 
     obsidian_wait.max(clay_wait).max(ore_wait) as usize
 }
@@ -143,6 +150,16 @@ pub fn transition(blueprint: &Blueprint, state: &State, time_limit: usize) -> Ve
                 break;
             }
         }
+    }
+
+    if result.is_empty() {
+        advance(
+            state,
+            time_remaining,
+            &Resources::default(),
+            &Resources::default(),
+            &mut result,
+        );
     }
 
     result
