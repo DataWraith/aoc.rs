@@ -51,12 +51,68 @@ pub fn solve(blueprint: &Blueprint, time_limit: usize) -> isize {
     .geodes
 }
 
-pub fn advance(s: &State, new_robots: &Resources, robot_cost: &Resources, result: &mut Vec<State>) {
+pub fn advance(
+    s: &State,
+    time_passed: usize,
+    new_robots: &Resources,
+    robot_cost: &Resources,
+    result: &mut Vec<State>,
+) {
     result.push(State {
-        time: s.time + 1,
-        resources: s.resources.clone() + s.robots.clone() - robot_cost.clone(),
+        time: s.time + time_passed,
+        resources: s.resources.clone() + s.robots.clone() * time_passed - robot_cost.clone(),
         robots: s.robots.clone() + new_robots.clone(),
     })
+}
+
+pub fn prune_resources(blueprint: &Blueprint, state: &State, time_limit: usize) -> State {
+    let time_remaining = (time_limit - state.time) as isize;
+
+    let max_obsidion_cost = blueprint.geode_robot_cost.obsidian;
+    let max_clay_cost = blueprint.obsidian_robot_cost.clay;
+    let max_ore_cost = blueprint
+        .clay_robot_cost
+        .ore
+        .max(blueprint.obsidian_robot_cost.ore)
+        .max(blueprint.geode_robot_cost.ore);
+
+    let max_spendable_obsidian = time_remaining * max_obsidion_cost;
+    let max_spendable_clay = time_remaining * max_clay_cost;
+    let max_spendable_ore = time_remaining * max_ore_cost;
+
+    State {
+        resources: Resources {
+            ore: state.resources.ore.min(max_spendable_ore),
+            clay: state.resources.clay.min(max_spendable_clay),
+            obsidian: state.resources.obsidian.min(max_spendable_obsidian),
+            geodes: state.resources.geodes,
+        },
+        ..state.clone()
+    }
+}
+
+pub fn wait_time(cost: &Resources, state: &State) -> usize {
+    if cost.obsidian > 0 && state.robots.obsidian == 0 {
+        return usize::MAX;
+    }
+
+    if cost.clay > 0 && state.robots.clay == 0 {
+        return usize::MAX;
+    }
+
+    let obsidian_wait = (cost.obsidian.saturating_sub(state.resources.obsidian)
+        + state.robots.obsidian.saturating_sub(1))
+        / state.robots.obsidian.max(1);
+
+    let clay_wait = (cost.clay.saturating_sub(state.resources.clay)
+        + state.robots.clay.saturating_sub(1))
+        / state.robots.clay.max(1);
+
+    let ore_wait = (cost.ore.saturating_sub(state.resources.ore)
+        + state.robots.ore.saturating_sub(1))
+        / state.robots.ore.max(1);
+
+    obsidian_wait.max(clay_wait).max(ore_wait) as usize
 }
 
 pub fn transition(blueprint: &Blueprint, state: &State, time_limit: usize) -> Vec<State> {
@@ -69,9 +125,12 @@ pub fn transition(blueprint: &Blueprint, state: &State, time_limit: usize) -> Ve
     }
 
     if time_remaining > 1 {
-        if state.resources.can_afford(&blueprint.geode_robot_cost) {
+        let wait = wait_time(&blueprint.geode_robot_cost, state);
+
+        if wait < time_remaining {
             advance(
                 state,
+                1 + wait,
                 &Resources {
                     ore: 0,
                     clay: 0,
@@ -81,66 +140,75 @@ pub fn transition(blueprint: &Blueprint, state: &State, time_limit: usize) -> Ve
                 &blueprint.geode_robot_cost,
                 &mut result,
             );
-
-            return result;
         }
 
-        if state.resources.can_afford(&blueprint.obsidian_robot_cost)
-            && state.robots.obsidian < blueprint.geode_robot_cost.obsidian
-        {
-            advance(
-                state,
-                &Resources {
-                    ore: 0,
-                    clay: 0,
-                    obsidian: 1,
-                    geodes: 0,
-                },
-                &blueprint.obsidian_robot_cost,
-                &mut result,
-            )
+        if state.robots.obsidian < blueprint.geode_robot_cost.obsidian {
+            let wait = wait_time(&blueprint.obsidian_robot_cost, state);
+
+            if wait < time_remaining {
+                advance(
+                    state,
+                    1 + wait,
+                    &Resources {
+                        ore: 0,
+                        clay: 0,
+                        obsidian: 1,
+                        geodes: 0,
+                    },
+                    &blueprint.obsidian_robot_cost,
+                    &mut result,
+                );
+            }
         }
 
-        if state.resources.can_afford(&blueprint.clay_robot_cost)
-            && state.robots.clay < blueprint.obsidian_robot_cost.clay
-        {
-            advance(
-                state,
-                &Resources {
-                    ore: 0,
-                    clay: 1,
-                    obsidian: 0,
-                    geodes: 0,
-                },
-                &blueprint.clay_robot_cost,
-                &mut result,
-            )
+        if state.robots.clay < blueprint.obsidian_robot_cost.clay {
+            let wait = wait_time(&blueprint.clay_robot_cost, state);
+
+            if wait < time_remaining {
+                advance(
+                    state,
+                    1 + wait,
+                    &Resources {
+                        ore: 0,
+                        clay: 1,
+                        obsidian: 0,
+                        geodes: 0,
+                    },
+                    &blueprint.clay_robot_cost,
+                    &mut result,
+                );
+            }
         }
 
-        if state.resources.can_afford(&blueprint.ore_robot_cost)
-            && state.robots.ore
-                < blueprint
-                    .clay_robot_cost
-                    .ore
-                    .max(blueprint.obsidian_robot_cost.ore)
-                    .max(blueprint.geode_robot_cost.ore)
+        if state.robots.ore
+            < blueprint
+                .clay_robot_cost
+                .ore
+                .max(blueprint.obsidian_robot_cost.ore)
+                .max(blueprint.geode_robot_cost.ore)
         {
-            advance(
-                state,
-                &Resources {
-                    ore: 1,
-                    clay: 0,
-                    obsidian: 0,
-                    geodes: 0,
-                },
-                &blueprint.ore_robot_cost,
-                &mut result,
-            )
+            let wait = wait_time(&blueprint.ore_robot_cost, state);
+
+            if wait < time_remaining {
+                advance(
+                    state,
+                    1 + wait,
+                    &Resources {
+                        ore: 1,
+                        clay: 0,
+                        obsidian: 0,
+                        geodes: 0,
+                    },
+                    &blueprint.ore_robot_cost,
+                    &mut result,
+                );
+            }
         }
     }
 
     advance(
         state,
+        1,
         &Resources {
             ore: 0,
             clay: 0,
@@ -157,6 +225,9 @@ pub fn transition(blueprint: &Blueprint, state: &State, time_limit: usize) -> Ve
     );
 
     result
+        .iter()
+        .map(|s| prune_resources(blueprint, s, time_limit))
+        .collect_vec()
 }
 
 #[cfg(test)]

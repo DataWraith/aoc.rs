@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub};
+use std::ops::{Add, Mul, Sub};
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
@@ -29,12 +29,16 @@ pub struct Resources {
     pub geodes: isize,
 }
 
-impl Resources {
-    pub fn can_afford(&self, other: &Self) -> bool {
-        self.ore >= other.ore
-            && self.clay >= other.clay
-            && self.obsidian >= other.obsidian
-            && self.geodes >= other.geodes
+impl Mul<usize> for Resources {
+    type Output = Self;
+
+    fn mul(self, rhs: usize) -> Self::Output {
+        Resources {
+            ore: self.ore * rhs as isize,
+            clay: self.clay * rhs as isize,
+            obsidian: self.obsidian * rhs as isize,
+            geodes: self.geodes * rhs as isize,
+        }
     }
 }
 
