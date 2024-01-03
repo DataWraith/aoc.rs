@@ -68,10 +68,10 @@ fn parse_blueprint(input: &str) -> IResult<&str, Blueprint> {
     };
 
     let max_resource = [
-        ore_robot_cost.clone(),
-        clay_robot_cost.clone(),
-        obsidian_robot_cost.clone(),
-        geode_robot_cost.clone(),
+        ore_robot_cost,
+        clay_robot_cost,
+        obsidian_robot_cost,
+        geode_robot_cost,
     ]
     .iter()
     .cloned()

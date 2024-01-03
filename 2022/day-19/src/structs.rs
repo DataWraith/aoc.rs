@@ -34,7 +34,7 @@ impl State {
             time_remaining: self.time_remaining - 1,
             pack: Pack {
                 resources: self.pack.resources + self.pack.robots,
-                robots: self.pack.robots.clone(),
+                robots: self.pack.robots,
             },
         }
     }
