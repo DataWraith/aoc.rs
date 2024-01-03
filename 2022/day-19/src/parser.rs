@@ -67,14 +67,33 @@ fn parse_blueprint(input: &str) -> IResult<&str, Blueprint> {
         geodes: 0,
     };
 
+    let max_resource = [
+        ore_robot_cost.clone(),
+        clay_robot_cost.clone(),
+        obsidian_robot_cost.clone(),
+        geode_robot_cost.clone(),
+    ]
+    .iter()
+    .cloned()
+    .reduce(|acc, cost| Resources {
+        ore: acc.ore.max(cost.ore),
+        clay: acc.clay.max(cost.clay),
+        obsidian: acc.obsidian.max(cost.obsidian),
+        geodes: isize::MAX,
+    })
+    .unwrap();
+
     Ok((
         input,
         Blueprint {
             number: number.parse().unwrap(),
-            ore_robot_cost,
-            clay_robot_cost,
-            obsidian_robot_cost,
-            geode_robot_cost,
+            robot_costs: [
+                ore_robot_cost,
+                clay_robot_cost,
+                obsidian_robot_cost,
+                geode_robot_cost,
+            ],
+            max_resources: max_resource,
         },
     ))
 }

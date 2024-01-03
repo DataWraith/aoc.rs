@@ -1,8 +1,15 @@
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Index, Mul, Sub};
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
     pub blueprints: Vec<Blueprint>,
+}
+
+pub enum ResourceType {
+    Ore = 0,
+    Clay = 1,
+    Obsidian = 2,
+    Geodes = 3,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -15,18 +22,30 @@ pub struct State {
 #[derive(Clone, Debug)]
 pub struct Blueprint {
     pub number: usize,
-    pub ore_robot_cost: Resources,
-    pub clay_robot_cost: Resources,
-    pub obsidian_robot_cost: Resources,
-    pub geode_robot_cost: Resources,
+    pub robot_costs: [Resources; 4],
+    pub max_resources: Resources,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct Resources {
     pub ore: isize,
     pub clay: isize,
     pub obsidian: isize,
     pub geodes: isize,
+}
+
+impl Index<usize> for Resources {
+    type Output = isize;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.ore,
+            1 => &self.clay,
+            2 => &self.obsidian,
+            3 => &self.geodes,
+            _ => panic!("Invalid index"),
+        }
+    }
 }
 
 impl Mul<usize> for Resources {

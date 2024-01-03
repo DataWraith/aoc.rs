@@ -68,17 +68,9 @@ pub fn advance(
 pub fn prune_resources(blueprint: &Blueprint, state: &State, time_limit: usize) -> State {
     let time_remaining = (time_limit - state.time) as isize;
 
-    let max_obsidion_cost = blueprint.geode_robot_cost.obsidian;
-    let max_clay_cost = blueprint.obsidian_robot_cost.clay;
-    let max_ore_cost = blueprint
-        .clay_robot_cost
-        .ore
-        .max(blueprint.obsidian_robot_cost.ore)
-        .max(blueprint.geode_robot_cost.ore);
-
-    let max_spendable_obsidian = time_remaining * max_obsidion_cost;
-    let max_spendable_clay = time_remaining * max_clay_cost;
-    let max_spendable_ore = time_remaining * max_ore_cost;
+    let max_spendable_obsidian = time_remaining * blueprint.max_resources.obsidian;
+    let max_spendable_clay = time_remaining * blueprint.max_resources.clay;
+    let max_spendable_ore = time_remaining * blueprint.max_resources.ore;
 
     State {
         resources: Resources {
@@ -125,104 +117,33 @@ pub fn transition(blueprint: &Blueprint, state: &State, time_limit: usize) -> Ve
     }
 
     if time_remaining > 1 {
-        let wait = wait_time(&blueprint.geode_robot_cost, state);
+        for r in 0..4 {
+            let wait = wait_time(&blueprint.robot_costs[r], state);
 
-        if wait < time_remaining {
-            advance(
-                state,
-                1 + wait,
-                &Resources {
-                    ore: 0,
-                    clay: 0,
-                    obsidian: 0,
-                    geodes: 1,
-                },
-                &blueprint.geode_robot_cost,
-                &mut result,
-            );
-        }
+            let robot_mines = Resources {
+                ore: (r == 0) as isize,
+                clay: (r == 1) as isize,
+                obsidian: (r == 2) as isize,
+                geodes: (r == 3) as isize,
+            };
 
-        if state.robots.obsidian < blueprint.geode_robot_cost.obsidian {
-            let wait = wait_time(&blueprint.obsidian_robot_cost, state);
-
-            if wait < time_remaining {
+            if wait < time_remaining
+                && (state.robots.clone() + robot_mines.clone())[r] <= blueprint.max_resources[r]
+            {
                 advance(
                     state,
                     1 + wait,
-                    &Resources {
-                        ore: 0,
-                        clay: 0,
-                        obsidian: 1,
-                        geodes: 0,
-                    },
-                    &blueprint.obsidian_robot_cost,
+                    &robot_mines,
+                    &blueprint.robot_costs[r],
                     &mut result,
                 );
             }
-        }
 
-        if state.robots.clay < blueprint.obsidian_robot_cost.clay {
-            let wait = wait_time(&blueprint.clay_robot_cost, state);
-
-            if wait < time_remaining {
-                advance(
-                    state,
-                    1 + wait,
-                    &Resources {
-                        ore: 0,
-                        clay: 1,
-                        obsidian: 0,
-                        geodes: 0,
-                    },
-                    &blueprint.clay_robot_cost,
-                    &mut result,
-                );
-            }
-        }
-
-        if state.robots.ore
-            < blueprint
-                .clay_robot_cost
-                .ore
-                .max(blueprint.obsidian_robot_cost.ore)
-                .max(blueprint.geode_robot_cost.ore)
-        {
-            let wait = wait_time(&blueprint.ore_robot_cost, state);
-
-            if wait < time_remaining {
-                advance(
-                    state,
-                    1 + wait,
-                    &Resources {
-                        ore: 1,
-                        clay: 0,
-                        obsidian: 0,
-                        geodes: 0,
-                    },
-                    &blueprint.ore_robot_cost,
-                    &mut result,
-                );
+            if wait == 0 && r == 3 {
+                break;
             }
         }
     }
-
-    advance(
-        state,
-        1,
-        &Resources {
-            ore: 0,
-            clay: 0,
-            obsidian: 0,
-            geodes: 0,
-        },
-        &Resources {
-            ore: 0,
-            clay: 0,
-            obsidian: 0,
-            geodes: 0,
-        },
-        &mut result,
-    );
 
     result
         .iter()
