@@ -1,7 +1,5 @@
 use crate::structs::*;
 
-use utility_belt::{misc::state_iteration, prelude::*};
-
 pub fn part1(input: &PuzzleInput) -> String {
     input
         .records
@@ -25,11 +23,12 @@ pub fn count_arrangements(input: &str, broken: &[usize]) -> usize {
         let mut count = 0;
 
         if input[0] == '.' || input[0] == '?' {
-            count += inner(&input[1..], &broken);
+            count += inner(&input[1..], broken);
         }
 
         if input[0] == '#' || input[0] == '?' {
             let mut fits = true;
+
             fits = fits && broken[0] < input.len();
             fits = fits && input[0..broken[0]].iter().all(|c| *c != '.');
             fits = fits && input[broken[0]] != '#';
