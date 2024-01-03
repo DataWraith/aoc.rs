@@ -5,14 +5,7 @@ pub struct PuzzleInput {
     pub blueprints: Vec<Blueprint>,
 }
 
-pub enum ResourceType {
-    Ore = 0,
-    Clay = 1,
-    Obsidian = 2,
-    Geodes = 3,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct State {
     pub time_remaining: usize,
     pub resources: Resources,

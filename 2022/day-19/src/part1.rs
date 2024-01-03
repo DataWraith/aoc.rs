@@ -124,7 +124,7 @@ pub fn transition(blueprint: &Blueprint, state: &State, time_limit: usize) -> Ve
     }
 
     if state.time_remaining > 1 {
-        for r in 0..4 {
+        for r in (0..4).rev() {
             let wait = wait_time(&blueprint.robot_costs[r], state);
 
             let robot_mines = Resources {
