@@ -1,5 +1,3 @@
-use std::{cmp::Reverse, collections::BinaryHeap};
-
 use crate::structs::*;
 
 use utility_belt::prelude::*;
@@ -27,7 +25,7 @@ pub fn simulate(blueprint: &Blueprint, time_limit: usize) -> isize {
 
     branch_and_bound(
         &initial_state,
-        |s: &State| transition(blueprint, s, time_limit),
+        |s: &State| transition(blueprint, s),
         |s: &State| {
             if s.time_remaining == 0 {
                 return Some(std::cmp::Reverse(s.resources.geodes));
@@ -116,39 +114,37 @@ pub fn wait_time(cost: &Resources, state: &State) -> usize {
     max
 }
 
-pub fn transition(blueprint: &Blueprint, state: &State, time_limit: usize) -> Vec<State> {
+pub fn transition(blueprint: &Blueprint, state: &State) -> Vec<State> {
     let mut result = Vec::new();
 
     if state.time_remaining == 0 {
         return result;
     }
 
-    if state.time_remaining > 1 {
-        for r in (0..4).rev() {
-            let wait = wait_time(&blueprint.robot_costs[r], state);
+    for r in (0..4).rev() {
+        let wait = wait_time(&blueprint.robot_costs[r], state);
 
-            let robot_mines = Resources {
-                ore: (r == 0) as isize,
-                clay: (r == 1) as isize,
-                obsidian: (r == 2) as isize,
-                geodes: (r == 3) as isize,
-            };
+        let robot_mines = Resources {
+            ore: (r == 0) as isize,
+            clay: (r == 1) as isize,
+            obsidian: (r == 2) as isize,
+            geodes: (r == 3) as isize,
+        };
 
-            if wait < state.time_remaining
-                && (state.robots.clone() + robot_mines.clone())[r] <= blueprint.max_resources[r]
-            {
-                tick(
-                    state,
-                    1 + wait,
-                    &robot_mines,
-                    &blueprint.robot_costs[r],
-                    &mut result,
-                );
-            }
+        if wait < state.time_remaining
+            && (state.robots.clone() + robot_mines.clone())[r] <= blueprint.max_resources[r]
+        {
+            tick(
+                state,
+                1 + wait,
+                &robot_mines,
+                &blueprint.robot_costs[r],
+                &mut result,
+            );
+        }
 
-            if wait == 0 && r == 3 {
-                break;
-            }
+        if wait == 0 && r == 3 {
+            break;
         }
     }
 
