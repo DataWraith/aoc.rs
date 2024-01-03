@@ -9,11 +9,11 @@ pub struct PuzzleInput {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Action {
-    OreRobot,
-    ClayRobot,
-    ObsidianRobot,
-    GeodeRobot,
-    Wait,
+    OreRobot = 0,
+    ClayRobot = 1,
+    ObsidianRobot = 2,
+    GeodeRobot = 3,
+    Wait = 4,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -21,7 +21,22 @@ pub struct State {
     pub time: usize,
     pub resources: Resources,
     pub robots: Resources,
-    pub current_action: Action,
+}
+
+impl State {
+    pub fn atoms(&self) -> [isize; 9] {
+        [
+            self.time as isize,
+            self.resources.ore,
+            self.resources.clay,
+            self.resources.obsidian,
+            self.resources.geodes,
+            self.robots.ore,
+            self.robots.clay,
+            self.robots.obsidian,
+            self.robots.geodes,
+        ]
+    }
 }
 
 #[derive(Clone, Debug)]
