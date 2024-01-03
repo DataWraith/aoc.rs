@@ -1,3 +1,5 @@
+use std::{cmp::Reverse, collections::BinaryHeap};
+
 use crate::structs::*;
 
 use utility_belt::prelude::*;
@@ -14,12 +16,7 @@ pub fn part1(input: &PuzzleInput) -> String {
 pub fn solve(blueprint: &Blueprint, time_limit: usize) -> isize {
     let initial_state = State {
         time: 0,
-        resources: Resources {
-            ore: 0,
-            clay: 0,
-            obsidian: 0,
-            geodes: 0,
-        },
+        resources: Resources::default(),
         robots: Resources {
             ore: 1,
             clay: 0,
@@ -65,6 +62,9 @@ pub fn advance(
     })
 }
 
+// This discards all resources that we can't possibly spend in the remaining
+// time, reducing the number of duplicate states and approximately halving the
+// time needed for the search.
 pub fn prune_resources(blueprint: &Blueprint, state: &State, time_limit: usize) -> State {
     let time_remaining = (time_limit - state.time) as isize;
 
@@ -83,7 +83,10 @@ pub fn prune_resources(blueprint: &Blueprint, state: &State, time_limit: usize) 
     }
 }
 
+// Calculate how long we have to wait for a robot to become available at the current rate
+// of resource production. Returns isize::MAX if the robot will never become available.
 pub fn wait_time(cost: &Resources, state: &State) -> usize {
+    // Divide and then round up
     fn ceil_divide(a: isize, b: isize) -> isize {
         if a == 0 {
             return 0;
