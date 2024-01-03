@@ -1,9 +1,15 @@
-use crate::structs::*;
+use crate::{part1::solve, structs::*};
 
 use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    todo!();
+    input
+        .blueprints
+        .iter()
+        .take(3)
+        .map(|bp| solve(bp, 32))
+        .product::<isize>()
+        .to_string()
 }
 
 #[cfg(test)]
@@ -16,6 +22,6 @@ mod tests {
     #[test]
     fn test_part2() {
         let input = crate::parser::parse(TEST_INPUT);
-        assert_eq!(part2(&input), "TODO");
+        assert_eq!(part2(&input), (56 * 62).to_string());
     }
 }

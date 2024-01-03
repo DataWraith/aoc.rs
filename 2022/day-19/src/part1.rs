@@ -171,6 +171,6 @@ mod tests {
     #[test]
     fn test_part1() {
         let input = crate::parser::parse(TEST_INPUT);
-        assert_eq!(part1(&input), "12");
+        assert_eq!(part1(&input), "33");
     }
 }
