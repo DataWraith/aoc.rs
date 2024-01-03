@@ -36,6 +36,7 @@ pub fn max_geodes(blueprint: &Blueprint, time_limit: u8) -> u8 {
         }
 
         let mut result = 0;
+        let mut built_geode_robot = false;
 
         for (robot, cost) in blueprint.robot_costs.iter().enumerate().rev() {
             if state.pack.can_afford(cost)
@@ -50,12 +51,17 @@ pub fn max_geodes(blueprint: &Blueprint, time_limit: u8) -> u8 {
                     ));
 
                     if robot == 3 {
+                        built_geode_robot = true;
                         break;
                     }
                 }
 
                 new_can_build[robot] = false;
             }
+        }
+
+        if built_geode_robot {
+            return result;
         }
 
         result.max(solution(blueprint, state.tick(), max_result, new_can_build))
