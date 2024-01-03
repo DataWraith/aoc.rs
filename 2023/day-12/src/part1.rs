@@ -12,21 +12,42 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 pub fn count_arrangements(input: &str, broken: &[usize]) -> usize {
-    let automaton = Automaton::new(broken);
+    #[comemo::memoize]
+    fn inner(input: &[char], broken: &[usize]) -> usize {
+        if input.is_empty() {
+            return broken.is_empty() as usize;
+        }
 
-    let start = State::ColumnStart(0);
+        if broken.is_empty() {
+            return !input.contains(&'#') as usize;
+        }
 
-    let mut states = HashMap::default();
-    states.insert(start, 1);
+        let mut count = 0;
 
-    let states = input
-        .chars()
-        .chain(vec!['.', 'x'])
-        .fold(states, |states, c| {
-            state_iteration(&states, |s, c| automaton.transition(s, *c), c)
-        });
+        if input[0] == '.' || input[0] == '?' {
+            count += inner(&input[1..], &broken);
+        }
 
-    states.get(&State::Final).copied().unwrap_or(0)
+        if input[0] == '#' || input[0] == '?' {
+            let mut fits = true;
+            fits = fits && broken[0] < input.len();
+            fits = fits && input[0..broken[0]].iter().all(|c| *c != '.');
+            fits = fits && input[broken[0]] != '#';
+
+            if fits {
+                count += inner(&input[(broken[0] + 1)..], &broken[1..]);
+            }
+        }
+
+        count
+    }
+
+    let chars = std::iter::once('.')
+        .chain(input.chars())
+        .chain(std::iter::once('.'))
+        .collect::<Vec<_>>();
+
+    inner(&chars, broken)
 }
 
 #[cfg(test)]
