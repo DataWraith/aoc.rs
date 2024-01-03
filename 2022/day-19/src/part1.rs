@@ -6,12 +6,12 @@ pub fn part1(input: &PuzzleInput) -> String {
     input
         .blueprints
         .iter()
-        .map(|bp| bp.number as isize * simulate(bp, 24))
+        .map(|bp| bp.number as isize * simulate(bp, 24) as isize)
         .sum::<isize>()
         .to_string()
 }
 
-pub fn simulate(blueprint: &Blueprint, time_limit: usize) -> isize {
+pub fn simulate(blueprint: &Blueprint, time_limit: usize) -> i16 {
     let initial_state = State {
         time_remaining: time_limit,
         resources: Resources::default(),
@@ -35,9 +35,9 @@ pub fn simulate(blueprint: &Blueprint, time_limit: usize) -> isize {
         },
         |s: &State| {
             let cur_geodes = s.resources.geodes;
-            let cur_production = s.robots.geodes * s.time_remaining as isize;
+            let cur_production = s.robots.geodes * s.time_remaining as i16;
             let potential_production =
-                ((s.time_remaining * (s.time_remaining.saturating_sub(1))) / 2) as isize;
+                ((s.time_remaining * (s.time_remaining.saturating_sub(1))) / 2) as i16;
 
             std::cmp::Reverse(cur_geodes + cur_production + potential_production)
         },
@@ -65,7 +65,7 @@ pub fn tick(
 // time, reducing the number of duplicate states and approximately halving the
 // time needed for the search.
 pub fn prune_resources(blueprint: &Blueprint, state: &State) -> State {
-    let time_remaining = state.time_remaining as isize;
+    let time_remaining = state.time_remaining as i16;
 
     let max_spendable_obsidian = time_remaining * blueprint.max_resources.obsidian;
     let max_spendable_clay = time_remaining * blueprint.max_resources.clay;
@@ -125,10 +125,10 @@ pub fn transition(blueprint: &Blueprint, state: &State) -> Vec<State> {
         let wait = wait_time(&blueprint.robot_costs[r], state);
 
         let robot_mines = Resources {
-            ore: (r == 0) as isize,
-            clay: (r == 1) as isize,
-            obsidian: (r == 2) as isize,
-            geodes: (r == 3) as isize,
+            ore: (r == 0) as i16,
+            clay: (r == 1) as i16,
+            obsidian: (r == 2) as i16,
+            geodes: (r == 3) as i16,
         };
 
         if wait < state.time_remaining

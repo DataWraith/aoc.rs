@@ -5,7 +5,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         .blueprints
         .iter()
         .take(3)
-        .map(|bp| simulate(bp, 32))
+        .map(|bp| simulate(bp, 32) as isize)
         .product::<isize>()
         .to_string()
 }

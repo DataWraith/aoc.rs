@@ -79,7 +79,7 @@ fn parse_blueprint(input: &str) -> IResult<&str, Blueprint> {
         ore: acc.ore.max(cost.ore),
         clay: acc.clay.max(cost.clay),
         obsidian: acc.obsidian.max(cost.obsidian),
-        geodes: isize::MAX,
+        geodes: i16::MAX,
     })
     .unwrap();
 

@@ -21,14 +21,14 @@ pub struct Blueprint {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct Resources {
-    pub ore: isize,
-    pub clay: isize,
-    pub obsidian: isize,
-    pub geodes: isize,
+    pub ore: i16,
+    pub clay: i16,
+    pub obsidian: i16,
+    pub geodes: i16,
 }
 
 impl Index<usize> for Resources {
-    type Output = isize;
+    type Output = i16;
 
     fn index(&self, index: usize) -> &Self::Output {
         match index {
@@ -46,10 +46,10 @@ impl Mul<usize> for Resources {
 
     fn mul(self, rhs: usize) -> Self::Output {
         Resources {
-            ore: self.ore * rhs as isize,
-            clay: self.clay * rhs as isize,
-            obsidian: self.obsidian * rhs as isize,
-            geodes: self.geodes * rhs as isize,
+            ore: self.ore * rhs as i16,
+            clay: self.clay * rhs as i16,
+            obsidian: self.obsidian * rhs as i16,
+            geodes: self.geodes * rhs as i16,
         }
     }
 }
