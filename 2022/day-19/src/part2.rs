@@ -1,11 +1,11 @@
-use crate::{part1::simulate, structs::*};
+use crate::{part1::max_geodes, structs::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
     input
         .blueprints
         .iter()
         .take(3)
-        .map(|bp| simulate(bp, 32) as isize)
+        .map(|bp| max_geodes(bp, 32) as isize)
         .product::<isize>()
         .to_string()
 }

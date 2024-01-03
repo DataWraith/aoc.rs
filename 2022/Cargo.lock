@@ -176,6 +176,7 @@ dependencies = [
 name = "day-19"
 version = "0.1.0"
 dependencies = [
+ "derive_more",
  "utility-belt",
 ]
 
@@ -788,7 +789,7 @@ checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
 [[package]]
 name = "utility-belt"
 version = "0.2.0"
-source = "git+https://github.com/DataWraith/utility-belt.git#43f7bd1588d257b345ed03a7c5e1d6b59eb460e1"
+source = "git+https://github.com/DataWraith/utility-belt.git#4f052cb3502ef5431f4c5be5f9c8d8036dd31072"
 dependencies = [
  "ahash",
  "comemo",
