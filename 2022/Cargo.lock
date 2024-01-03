@@ -717,9 +717,9 @@ dependencies = [
 
 [[package]]
 name = "semver"
-version = "1.0.20"
+version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "836fa6a3e1e547f9a2c4040802ec865b5d85f4014efe00555d7090a3dcaa1090"
+checksum = "b97ed7a9823b74f99c7742f5336af7be5ecd3eeafcb1507d1fa93347b1d589b0"
 
 [[package]]
 name = "simd-adler32"
@@ -788,7 +788,7 @@ checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
 [[package]]
 name = "utility-belt"
 version = "0.2.0"
-source = "git+https://github.com/DataWraith/utility-belt.git#6d15ddcc95fa8e3323d8e3409ac8440add7f6cbf"
+source = "git+https://github.com/DataWraith/utility-belt.git#43f7bd1588d257b345ed03a7c5e1d6b59eb460e1"
 dependencies = [
  "ahash",
  "comemo",
