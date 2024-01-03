@@ -1,11 +1,11 @@
-use crate::{part1::solve, structs::*};
+use crate::{part1::simulate, structs::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
     input
         .blueprints
         .iter()
         .take(3)
-        .map(|bp| solve(bp, 32))
+        .map(|bp| simulate(bp, 32))
         .product::<isize>()
         .to_string()
 }

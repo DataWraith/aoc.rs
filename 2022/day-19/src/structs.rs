@@ -14,7 +14,7 @@ pub enum ResourceType {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct State {
-    pub time: usize,
+    pub time_remaining: usize,
     pub resources: Resources,
     pub robots: Resources,
 }

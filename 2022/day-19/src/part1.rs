@@ -8,14 +8,14 @@ pub fn part1(input: &PuzzleInput) -> String {
     input
         .blueprints
         .iter()
-        .map(|bp| bp.number as isize * solve(bp, 24))
+        .map(|bp| bp.number as isize * simulate(bp, 24))
         .sum::<isize>()
         .to_string()
 }
 
-pub fn solve(blueprint: &Blueprint, time_limit: usize) -> isize {
+pub fn simulate(blueprint: &Blueprint, time_limit: usize) -> isize {
     let initial_state = State {
-        time: 0,
+        time_remaining: time_limit,
         resources: Resources::default(),
         robots: Resources {
             ore: 1,
@@ -29,17 +29,17 @@ pub fn solve(blueprint: &Blueprint, time_limit: usize) -> isize {
         &initial_state,
         |s: &State| transition(blueprint, s, time_limit),
         |s: &State| {
-            if s.time >= time_limit {
+            if s.time_remaining == 0 {
                 return Some(std::cmp::Reverse(s.resources.geodes));
             }
 
             None
         },
         |s: &State| {
-            let time_left = time_limit - s.time;
             let cur_geodes = s.resources.geodes;
-            let cur_production = s.robots.geodes * time_left as isize;
-            let potential_production = ((time_left * (time_left.saturating_sub(1))) / 2) as isize;
+            let cur_production = s.robots.geodes * s.time_remaining as isize;
+            let potential_production =
+                ((s.time_remaining * (s.time_remaining.saturating_sub(1))) / 2) as isize;
 
             std::cmp::Reverse(cur_geodes + cur_production + potential_production)
         },
@@ -48,7 +48,8 @@ pub fn solve(blueprint: &Blueprint, time_limit: usize) -> isize {
     .geodes
 }
 
-pub fn advance(
+// Generates a successor state with the given parameters and adds it to the result Vec.
+pub fn tick(
     s: &State,
     time_passed: usize,
     new_robots: &Resources,
@@ -56,7 +57,7 @@ pub fn advance(
     result: &mut Vec<State>,
 ) {
     result.push(State {
-        time: s.time + time_passed,
+        time_remaining: s.time_remaining - time_passed,
         resources: s.resources.clone() + s.robots.clone() * time_passed - robot_cost.clone(),
         robots: s.robots.clone() + new_robots.clone(),
     })
@@ -65,8 +66,8 @@ pub fn advance(
 // This discards all resources that we can't possibly spend in the remaining
 // time, reducing the number of duplicate states and approximately halving the
 // time needed for the search.
-pub fn prune_resources(blueprint: &Blueprint, state: &State, time_limit: usize) -> State {
-    let time_remaining = (time_limit - state.time) as isize;
+pub fn prune_resources(blueprint: &Blueprint, state: &State) -> State {
+    let time_remaining = state.time_remaining as isize;
 
     let max_spendable_obsidian = time_remaining * blueprint.max_resources.obsidian;
     let max_spendable_clay = time_remaining * blueprint.max_resources.clay;
@@ -84,49 +85,45 @@ pub fn prune_resources(blueprint: &Blueprint, state: &State, time_limit: usize) 
 }
 
 // Calculate how long we have to wait for a robot to become available at the current rate
-// of resource production. Returns isize::MAX if the robot will never become available.
+// of resource production. Returns usize::MAX if the robot will never become available.
 pub fn wait_time(cost: &Resources, state: &State) -> usize {
     // Divide and then round up
-    fn ceil_divide(a: isize, b: isize) -> isize {
+    fn ceil_divide(a: usize, b: usize) -> usize {
         if a == 0 {
             return 0;
         }
 
         if b == 0 {
-            return isize::MAX;
+            return usize::MAX;
         }
 
         (a + b - 1) / b
     }
 
-    let obsidian_wait = ceil_divide(
-        cost.obsidian.saturating_sub(state.resources.obsidian),
-        state.robots.obsidian,
-    );
+    let mut max = 0;
 
-    let clay_wait = ceil_divide(
-        cost.clay.saturating_sub(state.resources.clay),
-        state.robots.clay,
-    );
+    for r in 0..3 {
+        let cost = (cost[r] - state.resources[r]).max(0) as usize;
+        let wait = ceil_divide(cost, state.robots[r] as usize);
 
-    let ore_wait = ceil_divide(
-        cost.ore.saturating_sub(state.resources.ore),
-        state.robots.ore,
-    );
+        max = max.max(wait);
 
-    obsidian_wait.max(clay_wait).max(ore_wait) as usize
+        if max == usize::MAX {
+            return max;
+        }
+    }
+
+    max
 }
 
 pub fn transition(blueprint: &Blueprint, state: &State, time_limit: usize) -> Vec<State> {
     let mut result = Vec::new();
 
-    let time_remaining = time_limit - state.time;
-
-    if time_remaining == 0 {
+    if state.time_remaining == 0 {
         return result;
     }
 
-    if time_remaining > 1 {
+    if state.time_remaining > 1 {
         for r in 0..4 {
             let wait = wait_time(&blueprint.robot_costs[r], state);
 
@@ -137,10 +134,10 @@ pub fn transition(blueprint: &Blueprint, state: &State, time_limit: usize) -> Ve
                 geodes: (r == 3) as isize,
             };
 
-            if wait < time_remaining
+            if wait < state.time_remaining
                 && (state.robots.clone() + robot_mines.clone())[r] <= blueprint.max_resources[r]
             {
-                advance(
+                tick(
                     state,
                     1 + wait,
                     &robot_mines,
@@ -155,10 +152,12 @@ pub fn transition(blueprint: &Blueprint, state: &State, time_limit: usize) -> Ve
         }
     }
 
+    // We can't afford any robots within the time limit, so we have to wait
+    // until time's up to get our final score.
     if result.is_empty() {
-        advance(
+        tick(
             state,
-            time_remaining,
+            state.time_remaining,
             &Resources::default(),
             &Resources::default(),
             &mut result,
@@ -167,7 +166,7 @@ pub fn transition(blueprint: &Blueprint, state: &State, time_limit: usize) -> Ve
 
     result
         .iter()
-        .map(|s| prune_resources(blueprint, s, time_limit))
+        .map(|s| prune_resources(blueprint, s))
         .collect_vec()
 }
 
