@@ -1,19 +1,8 @@
 use std::ops::{Add, Sub};
 
-use utility_belt::prelude::*;
-
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
     pub blueprints: Vec<Blueprint>,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub enum Action {
-    OreRobot = 0,
-    ClayRobot = 1,
-    ObsidianRobot = 2,
-    GeodeRobot = 3,
-    Wait = 4,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -21,22 +10,6 @@ pub struct State {
     pub time: usize,
     pub resources: Resources,
     pub robots: Resources,
-}
-
-impl State {
-    pub fn atoms(&self) -> [isize; 9] {
-        [
-            self.time as isize,
-            self.resources.ore,
-            self.resources.clay,
-            self.resources.obsidian,
-            self.resources.geodes,
-            self.robots.ore,
-            self.robots.clay,
-            self.robots.obsidian,
-            self.robots.geodes,
-        ]
-    }
 }
 
 #[derive(Clone, Debug)]

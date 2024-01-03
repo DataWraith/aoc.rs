@@ -1,8 +1,6 @@
 use crate::structs::*;
-use std::hash::{Hash, Hasher, SipHasher};
 
 use utility_belt::prelude::*;
-use wyhash::WyHash;
 
 pub fn part1(input: &PuzzleInput) -> String {
     input
@@ -164,7 +162,6 @@ pub fn transition(blueprint: &Blueprint, state: &State, time_limit: usize) -> Ve
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 

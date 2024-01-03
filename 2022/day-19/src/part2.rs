@@ -1,7 +1,5 @@
 use crate::{part1::solve, structs::*};
 
-use utility_belt::prelude::*;
-
 pub fn part2(input: &PuzzleInput) -> String {
     input
         .blueprints
@@ -15,7 +13,6 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 
