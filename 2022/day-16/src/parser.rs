@@ -9,6 +9,7 @@ fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
     let (input, valves) = many1(parse_line)(input)?;
     let (input, _) = eof(input)?;
 
+    let mut valve_pressures = Vec::new();
     let mut network = petgraph::UnGraph::<u32, u32>::new_undirected();
     let mut node_ids = HashMap::default();
 
@@ -16,7 +17,11 @@ fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
         node_ids
             .entry(valve.0.clone())
             .or_insert_with(|| network.add_node(valve.1));
+
+        valve_pressures.push((node_ids[&valve.0], valve.1));
     }
+
+    valve_pressures.sort_by_key(|(_id, flow)| std::cmp::Reverse(flow.clone()));
 
     for valve in valves.iter() {
         let from = node_ids[&valve.0];
@@ -30,6 +35,7 @@ fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
         input,
         PuzzleInput {
             valve_ids: node_ids,
+            valve_pressures,
             network,
         },
     ))
