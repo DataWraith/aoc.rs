@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 comemo = "0.3.1"
+petgraph = "0.6.4"
 utility-belt.workspace = true

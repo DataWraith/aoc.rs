@@ -9,22 +9,8 @@ pub struct PuzzleInput {
     pub valve_ids: HashMap<String, NodeIndex<u32>>,
     pub valve_pressures: Vec<(NodeIndex<u32>, u32)>,
     pub network: UnGraph<u32, u32>,
+    pub distances: std::collections::HashMap<(NodeIndex<u32>, NodeIndex<u32>), u32>,
 }
-
-// Dummy impl
-impl Hash for PuzzleInput {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        0.hash(state);
-    }
-}
-
-impl PartialEq for PuzzleInput {
-    fn eq(&self, other: &Self) -> bool {
-        true
-    }
-}
-
-impl Eq for PuzzleInput {}
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct State {

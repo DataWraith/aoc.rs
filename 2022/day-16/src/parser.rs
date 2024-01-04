@@ -1,3 +1,4 @@
+use ::petgraph::algo::floyd_warshall;
 use utility_belt::prelude::{
     nom::{branch::alt, bytes::complete::take_until1, combinator::opt},
     *,
@@ -31,11 +32,14 @@ fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
         }
     }
 
+    let distances = floyd_warshall(&network, |e| *e.weight()).unwrap();
+
     Ok((
         input,
         PuzzleInput {
             valve_ids: node_ids,
             valve_pressures,
+            distances,
             network,
         },
     ))

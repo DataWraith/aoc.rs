@@ -12,10 +12,6 @@ pub fn part2(input: &PuzzleInput) -> String {
         max_pressure: &mut u32,
         cache: &mut HashMap<(State, State), u32>,
     ) -> u32 {
-        if cache.len() > 1 * 1024 * 1024 * 1024 {
-            cache.clear();
-        }
-
         if let Some(result) = cache.get(&(my_state.clone(), elephant_state.clone())) {
             return *result;
         }
@@ -27,7 +23,7 @@ pub fn part2(input: &PuzzleInput) -> String {
                 dbg!((&my_state.time_left, &elephant_state.time_left, result));
             }
             *max_pressure = (*max_pressure).max(result);
-            //cache.insert((my_state, elephant_state), result);
+            cache.insert((my_state, elephant_state), result);
             return result;
         }
 
@@ -39,110 +35,110 @@ pub fn part2(input: &PuzzleInput) -> String {
 
         let mut n = my_state.time_left.max(elephant_state.time_left);
 
-        for (i, (valve_id, flow_rate)) in input.valve_pressures.iter().enumerate() {
+        let mut opened = 0;
+        for (valve_id, flow_rate) in input.valve_pressures.iter() {
             if n == 0 {
                 break;
             }
 
             if !my_state.opened.contains(valve_id) {
-                upper_bound += n * *flow_rate;
-            }
+                upper_bound += (n - 1) * *flow_rate;
+                opened += 1;
 
-            if i % 2 == 0 && i != 0 {
-                n = n.saturating_sub(2);
+                if opened % 2 == 0 {
+                    n -= 2;
+                }
             }
         }
 
         if upper_bound <= *max_pressure {
-            return my_state.pressure_released + elephant_state.pressure_released;
+            return 0;
         }
 
         let mut result = 0;
 
         // My move
         if my_state.time_left >= elephant_state.time_left {
-            for neighbor in input.network.neighbors(my_state.position) {
+            for (valve, _) in input.valve_pressures.iter() {
+                if my_state.opened.contains(&valve) {
+                    continue;
+                }
+
                 let mut new_state = my_state.clone();
 
-                // Go to valve
-                new_state.time_left -= 1;
-                new_state.pressure_released += my_state.open_valves;
-                new_state.position = neighbor;
+                let distance = *input.distances.get(&(new_state.position, *valve)).unwrap();
 
-                // Choose not to open the valve that's here
+                if distance >= new_state.time_left + 1 {
+                    continue;
+                }
+
+                // Go to valve
+                new_state.time_left -= distance;
+                new_state.pressure_released += new_state.open_valves * distance;
+                new_state.position = *valve;
+
+                // Open valve
+                new_state.time_left -= 1;
+                new_state.pressure_released += new_state.open_valves;
+
+                // Valve is now open
+                new_state.open_valves += input.network.node_weight(*valve).unwrap();
+                new_state.opened.insert(*valve);
+
                 result = result.max(releasable_pressure(
                     input,
-                    new_state.clone(),
+                    new_state,
                     elephant_state.clone(),
                     max_pressure,
                     cache,
                 ));
-
-                // Open the valve that's here
-                if !my_state.opened.contains(&neighbor)
-                    && new_state.time_left > 1
-                    && !elephant_state.opened.contains(&neighbor)
-                {
-                    // Open valve
-                    new_state.time_left -= 1;
-                    new_state.pressure_released += my_state.open_valves;
-
-                    // Valve is now open
-                    new_state.open_valves += input.network.node_weight(neighbor).unwrap_or(&0);
-                    new_state.opened.insert(neighbor);
-
-                    result = result.max(releasable_pressure(
-                        input,
-                        new_state,
-                        elephant_state.clone(),
-                        max_pressure,
-                        cache,
-                    ));
-                }
             }
         }
 
         // Elephant's move
-        if my_state.time_left <= elephant_state.time_left {
-            for neighbor in input.network.neighbors(elephant_state.position) {
+        if my_state.time_left < elephant_state.time_left {
+            for (valve, _) in input.valve_pressures.iter() {
+                if my_state.opened.contains(valve) {
+                    continue;
+                }
+
                 let mut new_state = elephant_state.clone();
 
-                // Go to valve
-                new_state.time_left -= 1;
-                new_state.pressure_released += elephant_state.open_valves;
-                new_state.position = neighbor;
+                let distance = *input.distances.get(&(new_state.position, *valve)).unwrap();
 
-                // Choose not to open the valve that's here
+                if distance >= new_state.time_left + 1 {
+                    continue;
+                }
+
+                // Go to valve
+                new_state.time_left -= distance;
+                new_state.pressure_released += new_state.open_valves * distance;
+                new_state.position = *valve;
+
+                // Open valve
+                new_state.time_left -= 1;
+                new_state.pressure_released += new_state.open_valves;
+
+                // Valve is now open
+                let mut ms = my_state.clone();
+                ms.opened.insert(*valve);
+                new_state.open_valves += input.network.node_weight(*valve).unwrap();
+
                 result = result.max(releasable_pressure(
                     input,
-                    my_state.clone(),
-                    new_state.clone(),
+                    ms,
+                    new_state,
                     max_pressure,
                     cache,
                 ));
-
-                // Open the valve that's here
-                if !my_state.opened.contains(&neighbor) && new_state.time_left > 1 {
-                    // Open valve
-                    new_state.time_left -= 1;
-                    new_state.pressure_released += elephant_state.open_valves;
-
-                    // Valve is now open
-                    let mut ms = my_state.clone();
-                    ms.opened.insert(neighbor);
-
-                    new_state.open_valves += input.network.node_weight(neighbor).unwrap_or(&0);
-
-                    result = result.max(releasable_pressure(
-                        input,
-                        ms,
-                        new_state,
-                        max_pressure,
-                        cache,
-                    ));
-                }
             }
         }
+
+        let r = my_state.pressure_released + elephant_state.pressure_released;
+        let r = r + my_state.open_valves * my_state.time_left;
+        let r = r + elephant_state.open_valves * elephant_state.time_left;
+
+        result = result.max(r);
 
         if result > *max_pressure {
             *max_pressure = result;
