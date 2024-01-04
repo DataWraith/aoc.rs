@@ -31,7 +31,7 @@ pub fn part1(input: &PuzzleInput) -> String {
                 break;
             }
 
-            if !state.opened.contains(valve_id) {
+            if !state.opened.contains(valve_id.index()) {
                 n = n - 1;
                 upper_bound += n * *flow_rate;
                 n = n.saturating_sub(1);
@@ -61,14 +61,14 @@ pub fn part1(input: &PuzzleInput) -> String {
             ));
 
             // Open the valve that's here
-            if !state.opened.contains(&neighbor) && new_state.time_left != 0 {
+            if !state.opened.contains(neighbor.index()) && new_state.time_left != 0 {
                 // Open valve
                 new_state.time_left -= 1;
                 new_state.pressure_released += state.open_valves;
 
                 // Valve is now open
                 new_state.open_valves += input.network.node_weight(neighbor).unwrap_or(&0);
-                new_state.opened.insert(neighbor);
+                new_state.opened.insert(neighbor.index());
 
                 result = result.max(releasable_pressure(input, new_state, max_pressure, cache));
             }
@@ -82,11 +82,11 @@ pub fn part1(input: &PuzzleInput) -> String {
 
     let mut max_pressure = 0;
 
-    let mut uninteresting_valves = BTreeSet::default();
+    let mut uninteresting_valves = Set64::default();
 
     for valve_id in input.valve_ids.values() {
         if input.network.node_weight(*valve_id).unwrap_or(&0) == &0 {
-            uninteresting_valves.insert(*valve_id);
+            uninteresting_valves.insert(valve_id.index());
         }
     }
 

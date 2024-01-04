@@ -41,7 +41,7 @@ pub fn part2(input: &PuzzleInput) -> String {
                 break;
             }
 
-            if !my_state.opened.contains(valve_id) {
+            if !my_state.opened.contains(valve_id.index()) {
                 upper_bound += (n - 1) * *flow_rate;
                 opened += 1;
 
@@ -60,7 +60,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         // My move
         if my_state.time_left >= elephant_state.time_left {
             for (valve, _) in input.valve_pressures.iter() {
-                if my_state.opened.contains(&valve) {
+                if my_state.opened.contains(valve.index()) {
                     continue;
                 }
 
@@ -83,7 +83,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
                 // Valve is now open
                 new_state.open_valves += input.network.node_weight(*valve).unwrap();
-                new_state.opened.insert(*valve);
+                new_state.opened.insert(valve.index());
 
                 result = result.max(releasable_pressure(
                     input,
@@ -98,7 +98,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         // Elephant's move
         if my_state.time_left < elephant_state.time_left {
             for (valve, _) in input.valve_pressures.iter() {
-                if my_state.opened.contains(valve) {
+                if my_state.opened.contains(valve.index()) {
                     continue;
                 }
 
@@ -121,7 +121,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
                 // Valve is now open
                 let mut ms = my_state.clone();
-                ms.opened.insert(*valve);
+                ms.opened.insert(valve.index());
                 new_state.open_valves += input.network.node_weight(*valve).unwrap();
 
                 result = result.max(releasable_pressure(
@@ -152,11 +152,11 @@ pub fn part2(input: &PuzzleInput) -> String {
 
     let mut max_pressure = 0;
 
-    let mut uninteresting_valves = BTreeSet::default();
+    let mut uninteresting_valves = Set64::default();
 
     for valve_id in input.valve_ids.values() {
         if input.network.node_weight(*valve_id).unwrap_or(&0) == &0 {
-            uninteresting_valves.insert(*valve_id);
+            uninteresting_valves.insert(valve_id.index());
         }
     }
 

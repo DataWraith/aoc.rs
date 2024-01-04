@@ -1,4 +1,5 @@
 use ::petgraph::algo::floyd_warshall;
+
 use utility_belt::prelude::{
     nom::{branch::alt, bytes::complete::take_until1, combinator::opt},
     *,
@@ -22,7 +23,7 @@ fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
         valve_pressures.push((node_ids[&valve.0], valve.1));
     }
 
-    valve_pressures.sort_by_key(|(_id, flow)| std::cmp::Reverse(flow.clone()));
+    valve_pressures.sort_by_key(|(_id, flow)| std::cmp::Reverse(*flow));
 
     for valve in valves.iter() {
         let from = node_ids[&valve.0];
@@ -65,7 +66,7 @@ pub fn parse_line(input: &str) -> IResult<&str, (String, u32, Vec<String>)> {
             name.to_string(),
             flow_rate,
             std::iter::once(vec![first_neighbor])
-                .chain(neighbors.into_iter())
+                .chain(neighbors)
                 .flat_map(|s| s.into_iter().map(|s| s.to_string()))
                 .collect(),
         ),
