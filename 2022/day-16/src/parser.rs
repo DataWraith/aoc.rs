@@ -1,12 +1,65 @@
-use utility_belt::prelude::*;
+use utility_belt::prelude::{
+    nom::{branch::alt, bytes::complete::take_until1, combinator::opt},
+    *,
+};
 
 use crate::structs::*;
 
 fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
-    todo!();
+    let (input, valves) = many1(parse_line)(input)?;
     let (input, _) = eof(input)?;
 
-    Ok((input, PuzzleInput {}))
+    let mut network = petgraph::UnGraph::<u32, u32>::new_undirected();
+    let mut node_ids = HashMap::default();
+
+    for valve in valves.iter() {
+        node_ids
+            .entry(valve.0.clone())
+            .or_insert_with(|| network.add_node(valve.1));
+    }
+
+    for valve in valves.iter() {
+        let from = node_ids[&valve.0];
+        for neighbor in valve.2.iter() {
+            let to = node_ids[neighbor];
+            network.add_edge(from, to, 1);
+        }
+    }
+
+    Ok((
+        input,
+        PuzzleInput {
+            valve_ids: node_ids,
+            network,
+        },
+    ))
+}
+
+pub fn parse_line(input: &str) -> IResult<&str, (String, u32, Vec<String>)> {
+    let (input, _) = tag("Valve ")(input)?;
+    let (input, name) = take_until1(" ")(input)?;
+    let (input, _) = tag(" has flow rate=")(input)?;
+    let (input, flow_rate) = u32(input)?;
+    let (input, _) = alt((
+        tag("; tunnel leads to valve "),
+        tag("; tunnels lead to valves "),
+    ))(input)?;
+    let (input, first_neighbor) = alpha1(input)?;
+    let (input, _) = opt(tag(", "))(input)?;
+    let (input, neighbors) = opt(separated_list0(tag(", "), alpha1))(input)?;
+    let (input, _) = newline(input)?;
+
+    Ok((
+        input,
+        (
+            name.to_string(),
+            flow_rate,
+            std::iter::once(vec![first_neighbor])
+                .chain(neighbors.into_iter())
+                .flat_map(|s| s.into_iter().map(|s| s.to_string()))
+                .collect(),
+        ),
+    ))
 }
 
 pub fn parse(input: &str) -> PuzzleInput {
