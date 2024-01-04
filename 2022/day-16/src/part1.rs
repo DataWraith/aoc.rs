@@ -32,8 +32,9 @@ pub fn part1(input: &PuzzleInput) -> String {
             }
 
             if !state.opened.contains(valve_id) {
-                upper_bound += n * *flow_rate;
                 n = n - 1;
+                upper_bound += n * *flow_rate;
+                n = n.saturating_sub(1);
             }
         }
 
