@@ -1,6 +1,3 @@
-use std::collections::BTreeSet;
-use std::hash::{Hash, Hasher};
-
 use utility_belt::prelude::petgraph::*;
 use utility_belt::prelude::*;
 
@@ -19,30 +16,4 @@ pub struct State {
     pub opened: Set64,
     pub pressure_released: u32,
     pub open_valves: u32,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Copy, Default)]
-pub struct Set64(u64);
-
-impl Set64 {
-    pub fn new(val: u64) -> Self {
-        Self(val)
-    }
-
-    pub fn contains(&self, i: usize) -> bool {
-        assert!(i < 64);
-
-        self.0 & (1 << i) != 0
-    }
-
-    pub fn insert(&mut self, i: usize) {
-        assert!(i < 64);
-
-        self.0 |= 1 << i
-    }
-
-    pub fn remove(&mut self, i: usize) {
-        assert!(i < 64);
-        self.0 &= !(1 << i)
-    }
 }

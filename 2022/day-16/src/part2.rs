@@ -1,5 +1,3 @@
-use std::collections::BTreeSet;
-
 use crate::structs::*;
 
 use utility_belt::prelude::*;
@@ -18,10 +16,6 @@ pub fn part2(input: &PuzzleInput) -> String {
 
         if my_state.time_left == 0 && elephant_state.time_left == 0 {
             let result = my_state.pressure_released + elephant_state.pressure_released;
-            if result > *max_pressure {
-                *max_pressure = result;
-                dbg!((&my_state.time_left, &elephant_state.time_left, result));
-            }
             *max_pressure = (*max_pressure).max(result);
             cache.insert((my_state, elephant_state), result);
             return result;
@@ -29,9 +23,9 @@ pub fn part2(input: &PuzzleInput) -> String {
 
         // Prune by comparing against the best result so far.
         let mut upper_bound =
-            my_state.pressure_released as u32 + my_state.open_valves as u32 * my_state.time_left;
-        upper_bound += elephant_state.pressure_released as u32
-            + elephant_state.open_valves as u32 * elephant_state.time_left;
+            my_state.pressure_released + my_state.open_valves * my_state.time_left;
+        upper_bound += elephant_state.pressure_released
+            + elephant_state.open_valves * elephant_state.time_left;
 
         let mut n = my_state.time_left.max(elephant_state.time_left);
 
@@ -68,7 +62,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
                 let distance = *input.distances.get(&(new_state.position, *valve)).unwrap();
 
-                if distance >= new_state.time_left + 1 {
+                if distance > new_state.time_left {
                     continue;
                 }
 
@@ -106,7 +100,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
                 let distance = *input.distances.get(&(new_state.position, *valve)).unwrap();
 
-                if distance >= new_state.time_left + 1 {
+                if distance > new_state.time_left {
                     continue;
                 }
 
@@ -139,11 +133,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         let r = r + elephant_state.open_valves * elephant_state.time_left;
 
         result = result.max(r);
-
-        if result > *max_pressure {
-            *max_pressure = result;
-            dbg!((&my_state.time_left, &elephant_state.time_left, result));
-        }
+        *max_pressure = (*max_pressure).max(result);
 
         cache.insert((my_state, elephant_state), result);
 
@@ -181,7 +171,6 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 

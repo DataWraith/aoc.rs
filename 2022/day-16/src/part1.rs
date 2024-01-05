@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+
 
 use crate::structs::*;
 
@@ -23,8 +23,8 @@ pub fn part1(input: &PuzzleInput) -> String {
         }
 
         // Prune by comparing against the best result so far.
-        let mut n = state.time_left as u32;
-        let mut upper_bound = state.pressure_released as u32 + state.open_valves as u32 * n;
+        let mut n = state.time_left;
+        let mut upper_bound = state.pressure_released + state.open_valves * n;
 
         for (valve_id, flow_rate) in input.valve_pressures.iter() {
             if n == 0 {
@@ -32,7 +32,7 @@ pub fn part1(input: &PuzzleInput) -> String {
             }
 
             if !state.opened.contains(valve_id.index()) {
-                n = n - 1;
+                n -= 1;
                 upper_bound += n * *flow_rate;
                 n = n.saturating_sub(1);
             }
@@ -110,7 +110,7 @@ pub fn part1(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 
