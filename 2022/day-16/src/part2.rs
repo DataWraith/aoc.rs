@@ -42,31 +42,32 @@ pub fn part2(input: &PuzzleInput) -> String {
         //
         // We start with our current estimate (base case where we do nothing).
         let mut upper_bound = result;
-        let mut n = myself.time_left.max(elephant.time_left).saturating_sub(1);
+        let mut my_time_left = myself.time_left;
+        let mut elephant_time_left = elephant.time_left;
 
         // Then we forward-simulate the best case where all valves we need
         // to open are adjacent to each other.
-        let mut opened = 0;
-
-        for (valve_id, flow_rate) in input.valve_pressures.iter() {
-            if n == 0 {
+        for (turn, (valve_id, flow_rate)) in input.valve_pressures.iter().enumerate() {
+            if my_time_left == 0 && elephant_time_left == 0 {
                 break;
             }
 
-            if !myself.opened.contains(valve_id.index())
-                && !elephant.opened.contains(valve_id.index())
+            if myself.opened.contains(valve_id.index())
+                || elephant.opened.contains(valve_id.index())
             {
-                // Open the valve to release pressure (n-1) times.
-                upper_bound += (n - 1) * *flow_rate;
-                opened += 1;
+                continue;
+            }
 
-                // Once both myself and the elephant have opened a valve, we
-                // need to move to the next valve. We subtract 2 here because we
-                // need to account for the time it took to open the current
-                // valve, as well as the travel time to the next valve.
-                if opened % 2 == 0 {
-                    n -= 2;
-                }
+            // I open a valve when it is my turn and then move to the next one
+            if my_time_left != 0 && (turn & 1 == 0 || elephant_time_left == 0) {
+                upper_bound += (my_time_left - 1) * *flow_rate;
+                my_time_left = my_time_left.saturating_sub(2);
+            }
+
+            // The elephant opens a valve when it is their turn and moves to the next one
+            if elephant_time_left != 0 && (turn & 1 == 1 || my_time_left == 0) {
+                upper_bound += (elephant_time_left - 1) * *flow_rate;
+                elephant_time_left = elephant_time_left.saturating_sub(2);
             }
         }
 

@@ -45,7 +45,7 @@ pub fn releasable_pressure(
 
     // Compute upper bound on the pressure we can release from here.
     let mut n = state.time_left;
-    let mut upper_bound = idle_until_deadline(&state);
+    let mut upper_bound = result;
 
     for (valve_id, flow_rate) in input.valve_pressures.iter() {
         if n == 0 {
