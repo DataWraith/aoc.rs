@@ -1,10 +1,9 @@
 use crate::structs::*;
 
+use min_max_heap::MinMaxHeap;
 use utility_belt::prelude::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let mut max_pressure = 0;
-
     let initial_state = State {
         position: input.valve_ids["AA"],
         time_left: 30,
@@ -13,72 +12,52 @@ pub fn part1(input: &PuzzleInput) -> String {
         open_valves: 0,
     };
 
-    releasable_pressure(
-        input,
-        initial_state,
-        &mut max_pressure,
-        &mut HashMap::default(),
-    )
-    .to_string()
-}
+    let beam_size = 200;
+    let mut max_pressure = 0;
 
-pub fn releasable_pressure(
-    input: &PuzzleInput,
-    state: State,
-    max_pressure: &mut u32,
-    cache: &mut HashMap<State, u32>,
-) -> u32 {
-    if let Some(result) = cache.get(&state) {
-        return *result;
-    }
+    let mut cur_heap = MinMaxHeap::with_capacity(beam_size);
+    let mut next_heap = MinMaxHeap::with_capacity(beam_size);
 
-    let mut result = idle_until_deadline(&state);
-    *max_pressure = (*max_pressure).max(result);
+    cur_heap.push((0, CmpEq(initial_state)));
 
-    // Base case: We're out of time or we've opened all the valves.
-    if state.time_left == 0
-        || state.opened.value().count_ones() == input.valve_pressures.len() as u32
-    {
-        cache.insert(state, result);
-        return result;
-    }
+    loop {
+        while let Some((score, CmpEq(state))) = cur_heap.pop_max() {
+            if state.time_left == 0 {
+                max_pressure = max_pressure.max(score);
+                continue;
+            }
 
-    // Compute upper bound on the pressure we can release from here.
-    let mut n = state.time_left;
-    let mut upper_bound = result;
+            let mut found = false;
 
-    for (valve_id, flow_rate) in input.valve_pressures.iter() {
-        if n == 0 {
+            for (valve, _flow_rate) in input.valve_pressures.iter() {
+                if state.opened.contains(valve.index()) {
+                    continue;
+                }
+
+                if let Some(new_state) = open_valve(input, &state, valve) {
+                    found = true;
+
+                    next_heap.push((idle_until_deadline(&new_state), CmpEq(new_state)));
+                }
+            }
+
+            if !found {
+                max_pressure = max_pressure.max(score);
+            }
+        }
+
+        while next_heap.len() > beam_size {
+            next_heap.pop_min();
+        }
+
+        std::mem::swap(&mut cur_heap, &mut next_heap);
+
+        if cur_heap.is_empty() {
             break;
         }
-
-        if !state.opened.contains(valve_id.index()) {
-            n -= 1;
-            upper_bound += n * *flow_rate;
-            n = n.saturating_sub(1);
-        }
     }
 
-    // Prune by comparing against the best result so far.
-    if upper_bound <= *max_pressure {
-        return 0;
-    }
-
-    for (valve, _flow_rate) in input.valve_pressures.iter() {
-        if state.opened.contains(valve.index()) {
-            continue;
-        }
-
-        if let Some(new_state) = open_valve(input, &state, valve) {
-            result = result.max(releasable_pressure(input, new_state, max_pressure, cache));
-            *max_pressure = (*max_pressure).max(result);
-        }
-    }
-
-    cache.insert(state, result);
-    *max_pressure = (*max_pressure).max(result);
-
-    result
+    max_pressure.to_string()
 }
 
 pub fn idle_until_deadline(myself: &State) -> u32 {
