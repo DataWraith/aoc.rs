@@ -5,29 +5,27 @@ use utility_belt::prelude::*;
 pub fn part2(input: &PuzzleInput) -> String {
     pub fn releasable_pressure(
         input: &PuzzleInput,
-        my_state: State,
-        elephant_state: State,
+        myself: State,
+        elephant: State,
         max_pressure: &mut u32,
         cache: &mut HashMap<(State, State), u32>,
     ) -> u32 {
-        if let Some(result) = cache.get(&(my_state.clone(), elephant_state.clone())) {
+        if let Some(result) = cache.get(&(myself.clone(), elephant.clone())) {
             return *result;
         }
 
-        if my_state.time_left == 0 && elephant_state.time_left == 0 {
-            let result = my_state.pressure_released + elephant_state.pressure_released;
+        if myself.time_left == 0 && elephant.time_left == 0 {
+            let result = myself.pressure_released + elephant.pressure_released;
             *max_pressure = (*max_pressure).max(result);
-            cache.insert((my_state, elephant_state), result);
+            cache.insert((myself, elephant), result);
             return result;
         }
 
         // Prune by comparing against the best result so far.
-        let mut upper_bound =
-            my_state.pressure_released + my_state.open_valves * my_state.time_left;
-        upper_bound += elephant_state.pressure_released
-            + elephant_state.open_valves * elephant_state.time_left;
+        let mut upper_bound = myself.pressure_released + myself.open_valves * myself.time_left;
+        upper_bound += elephant.pressure_released + elephant.open_valves * elephant.time_left;
 
-        let mut n = my_state.time_left.max(elephant_state.time_left);
+        let mut n = myself.time_left.max(elephant.time_left);
 
         let mut opened = 0;
         for (valve_id, flow_rate) in input.valve_pressures.iter() {
@@ -35,7 +33,9 @@ pub fn part2(input: &PuzzleInput) -> String {
                 break;
             }
 
-            if !my_state.opened.contains(valve_id.index()) {
+            if !myself.opened.contains(valve_id.index())
+                && !elephant.opened.contains(valve_id.index())
+            {
                 upper_bound += (n - 1) * *flow_rate;
                 opened += 1;
 
@@ -52,90 +52,54 @@ pub fn part2(input: &PuzzleInput) -> String {
         let mut result = 0;
 
         // My move
-        if my_state.time_left >= elephant_state.time_left {
+        if myself.time_left >= elephant.time_left {
             for (valve, _) in input.valve_pressures.iter() {
-                if my_state.opened.contains(valve.index()) {
+                if myself.opened.contains(valve.index()) || elephant.opened.contains(valve.index())
+                {
                     continue;
                 }
 
-                let mut new_state = my_state.clone();
-
-                let distance = *input.distances.get(&(new_state.position, *valve)).unwrap();
-
-                if distance > new_state.time_left {
-                    continue;
+                if let Some(new_state) = open_valve(input, &myself, valve) {
+                    result = result.max(releasable_pressure(
+                        input,
+                        new_state,
+                        elephant.clone(),
+                        max_pressure,
+                        cache,
+                    ));
                 }
-
-                // Go to valve
-                new_state.time_left -= distance;
-                new_state.pressure_released += new_state.open_valves * distance;
-                new_state.position = *valve;
-
-                // Open valve
-                new_state.time_left -= 1;
-                new_state.pressure_released += new_state.open_valves;
-
-                // Valve is now open
-                new_state.open_valves += input.network.node_weight(*valve).unwrap();
-                new_state.opened.insert(valve.index());
-
-                result = result.max(releasable_pressure(
-                    input,
-                    new_state,
-                    elephant_state.clone(),
-                    max_pressure,
-                    cache,
-                ));
             }
         }
 
         // Elephant's move
-        if my_state.time_left < elephant_state.time_left {
+        if myself.time_left < elephant.time_left {
             for (valve, _) in input.valve_pressures.iter() {
-                if my_state.opened.contains(valve.index()) {
+                if myself.opened.contains(valve.index()) || elephant.opened.contains(valve.index())
+                {
                     continue;
                 }
 
-                let mut new_state = elephant_state.clone();
-
-                let distance = *input.distances.get(&(new_state.position, *valve)).unwrap();
-
-                if distance > new_state.time_left {
-                    continue;
+                if let Some(new_state) = open_valve(input, &elephant, valve) {
+                    result = result.max(releasable_pressure(
+                        input,
+                        myself.clone(),
+                        new_state,
+                        max_pressure,
+                        cache,
+                    ));
                 }
-
-                // Go to valve
-                new_state.time_left -= distance;
-                new_state.pressure_released += new_state.open_valves * distance;
-                new_state.position = *valve;
-
-                // Open valve
-                new_state.time_left -= 1;
-                new_state.pressure_released += new_state.open_valves;
-
-                // Valve is now open
-                let mut ms = my_state.clone();
-                ms.opened.insert(valve.index());
-                new_state.open_valves += input.network.node_weight(*valve).unwrap();
-
-                result = result.max(releasable_pressure(
-                    input,
-                    ms,
-                    new_state,
-                    max_pressure,
-                    cache,
-                ));
             }
         }
 
-        let r = my_state.pressure_released + elephant_state.pressure_released;
-        let r = r + my_state.open_valves * my_state.time_left;
-        let r = r + elephant_state.open_valves * elephant_state.time_left;
+        // This case is only really relevant when all valves are already open
+        let r = myself.pressure_released + elephant.pressure_released;
+        let r = r + myself.open_valves * myself.time_left;
+        let r = r + elephant.open_valves * elephant.time_left;
 
         result = result.max(r);
         *max_pressure = (*max_pressure).max(result);
 
-        cache.insert((my_state, elephant_state), result);
+        cache.insert((myself, elephant), result);
 
         result
     }
@@ -166,6 +130,32 @@ pub fn part2(input: &PuzzleInput) -> String {
         &mut HashMap::default(),
     )
     .to_string()
+}
+
+fn open_valve(input: &PuzzleInput, state: &State, valve: &petgraph::NodeIndex) -> Option<State> {
+    let distance = *input.distances.get(&(state.position, *valve)).unwrap();
+
+    // Not enough time to get there and open the valve *and* let steam escape.
+    if distance + 1 >= state.time_left {
+        return None;
+    }
+
+    let mut new_state = state.clone();
+
+    // Go to valve
+    new_state.time_left -= distance;
+    new_state.pressure_released += new_state.open_valves * distance;
+    new_state.position = *valve;
+
+    // Open valve
+    new_state.time_left -= 1;
+    new_state.pressure_released += new_state.open_valves;
+
+    // Valve is now open
+    new_state.open_valves += input.network.node_weight(*valve).unwrap();
+    new_state.opened.insert(valve.index());
+
+    Some(new_state)
 }
 
 #[cfg(test)]
