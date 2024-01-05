@@ -24,6 +24,7 @@ fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
     }
 
     valve_pressures.sort_by_key(|(_id, flow)| std::cmp::Reverse(*flow));
+    valve_pressures.retain(|(_id, flow)| *flow > 0);
 
     for valve in valves.iter() {
         let from = node_ids[&valve.0];
