@@ -1,9 +1,13 @@
-use crate::structs::*;
+use crate::{part1::open_valve, structs::*};
 
 use utility_belt::prelude::*;
 
+// NOTE: This is kind of verbose. There's a more elegant way to solve this by
+// re-using the part 1 solution -- partition all valves into two sets, and then
+// run the part 1 solution on each set. However, this is not as efficient as the
+// solution below, which runs about twice as fast as that approach.
 pub fn part2(input: &PuzzleInput) -> String {
-    pub fn releasable_pressure(
+    fn releasable_pressure(
         input: &PuzzleInput,
         myself: State,
         elephant: State,
@@ -26,7 +30,8 @@ pub fn part2(input: &PuzzleInput) -> String {
 
         // Base case: We are out of time, or all valves are open.
         if out_of_time || all_valves_open {
-            cache.insert((myself, elephant), result);
+            cache.insert((myself.clone(), elephant.clone()), result);
+            cache.insert((elephant, myself), result);
             return result;
         }
 
@@ -34,13 +39,12 @@ pub fn part2(input: &PuzzleInput) -> String {
         //
         // We start with our current estimate (base case where we do nothing).
         let mut upper_bound = result;
-        let mut n = myself.time_left.max(elephant.time_left);
-
-        let mut opened = 0;
+        let mut n = myself.time_left.max(elephant.time_left).saturating_sub(1);
 
         // Then we forward-simulate the best case where all valves we need
-        // to open are adjacent to each other and we both start at a valve
-        // that needs to be opened.
+        // to open are adjacent to each other.
+        let mut opened = 0;
+
         for (valve_id, flow_rate) in input.valve_pressures.iter() {
             if n == 0 {
                 break;
@@ -53,8 +57,10 @@ pub fn part2(input: &PuzzleInput) -> String {
                 upper_bound += (n - 1) * *flow_rate;
                 opened += 1;
 
-                // Once both myself and the elephant have opened a valve,
-                // we need to move to the next valve.
+                // Once both myself and the elephant have opened a valve, we
+                // need to move to the next valve. We subtract 2 here because we
+                // need to account for the time it took to open the current
+                // valve, as well as the travel time to the next valve.
                 if opened % 2 == 0 {
                     n -= 2;
                 }
@@ -82,8 +88,6 @@ pub fn part2(input: &PuzzleInput) -> String {
                         max_pressure,
                         cache,
                     ));
-
-                    *max_pressure = (*max_pressure).max(result);
                 }
             }
         }
@@ -104,13 +108,14 @@ pub fn part2(input: &PuzzleInput) -> String {
                         max_pressure,
                         cache,
                     ));
-
-                    *max_pressure = (*max_pressure).max(result);
                 }
             }
         }
 
-        cache.insert((myself, elephant), result);
+        *max_pressure = (*max_pressure).max(result);
+
+        cache.insert((myself.clone(), elephant.clone()), result);
+        cache.insert((elephant, myself), result);
 
         result
     }
@@ -140,32 +145,6 @@ fn idle_until_deadline(myself: &State, elephant: &State) -> u32 {
     let elephant_pressure = elephant.pressure_released + elephant.open_valves * elephant.time_left;
 
     my_pressure + elephant_pressure
-}
-
-fn open_valve(input: &PuzzleInput, state: &State, valve: &petgraph::NodeIndex) -> Option<State> {
-    let distance = *input.distances.get(&(state.position, *valve)).unwrap();
-
-    // Not enough time to get there and open the valve *and* let steam escape.
-    if distance + 1 >= state.time_left {
-        return None;
-    }
-
-    let mut new_state = state.clone();
-
-    // Go to valve
-    new_state.time_left -= distance;
-    new_state.pressure_released += new_state.open_valves * distance;
-    new_state.position = *valve;
-
-    // Open valve
-    new_state.time_left -= 1;
-    new_state.pressure_released += new_state.open_valves;
-
-    // Valve is now open
-    new_state.open_valves += input.network.node_weight(*valve).unwrap();
-    new_state.opened.insert(valve.index());
-
-    Some(new_state)
 }
 
 #[cfg(test)]
