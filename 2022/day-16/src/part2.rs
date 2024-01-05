@@ -18,6 +18,10 @@ pub fn part2(input: &PuzzleInput) -> String {
             return *result;
         }
 
+        if let Some(result) = cache.get(&(elephant.clone(), myself.clone())) {
+            return *result;
+        }
+
         let mut result = idle_until_deadline(&myself, &elephant);
 
         // Update the best result so far
@@ -30,8 +34,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
         // Base case: We are out of time, or all valves are open.
         if out_of_time || all_valves_open {
-            cache.insert((myself.clone(), elephant.clone()), result);
-            cache.insert((elephant, myself), result);
+            cache.insert((myself, elephant), result);
             return result;
         }
 
@@ -114,8 +117,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
         *max_pressure = (*max_pressure).max(result);
 
-        cache.insert((myself.clone(), elephant.clone()), result);
-        cache.insert((elephant, myself), result);
+        cache.insert((myself, elephant), result);
 
         result
     }
