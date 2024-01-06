@@ -5,7 +5,7 @@ use utility_belt::prelude::*;
 pub fn part1(input: &PuzzleInput) -> String {
     let mut monkeys = input.monkeys.clone();
 
-    for round in 1..=20 {
+    for _round in 1..=20 {
         for i in 0..monkeys.len() {
             while !monkeys[i].items.is_empty() {
                 let item = monkeys[i].items.remove(0);
@@ -43,7 +43,6 @@ pub fn part1(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 

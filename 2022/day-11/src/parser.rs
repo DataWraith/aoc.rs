@@ -76,7 +76,6 @@ pub fn parse_multiplication(input: &str) -> IResult<&str, OperationType> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 

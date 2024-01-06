@@ -5,9 +5,9 @@ use utility_belt::prelude::*;
 pub fn part2(input: &PuzzleInput) -> String {
     let mut monkeys = input.monkeys.clone();
 
-    let mut limit = monkeys.iter().fold(1, |acc, b| lcm(acc, b.divisible_by));
+    let limit = monkeys.iter().fold(1, |acc, b| lcm(acc, b.divisible_by));
 
-    for round in 1..=10000 {
+    for _round in 1..=10000 {
         for i in 0..monkeys.len() {
             while !monkeys[i].items.is_empty() {
                 let item = monkeys[i].items.remove(0);
@@ -45,7 +45,6 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 
