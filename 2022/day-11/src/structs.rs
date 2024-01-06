@@ -20,4 +20,5 @@ pub struct Monkey {
     pub divisible_by: usize,
     pub true_monkey: usize,
     pub false_monkey: usize,
+    pub inspections: usize,
 }

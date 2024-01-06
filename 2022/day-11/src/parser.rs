@@ -46,6 +46,7 @@ pub fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
             divisible_by: divisible_by.parse().unwrap(),
             true_monkey: true_monkey.parse().unwrap(),
             false_monkey: false_monkey.parse().unwrap(),
+            inspections: 0,
         },
     ))
 }
