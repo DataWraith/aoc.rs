@@ -24,8 +24,8 @@ pub fn monkey_business_level(monkeys: &[Monkey]) -> String {
 pub fn keepaway(monkeys: &mut [Monkey], rounds: usize, worry_fn: impl Fn(usize) -> usize) {
     for _round in 1..=rounds {
         for i in 0..monkeys.len() {
-            while !monkeys[i].items.is_empty() {
-                let item = monkeys[i].items.remove(0);
+            for item_idx in 0..monkeys[i].items.len() {
+                let item = monkeys[i].items[item_idx];
                 let mut worry_level = item;
 
                 match monkeys[i].operation_type {
@@ -33,8 +33,6 @@ pub fn keepaway(monkeys: &mut [Monkey], rounds: usize, worry_fn: impl Fn(usize) 
                     OperationType::Square => worry_level *= worry_level,
                     OperationType::Mul(j) => worry_level *= j,
                 }
-
-                monkeys[i].inspections += 1;
 
                 worry_level = worry_fn(worry_level);
 
@@ -46,6 +44,9 @@ pub fn keepaway(monkeys: &mut [Monkey], rounds: usize, worry_fn: impl Fn(usize) 
 
                 monkeys[target_monkey].items.push(worry_level);
             }
+
+            monkeys[i].inspections += monkeys[i].items.len();
+            monkeys[i].items.clear();
         }
     }
 }
