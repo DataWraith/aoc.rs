@@ -5,7 +5,24 @@ use utility_belt::prelude::*;
 pub fn part1(input: &PuzzleInput) -> String {
     let mut monkeys = input.monkeys.clone();
 
-    for _round in 1..=20 {
+    keepaway(&mut monkeys, 20, |worry_level| worry_level / 3);
+
+    monkey_business_level(&monkeys)
+}
+
+pub fn monkey_business_level(monkeys: &[Monkey]) -> String {
+    monkeys
+        .iter()
+        .sorted_by_key(|m| m.inspections)
+        .rev()
+        .take(2)
+        .map(|m| m.inspections)
+        .product::<usize>()
+        .to_string()
+}
+
+pub fn keepaway(monkeys: &mut [Monkey], rounds: usize, worry_fn: impl Fn(usize) -> usize) {
+    for _round in 1..=rounds {
         for i in 0..monkeys.len() {
             while !monkeys[i].items.is_empty() {
                 let item = monkeys[i].items.remove(0);
@@ -19,7 +36,7 @@ pub fn part1(input: &PuzzleInput) -> String {
 
                 monkeys[i].inspections += 1;
 
-                worry_level /= 3;
+                worry_level = worry_fn(worry_level);
 
                 let target_monkey = if worry_level % monkeys[i].divisible_by == 0 {
                     monkeys[i].true_monkey
@@ -31,13 +48,6 @@ pub fn part1(input: &PuzzleInput) -> String {
             }
         }
     }
-
-    monkeys.sort_by_key(|m| m.inspections);
-
-    let m1 = monkeys.pop().unwrap();
-    let m2 = monkeys.pop().unwrap();
-
-    (m1.inspections * m2.inspections).to_string()
 }
 
 #[cfg(test)]
