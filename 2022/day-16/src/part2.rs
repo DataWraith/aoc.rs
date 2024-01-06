@@ -1,6 +1,5 @@
 use crate::{part1::open_valve, structs::*};
 
-use min_max_heap::MinMaxHeap;
 use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
@@ -15,13 +14,13 @@ pub fn part2(input: &PuzzleInput) -> String {
     let beam_size = 2222;
     let mut max_pressure = 0;
 
-    let mut cur_heap = MinMaxHeap::with_capacity(beam_size);
-    let mut next_heap = MinMaxHeap::with_capacity(beam_size);
+    let mut cur = Vec::with_capacity(beam_size);
+    let mut next = Vec::with_capacity(beam_size);
 
-    cur_heap.push((0, CmpEq((initial_state.clone(), initial_state))));
+    cur.push((0, CmpEq((initial_state.clone(), initial_state))));
 
     loop {
-        while let Some((score, CmpEq((myself, elephant)))) = cur_heap.pop_max() {
+        while let Some((score, CmpEq((myself, elephant)))) = cur.pop() {
             max_pressure = max_pressure.max(score);
 
             for (valve, _flow_rate) in input.valve_pressures.iter() {
@@ -32,13 +31,13 @@ pub fn part2(input: &PuzzleInput) -> String {
 
                 if myself.time_left >= elephant.time_left {
                     if let Some(new_state) = open_valve(input, &myself, valve) {
-                        next_heap.push((
+                        next.push((
                             idle_until_deadline(&new_state, &elephant),
                             CmpEq((new_state, elephant.clone())),
                         ));
                     }
                 } else if let Some(new_state) = open_valve(input, &elephant, valve) {
-                    next_heap.push((
+                    next.push((
                         idle_until_deadline(&myself, &new_state),
                         CmpEq((myself.clone(), new_state)),
                     ));
@@ -46,13 +45,12 @@ pub fn part2(input: &PuzzleInput) -> String {
             }
         }
 
-        while next_heap.len() > beam_size {
-            next_heap.pop_min();
-        }
+        next.sort_unstable_by_key(|(score, _)| std::cmp::Reverse(*score));
+        next.truncate(beam_size);
 
-        std::mem::swap(&mut cur_heap, &mut next_heap);
+        std::mem::swap(&mut cur, &mut next);
 
-        if cur_heap.is_empty() {
+        if cur.is_empty() {
             break;
         }
     }

@@ -1,6 +1,5 @@
 use crate::structs::*;
 
-use min_max_heap::MinMaxHeap;
 use utility_belt::prelude::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
@@ -15,19 +14,18 @@ pub fn part1(input: &PuzzleInput) -> String {
     let beam_size = 200;
     let mut max_pressure = 0;
 
-    let mut cur_heap = MinMaxHeap::with_capacity(beam_size);
-    let mut next_heap = MinMaxHeap::with_capacity(beam_size);
+    let mut cur = Vec::with_capacity(beam_size);
+    let mut next = Vec::with_capacity(beam_size);
 
-    cur_heap.push((0, CmpEq(initial_state)));
+    cur.push((0, CmpEq(initial_state)));
 
     loop {
-        while let Some((score, CmpEq(state))) = cur_heap.pop_max() {
+        while let Some((score, CmpEq(state))) = cur.pop() {
+            max_pressure = max_pressure.max(score);
+
             if state.time_left == 0 {
-                max_pressure = max_pressure.max(score);
                 continue;
             }
-
-            let mut found = false;
 
             for (valve, _flow_rate) in input.valve_pressures.iter() {
                 if state.opened.contains(valve.index()) {
@@ -35,24 +33,17 @@ pub fn part1(input: &PuzzleInput) -> String {
                 }
 
                 if let Some(new_state) = open_valve(input, &state, valve) {
-                    found = true;
-
-                    next_heap.push((idle_until_deadline(&new_state), CmpEq(new_state)));
+                    next.push((idle_until_deadline(&new_state), CmpEq(new_state)));
                 }
             }
-
-            if !found {
-                max_pressure = max_pressure.max(score);
-            }
         }
 
-        while next_heap.len() > beam_size {
-            next_heap.pop_min();
-        }
+        next.sort_by_key(|(score, _)| std::cmp::Reverse(*score));
+        next.truncate(beam_size);
 
-        std::mem::swap(&mut cur_heap, &mut next_heap);
+        std::mem::swap(&mut cur, &mut next);
 
-        if cur_heap.is_empty() {
+        if cur.is_empty() {
             break;
         }
     }
