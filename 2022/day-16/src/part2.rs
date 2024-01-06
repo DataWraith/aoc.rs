@@ -45,8 +45,10 @@ pub fn part2(input: &PuzzleInput) -> String {
             }
         }
 
-        next.sort_unstable_by_key(|(score, _)| std::cmp::Reverse(*score));
-        next.truncate(beam_size);
+        if next.len() > beam_size {
+            next.select_nth_unstable_by_key(beam_size, |(score, _)| std::cmp::Reverse(*score));
+            next.truncate(beam_size);
+        }
 
         std::mem::swap(&mut cur, &mut next);
 
