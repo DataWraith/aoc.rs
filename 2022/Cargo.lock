@@ -159,6 +159,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day-12"
+version = "0.1.0"
+dependencies = [
+ "utility-belt",
+]
+
+[[package]]
 name = "day-16"
 version = "0.1.0"
 dependencies = [
@@ -777,7 +784,7 @@ checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
 [[package]]
 name = "utility-belt"
 version = "0.2.0"
-source = "git+https://github.com/DataWraith/utility-belt.git#c9a2965ed63094fa73a35108e5410a286c5881e2"
+source = "git+https://github.com/DataWraith/utility-belt.git#d8995a0c91c7a9f95e4e068ff30d680a8369e1cd"
 dependencies = [
  "ahash",
  "derive_more",
