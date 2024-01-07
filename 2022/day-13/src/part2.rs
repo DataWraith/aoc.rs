@@ -1,7 +1,5 @@
 use crate::{parser, structs::*};
 
-use utility_belt::prelude::*;
-
 pub fn part2(input: &PuzzleInput) -> String {
     let mut packets = input
         .packets
@@ -20,7 +18,7 @@ pub fn part2(input: &PuzzleInput) -> String {
     packets
         .into_iter()
         .enumerate()
-        .filter(|(i, p)| *p == dividers.packets[0].0 || *p == dividers.packets[0].1)
+        .filter(|(_i, p)| *p == dividers.packets[0].0 || *p == dividers.packets[0].1)
         .map(|(i, _)| i + 1)
         .product::<usize>()
         .to_string()
@@ -29,7 +27,6 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 

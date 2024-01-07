@@ -1,5 +1,3 @@
-use utility_belt::prelude::*;
-
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
     pub packets: Vec<(List, List)>,
@@ -9,7 +7,7 @@ pub struct PuzzleInput {
 pub enum List {
     Nil,
     Digit(u32),
-    List(Vec<Box<List>>),
+    Nested(Vec<List>),
 }
 
 impl Ord for List {
@@ -19,11 +17,11 @@ impl Ord for List {
             (List::Nil, _) => std::cmp::Ordering::Less,
             (_, List::Nil) => std::cmp::Ordering::Greater,
 
-            (List::List(a), List::List(b)) => a.cmp(b),
+            (List::Nested(a), List::Nested(b)) => a.cmp(b),
             (List::Digit(a), List::Digit(b)) => a.cmp(b),
 
-            (List::Digit(a), other) => List::List(vec![Box::new(List::Digit(*a))]).cmp(other),
-            (other, List::Digit(b)) => other.cmp(&List::List(vec![Box::new(List::Digit(*b))])),
+            (List::Digit(a), other) => List::Nested(vec![List::Digit(*a)]).cmp(other),
+            (other, List::Digit(b)) => other.cmp(&List::Nested(vec![List::Digit(*b)])),
         }
     }
 }

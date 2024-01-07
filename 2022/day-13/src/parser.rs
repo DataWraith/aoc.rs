@@ -1,5 +1,5 @@
 use utility_belt::prelude::{
-    nom::{combinator::opt, sequence::delimited, Parser},
+    nom::{combinator::opt, sequence::delimited},
     *,
 };
 
@@ -48,7 +48,7 @@ fn parse_list(input: &str) -> IResult<&str, List> {
 
     let (input, lists) = delimited(tag("["), many1(parse_list), tag("]"))(input)?;
     let (input, _) = opt(tag(","))(input)?;
-    let result = List::List(lists.into_iter().map(Box::new).collect());
+    let result = List::Nested(lists.into_iter().collect());
 
     Ok((input, result))
 }
@@ -56,7 +56,6 @@ fn parse_list(input: &str) -> IResult<&str, List> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 
