@@ -3,17 +3,17 @@ use utility_belt::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
-    pub valve_ids: HashMap<String, NodeIndex<u32>>,
-    pub valve_pressures: Vec<(NodeIndex<u32>, u32)>,
-    pub network: UnGraph<u32, u32>,
-    pub distances: std::collections::HashMap<(NodeIndex<u32>, NodeIndex<u32>), u32>,
+    pub valve_ids: HashMap<String, NodeIndex<u8>>,
+    pub valve_pressures: Vec<(NodeIndex<u8>, u16)>,
+    pub network: UnGraph<u16, u8, u8>,
+    pub distances: std::collections::HashMap<(NodeIndex<u8>, NodeIndex<u8>), u8>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct State {
-    pub time_left: u32,
-    pub position: NodeIndex<u32>,
-    pub opened: Set64,
-    pub pressure_released: u32,
-    pub open_valves: u32,
+    pub time_left: u8,
+    pub position: NodeIndex<u8>,
+    pub opened: Set32,
+    pub pressure_released: u16,
+    pub open_valves: u16,
 }

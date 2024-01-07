@@ -12,7 +12,7 @@ fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
     let (input, _) = eof(input)?;
 
     let mut valve_pressures = Vec::new();
-    let mut network = petgraph::UnGraph::<u32, u32>::new_undirected();
+    let mut network = petgraph::UnGraph::<u16, u8, u8>::default();
     let mut node_ids = HashMap::default();
 
     for valve in valves.iter() {
@@ -20,11 +20,12 @@ fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
             .entry(valve.0.clone())
             .or_insert_with(|| network.add_node(valve.1));
 
-        valve_pressures.push((node_ids[&valve.0], valve.1));
+        if valve.1 > 0 {
+            valve_pressures.push((node_ids[&valve.0], valve.1));
+        }
     }
 
     valve_pressures.sort_by_key(|(_id, flow)| std::cmp::Reverse(*flow));
-    valve_pressures.retain(|(_id, flow)| *flow > 0);
 
     for valve in valves.iter() {
         let from = node_ids[&valve.0];
@@ -47,11 +48,11 @@ fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
     ))
 }
 
-pub fn parse_line(input: &str) -> IResult<&str, (String, u32, Vec<String>)> {
+pub fn parse_line(input: &str) -> IResult<&str, (String, u16, Vec<String>)> {
     let (input, _) = tag("Valve ")(input)?;
     let (input, name) = take_until1(" ")(input)?;
     let (input, _) = tag(" has flow rate=")(input)?;
-    let (input, flow_rate) = u32(input)?;
+    let (input, flow_rate) = u16(input)?;
     let (input, _) = alt((
         tag("; tunnel leads to valve "),
         tag("; tunnels lead to valves "),

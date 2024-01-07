@@ -6,7 +6,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     let initial_state = State {
         position: input.valve_ids["AA"],
         time_left: 30,
-        opened: Set64::default(),
+        opened: Set32::default(),
         pressure_released: 0,
         open_valves: 0,
     };
@@ -27,12 +27,12 @@ pub fn part1(input: &PuzzleInput) -> String {
                 continue;
             }
 
-            for (valve, _flow_rate) in input.valve_pressures.iter() {
-                if state.opened.contains(valve.index()) {
+            for (i, (valve, _flow_rate)) in input.valve_pressures.iter().enumerate() {
+                if state.opened.contains(i) {
                     continue;
                 }
 
-                if let Some(new_state) = open_valve(input, &state, valve) {
+                if let Some(new_state) = open_valve(input, &state, valve, i) {
                     next.push((idle_until_deadline(&new_state), CmpEq(new_state)));
                 }
             }
@@ -53,14 +53,15 @@ pub fn part1(input: &PuzzleInput) -> String {
     max_pressure.to_string()
 }
 
-pub fn idle_until_deadline(myself: &State) -> u32 {
-    myself.pressure_released + myself.open_valves * myself.time_left
+pub fn idle_until_deadline(myself: &State) -> u16 {
+    myself.pressure_released + myself.open_valves * myself.time_left as u16
 }
 
 pub fn open_valve(
     input: &PuzzleInput,
     state: &State,
-    valve: &petgraph::NodeIndex,
+    valve: &petgraph::NodeIndex<u8>,
+    valve_idx: usize,
 ) -> Option<State> {
     let distance = *input.distances.get(&(state.position, *valve)).unwrap();
 
@@ -73,7 +74,7 @@ pub fn open_valve(
 
     // Go to valve
     new_state.time_left -= distance;
-    new_state.pressure_released += new_state.open_valves * distance;
+    new_state.pressure_released += new_state.open_valves * distance as u16;
     new_state.position = *valve;
 
     // Open valve
@@ -82,7 +83,7 @@ pub fn open_valve(
 
     // Valve is now open
     new_state.open_valves += input.network.node_weight(*valve).unwrap();
-    new_state.opened.insert(valve.index());
+    new_state.opened.insert(valve_idx);
 
     Some(new_state)
 }

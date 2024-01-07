@@ -6,7 +6,7 @@ pub fn part2(input: &PuzzleInput) -> String {
     let initial_state = State {
         position: input.valve_ids["AA"],
         time_left: 26,
-        opened: Set64::default(),
+        opened: Set32::default(),
         pressure_released: 0,
         open_valves: 0,
     };
@@ -23,20 +23,19 @@ pub fn part2(input: &PuzzleInput) -> String {
         while let Some((score, CmpEq((myself, elephant)))) = cur.pop() {
             max_pressure = max_pressure.max(score);
 
-            for (valve, _flow_rate) in input.valve_pressures.iter() {
-                if myself.opened.contains(valve.index()) || elephant.opened.contains(valve.index())
-                {
+            for (i, (valve, _flow_rate)) in input.valve_pressures.iter().enumerate() {
+                if myself.opened.contains(i) || elephant.opened.contains(i) {
                     continue;
                 }
 
                 if myself.time_left >= elephant.time_left {
-                    if let Some(new_state) = open_valve(input, &myself, valve) {
+                    if let Some(new_state) = open_valve(input, &myself, valve, i) {
                         next.push((
                             idle_until_deadline(&new_state, &elephant),
                             CmpEq((new_state, elephant.clone())),
                         ));
                     }
-                } else if let Some(new_state) = open_valve(input, &elephant, valve) {
+                } else if let Some(new_state) = open_valve(input, &elephant, valve, i) {
                     next.push((
                         idle_until_deadline(&myself, &new_state),
                         CmpEq((myself.clone(), new_state)),
@@ -60,9 +59,9 @@ pub fn part2(input: &PuzzleInput) -> String {
     max_pressure.to_string()
 }
 
-fn idle_until_deadline(myself: &State, elephant: &State) -> u32 {
-    let my_pressure = myself.pressure_released + myself.open_valves * myself.time_left;
-    let elephant_pressure = elephant.pressure_released + elephant.open_valves * elephant.time_left;
+fn idle_until_deadline(myself: &State, elephant: &State) -> u16 {
+    let my_pressure = myself.pressure_released + myself.open_valves * myself.time_left as u16;
+    let elephant_pressure = elephant.pressure_released + elephant.open_valves * elephant.time_left as u16;
 
     my_pressure + elephant_pressure
 }
