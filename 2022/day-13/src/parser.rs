@@ -61,6 +61,6 @@ mod tests {
 
     #[test]
     fn test_parse() {
-        assert!(dbg!(nom_parser(TEST_INPUT)).is_ok());
+        assert!(nom_parser(TEST_INPUT).is_ok());
     }
 }

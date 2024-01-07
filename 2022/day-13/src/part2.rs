@@ -1,7 +1,7 @@
 use crate::{parser, structs::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let mut packets = input
+    let packets = input
         .packets
         .iter()
         .cloned()
@@ -10,18 +10,23 @@ pub fn part2(input: &PuzzleInput) -> String {
 
     let dividers = parser::parse("[[2]]\n[[6]]\n\n");
 
-    packets.push(dividers.packets[0].0.clone());
-    packets.push(dividers.packets[0].1.clone());
+    // We don't actually need to sort here, we just need to keep track of how
+    // many packets are less than the dividers to compute the indices, making
+    // this O(n) instead of O(n log n).
+    let mut divider2_idx = 1;
+    let mut divider6_idx = 2;
 
-    packets.sort();
+    for packet in packets.into_iter() {
+        if packet < dividers.packets[0].0 {
+            divider2_idx += 1;
+        }
 
-    packets
-        .into_iter()
-        .enumerate()
-        .filter(|(_i, p)| *p == dividers.packets[0].0 || *p == dividers.packets[0].1)
-        .map(|(i, _)| i + 1)
-        .product::<usize>()
-        .to_string()
+        if packet < dividers.packets[0].1 {
+            divider6_idx += 1;
+        }
+    }
+
+    (divider2_idx * divider6_idx).to_string()
 }
 
 #[cfg(test)]
