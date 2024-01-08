@@ -14,7 +14,7 @@ pub fn part1(input: &PuzzleInput) -> String {
         .unwrap();
 
     for count in 0.. {
-        if fall(&mut grid, abyss, Coordinate::new(500, 0)) {
+        if fall(&mut grid, abyss, i32::MAX, Coordinate::new(500, 0)) {
             return count.to_string();
         }
     }
@@ -40,8 +40,17 @@ pub fn make_grid(input: &PuzzleInput) -> HashSet<Coordinate> {
     grid
 }
 
-pub fn fall(grid: &mut HashSet<Coordinate>, abyss: i32, coordinate: Coordinate) -> bool {
+pub fn fall(
+    grid: &mut HashSet<Coordinate>,
+    abyss: i32,
+    floor: i32,
+    coordinate: Coordinate,
+) -> bool {
     let mut current = coordinate;
+
+    if grid.contains(&coordinate) {
+        return true;
+    }
 
     loop {
         let below = current + Direction::Down.into();
@@ -50,21 +59,26 @@ pub fn fall(grid: &mut HashSet<Coordinate>, abyss: i32, coordinate: Coordinate) 
             return true;
         }
 
-        if grid.get(&below).is_none() {
+        if below.y() >= floor {
+            grid.insert(current);
+            break;
+        }
+
+        if !grid.contains(&below) {
             current = below;
             continue;
         }
 
         let below_left = below + Direction::Left.into();
 
-        if grid.get(&below_left).is_none() {
+        if !grid.contains(&below_left) {
             current = below_left;
             continue;
         }
 
         let below_right = below + Direction::Right.into();
 
-        if grid.get(&below_right).is_none() {
+        if !grid.contains(&below_right) {
             current = below_right;
             continue;
         }
