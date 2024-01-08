@@ -19,11 +19,16 @@ pub fn load(input: &PuzzleInput) -> usize {
 }
 
 pub fn tilt(input: &PuzzleInput, direction: Direction) -> PuzzleInput {
-    let mut grid = match direction {
-        Direction::Up => input.grid.clone(),
-        Direction::Down => input.grid.mirror_y(),
-        Direction::Left => input.grid.transpose(),
-        Direction::Right => input.grid.transpose().mirror_y(),
+    let mut grid = input.grid.clone();
+
+    match direction {
+        Direction::Up => {}
+        Direction::Down => grid.mirror_y(),
+        Direction::Left => grid.transpose(),
+        Direction::Right => {
+            grid.transpose();
+            grid.mirror_y();
+        }
     };
 
     loop {
@@ -47,18 +52,19 @@ pub fn tilt(input: &PuzzleInput, direction: Direction) -> PuzzleInput {
         }
     }
 
+    let mut g = grid.clone();
+
     match direction {
-        Direction::Up => PuzzleInput { grid },
-        Direction::Down => PuzzleInput {
-            grid: grid.mirror_y(),
-        },
-        Direction::Left => PuzzleInput {
-            grid: grid.transpose(),
-        },
-        Direction::Right => PuzzleInput {
-            grid: grid.mirror_y().transpose(),
-        },
+        Direction::Up => {}
+        Direction::Down => g.mirror_y(),
+        Direction::Left => g.transpose(),
+        Direction::Right => {
+            g.mirror_y();
+            g.transpose();
+        }
     }
+
+    PuzzleInput { grid: g }
 }
 
 #[cfg(test)]

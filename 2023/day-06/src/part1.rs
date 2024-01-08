@@ -15,14 +15,17 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 pub fn winning_race_strategies(race: &Race) -> Range<usize> {
-    let min_hold = bisect(0, race.time, |t| boat_distance(race, t) > race.distance);
-    let max_hold = bisect(min_hold, race.time, |t| {
-        boat_distance(race, t) <= race.distance
-    }) - 1;
+    let min_hold = bisect(0, race.time / 2, |t| {
+        boat_distance(race, *t) > race.distance
+    })
+    .unwrap();
 
-    dbg!(min_hold, max_hold);
+    let max_hold = bisect(min_hold + 1, race.time, |t| {
+        boat_distance(race, *t) <= race.distance
+    })
+    .unwrap();
 
-    min_hold..max_hold
+    min_hold..(max_hold - 1)
 }
 
 pub fn boat_distance(race: &Race, button_held_for: usize) -> usize {

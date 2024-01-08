@@ -7,7 +7,7 @@ use nom::{
     multi::{many1, separated_list1},
     IResult,
 };
-use petgraph::graph::DiGraph;
+use ::petgraph::graph::DiGraph;
 use utility_belt::prelude::*;
 
 use crate::structs::*;

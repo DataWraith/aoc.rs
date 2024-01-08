@@ -10,7 +10,11 @@ pub fn solve(input: &PuzzleInput, max_discrepancies: usize) -> String {
     let horizontal = input
         .patterns
         .iter()
-        .flat_map(|p| find_reflections(&p.transpose(), max_discrepancies))
+        .flat_map(|p| {
+            let mut t = p.clone();
+            t.transpose();
+            find_reflections(&t, max_discrepancies)
+        })
         .map(|y| 100 * (y + 1))
         .sum::<usize>();
 

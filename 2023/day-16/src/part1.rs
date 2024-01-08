@@ -16,7 +16,7 @@ pub fn part1(input: &PuzzleInput) -> String {
 pub fn solve(input: &PuzzleInput, start: Beam) -> usize {
     let mut energized = HashSet::new();
 
-    let mut brfs = BrFS::new(start);
+    let mut brfs = BrFS::new(vec![start]);
 
     while let Some(beam) = brfs.next(|beam| traverse(&input.grid, beam)) {
         energized.insert(beam.position);

@@ -1,6 +1,6 @@
 use crate::{part1::follow_path, structs::*};
 
-use petgraph::{algo::all_simple_paths, graph::NodeIndex, graph::UnGraph, visit::EdgeRef};
+use ::petgraph::{algo::all_simple_paths, graph::NodeIndex, graph::UnGraph, visit::EdgeRef};
 use utility_belt::prelude::*;
 
 pub fn part2(input: &PuzzleInput) -> String {

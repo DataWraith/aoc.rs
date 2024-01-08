@@ -5,7 +5,7 @@ use crate::{
     structs::*,
 };
 
-use utility_belt::{math::union_find::UnionFind, prelude::*};
+use utility_belt::{misc::union_find::UnionFind, prelude::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
     let grid = input.grid.clone();

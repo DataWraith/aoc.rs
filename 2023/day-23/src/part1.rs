@@ -1,6 +1,6 @@
 use crate::structs::*;
 
-use petgraph::{
+use ::petgraph::{
     algo::all_simple_paths,
     graph::{DiGraph, NodeIndex},
     visit::EdgeRef,
