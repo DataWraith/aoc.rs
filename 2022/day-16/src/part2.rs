@@ -61,7 +61,8 @@ pub fn part2(input: &PuzzleInput) -> String {
 
 fn idle_until_deadline(myself: &State, elephant: &State) -> u16 {
     let my_pressure = myself.pressure_released + myself.open_valves * myself.time_left as u16;
-    let elephant_pressure = elephant.pressure_released + elephant.open_valves * elephant.time_left as u16;
+    let elephant_pressure =
+        elephant.pressure_released + elephant.open_valves * elephant.time_left as u16;
 
     my_pressure + elephant_pressure
 }

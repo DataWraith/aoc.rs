@@ -79,7 +79,6 @@ pub fn fall(grid: &mut HashSet<Coordinate>, abyss: i32, coordinate: Coordinate) 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = include_str!("../test.txt");
 
