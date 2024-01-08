@@ -6,7 +6,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     let initial_state = State {
         position: input.valve_ids["AA"],
         time_left: 30,
-        opened: Set32::default(),
+        opened: MiniBitset::<u16>::default(),
         pressure_released: 0,
         open_valves: 0,
     };
@@ -70,7 +70,7 @@ pub fn open_valve(
         return None;
     }
 
-    let mut new_state = state.clone();
+    let mut new_state = *state;
 
     // Go to valve
     new_state.time_left -= distance;

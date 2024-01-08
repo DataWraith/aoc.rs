@@ -6,7 +6,7 @@ pub fn part2(input: &PuzzleInput) -> String {
     let initial_state = State {
         position: input.valve_ids["AA"],
         time_left: 26,
-        opened: Set32::default(),
+        opened: MiniBitset::<u16>::default(),
         pressure_released: 0,
         open_valves: 0,
     };
@@ -17,7 +17,7 @@ pub fn part2(input: &PuzzleInput) -> String {
     let mut cur = Vec::with_capacity(beam_size);
     let mut next = Vec::with_capacity(beam_size);
 
-    cur.push((0, CmpEq((initial_state.clone(), initial_state))));
+    cur.push((0, CmpEq((initial_state, initial_state))));
 
     loop {
         while let Some((score, CmpEq((myself, elephant)))) = cur.pop() {
@@ -32,13 +32,13 @@ pub fn part2(input: &PuzzleInput) -> String {
                     if let Some(new_state) = open_valve(input, &myself, valve, i) {
                         next.push((
                             idle_until_deadline(&new_state, &elephant),
-                            CmpEq((new_state, elephant.clone())),
+                            CmpEq((new_state, elephant)),
                         ));
                     }
                 } else if let Some(new_state) = open_valve(input, &elephant, valve, i) {
                     next.push((
                         idle_until_deadline(&myself, &new_state),
-                        CmpEq((myself.clone(), new_state)),
+                        CmpEq((myself, new_state)),
                     ));
                 }
             }

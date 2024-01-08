@@ -9,11 +9,11 @@ pub struct PuzzleInput {
     pub distances: std::collections::HashMap<(NodeIndex<u8>, NodeIndex<u8>), u8>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct State {
     pub time_left: u8,
     pub position: NodeIndex<u8>,
-    pub opened: Set32,
+    pub opened: MiniBitset<u16>,
     pub pressure_released: u16,
     pub open_valves: u16,
 }

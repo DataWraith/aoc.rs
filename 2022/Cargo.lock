@@ -416,9 +416,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.151"
+version = "0.2.152"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "302d7ab3130588088d277783b1e2d2e10c9e9e4a16dd9050e6ec93fb3e7048f4"
+checksum = "13e3bf6590cbc649f4d1a3eefc9d5d6eb746f5200ffb04e5e142700b8faa56e7"
 
 [[package]]
 name = "matrixmultiply"
@@ -798,7 +798,7 @@ checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
 [[package]]
 name = "utility-belt"
 version = "0.2.0"
-source = "git+https://github.com/DataWraith/utility-belt.git#d8995a0c91c7a9f95e4e068ff30d680a8369e1cd"
+source = "git+https://github.com/DataWraith/utility-belt.git#cf2fa0a5e77ba463acd5dfec8c6c7c7b3542ee7d"
 dependencies = [
  "ahash",
  "derive_more",
