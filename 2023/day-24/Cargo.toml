@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 glam = "0.25.0"
+ndarray = "0.15.6"
 nom.workspace = true
 num = "0.4.1"
 utility-belt.workspace = true

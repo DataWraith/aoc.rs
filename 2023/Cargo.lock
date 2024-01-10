@@ -326,6 +326,7 @@ name = "day-24"
 version = "0.1.0"
 dependencies = [
  "glam 0.25.0",
+ "ndarray",
  "nom",
  "num",
  "utility-belt",
@@ -1062,7 +1063,7 @@ checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
 [[package]]
 name = "utility-belt"
 version = "0.2.0"
-source = "git+https://github.com/DataWraith/utility-belt.git?rev=cf2fa0a5e77#cf2fa0a5e77ba463acd5dfec8c6c7c7b3542ee7d"
+source = "git+https://github.com/DataWraith/utility-belt.git?rev=e7b99c3#e7b99c340918a3a14df6568273f38c96ad1ebb6e"
 dependencies = [
  "ahash",
  "derive_more",

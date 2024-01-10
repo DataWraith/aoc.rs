@@ -3,8 +3,10 @@ use std::ops::RangeInclusive;
 use glam::Vec3Swizzles;
 use num::BigRational;
 use num::Signed;
+use num::Zero;
 use num::{FromPrimitive, ToPrimitive};
 
+use utility_belt::math::line_intersection_point;
 use utility_belt::prelude::Itertools;
 
 use crate::structs::*;
@@ -56,46 +58,11 @@ pub fn solve(
         .count()
 }
 
-// This returns the intersection point of two lines, a and b, defined by two points each.
-pub fn line_intersection_point(
-    a: ((BigRational, BigRational), (BigRational, BigRational)),
-    b: ((BigRational, BigRational), (BigRational, BigRational)),
-) -> Option<(BigRational, BigRational)> {
-    let x1 = (a.0).0;
-    let y1 = (a.0).1;
-    let dx1 = (a.1).0 - x1.clone();
-    let dy1 = (a.1).1 - y1.clone();
-
-    let x2 = (b.0).0;
-    let y2 = (b.0).1;
-    let dx2 = (b.1).0 - x2.clone();
-    let dy2 = (b.1).1 - y2.clone();
-
-    let zero = BigRational::from_i64(0).unwrap();
-
-    if dx1 == zero || dx2 == zero {
-        return None;
-    }
-
-    let m1 = dy1.clone() / dx1.clone();
-    let m2 = dy2.clone() / dx2.clone();
-
-    if m1 == m2 {
-        return None;
-    }
-
-    let x = (m1.clone() * x1.clone() - m2.clone() * x2.clone() + y2.clone() - y1.clone())
-        / (m1.clone() - m2.clone());
-    let y = m1.clone() * (x.clone() - x1.clone()) + y1.clone();
-
-    Some((x, y))
-}
-
 pub fn future_line_intersection(
     a: ((BigRational, BigRational), (BigRational, BigRational)),
     b: ((BigRational, BigRational), (BigRational, BigRational)),
 ) -> Option<(BigRational, BigRational)> {
-    let intersection_point = line_intersection_point(a.clone(), b.clone());
+    let intersection_point = line_intersection_point(a.clone(), b.clone(), BigRational::zero());
 
     if let Some(p) = intersection_point {
         let mut in_future = true;
