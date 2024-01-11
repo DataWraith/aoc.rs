@@ -17,8 +17,8 @@ pub fn part2(input: &PuzzleInput) -> String {
 
         cur += Direction::Right.into();
 
-        if cur.x() >= screen.width() as i32 {
-            cur = Coordinate::new(0, cur.y() + 1);
+        if cur.x >= screen.width() as i32 {
+            cur = Coordinate::new(0, cur.y + 1);
         }
     }
 

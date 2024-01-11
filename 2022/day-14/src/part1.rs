@@ -9,7 +9,7 @@ pub fn part1(input: &PuzzleInput) -> String {
         .segments
         .iter()
         .flatten()
-        .map(|c| c.y() + 1)
+        .map(|c| c.y + 1)
         .max()
         .unwrap();
 
@@ -27,12 +27,12 @@ pub fn make_grid(input: &PuzzleInput) -> HashSet<Coordinate> {
 
     for segment in input.segments.iter() {
         for (c1, c2) in segment.iter().tuple_windows() {
-            for x in c1.x().min(c2.x())..=c2.x().max(c1.x()) {
-                grid.insert(Coordinate::new(x, c1.y()));
+            for x in c1.x.min(c2.x)..=c2.x.max(c1.x) {
+                grid.insert(Coordinate::new(x, c1.y));
             }
 
-            for y in c1.y().min(c2.y())..=c2.y().max(c1.y()) {
-                grid.insert(Coordinate::new(c1.x(), y));
+            for y in c1.y.min(c2.y)..=c2.y.max(c1.y) {
+                grid.insert(Coordinate::new(c1.x, y));
             }
         }
     }
@@ -55,11 +55,11 @@ pub fn fall(
     loop {
         let below = current + Direction::Down.into();
 
-        if below.y() >= abyss {
+        if below.y >= abyss {
             return true;
         }
 
-        if below.y() >= floor {
+        if below.y >= floor {
             grid.insert(current);
             break;
         }

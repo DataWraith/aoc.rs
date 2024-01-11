@@ -12,7 +12,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         .segments
         .iter()
         .flatten()
-        .map(|c| c.y() + 2)
+        .map(|c| c.y + 2)
         .max()
         .unwrap();
 

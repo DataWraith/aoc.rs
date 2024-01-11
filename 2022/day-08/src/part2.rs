@@ -11,12 +11,12 @@ pub fn part2(input: &PuzzleInput) -> String {
             let mut score = 1;
 
             // Not sure if this is sound, but it works.
-            if coord.x() == 0 || coord.y() == 0 {
+            if coord.x == 0 || coord.y == 0 {
                 return 0;
             }
 
-            if coord.x() as usize == input.grid.width() - 1
-                || coord.y() as usize == input.grid.height() - 1
+            if coord.x as usize == input.grid.width() - 1
+                || coord.y as usize == input.grid.height() - 1
             {
                 return 0;
             }
