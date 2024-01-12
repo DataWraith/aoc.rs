@@ -11,3 +11,4 @@ ndarray = "0.15.6"
 nom.workspace = true
 num = "0.4.1"
 utility-belt.workspace = true
+z3 = { version = "0.12" }

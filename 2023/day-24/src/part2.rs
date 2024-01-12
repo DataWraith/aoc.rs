@@ -4,9 +4,67 @@ use ndarray::Array1;
 use num::traits::ToPrimitive;
 use num::BigRational;
 use utility_belt::prelude::*;
+use z3::{ast::Ast, ast::Int, SatResult, Solver};
 
 use crate::structs::*;
 
+pub fn part2_z3(input: &PuzzleInput) -> String {
+    let cfg = z3::Config::new();
+    let ctx = z3::Context::new(&cfg);
+
+    let sx = Int::new_const(&ctx, "sx");
+    let sy = Int::new_const(&ctx, "sy");
+    let sz = Int::new_const(&ctx, "sz");
+    let vx = Int::new_const(&ctx, "vx");
+    let vy = Int::new_const(&ctx, "vy");
+    let vz = Int::new_const(&ctx, "vz");
+
+    let solver = Solver::new(&ctx);
+
+    for h in input.hailstones.iter().take(3) {
+        let hx = Int::from_i64(&ctx, h.position.x);
+        let hy = Int::from_i64(&ctx, h.position.y);
+        let hz = Int::from_i64(&ctx, h.position.z);
+        let hvx = Int::from_i64(&ctx, h.velocity.x);
+        let hvy = Int::from_i64(&ctx, h.velocity.y);
+        let hvz = Int::from_i64(&ctx, h.velocity.z);
+        let ht = Int::fresh_const(&ctx, "ht");
+
+        solver.assert(&(&sx + &vx * &ht - &hx - &hvx * &ht)._eq(&Int::from_i64(&ctx, 0)));
+        solver.assert(&(&sy + &vy * &ht - &hy - &hvy * &ht)._eq(&Int::from_i64(&ctx, 0)));
+        solver.assert(&(&sz + &vz * &ht - &hz - &hvz * &ht)._eq(&Int::from_i64(&ctx, 0)));
+    }
+
+    assert_eq!(solver.check(), SatResult::Sat);
+
+    let sx = solver
+        .get_model()
+        .unwrap()
+        .eval(&sx, true)
+        .unwrap()
+        .as_i64()
+        .unwrap();
+
+    let sy = solver
+        .get_model()
+        .unwrap()
+        .eval(&sy, true)
+        .unwrap()
+        .as_i64()
+        .unwrap();
+
+    let sz = solver
+        .get_model()
+        .unwrap()
+        .eval(&sz, true)
+        .unwrap()
+        .as_i64()
+        .unwrap();
+
+    (sx + sy + sz).to_string()
+}
+
+#[allow(dead_code)]
 pub fn part2(input: &PuzzleInput) -> String {
     // This can be solved by solving a system of linear equations:
     //
@@ -93,6 +151,7 @@ pub fn part2(input: &PuzzleInput) -> String {
     (sx + sy + sz).to_string()
 }
 
+#[allow(dead_code)]
 fn solve2d(input: &PuzzleInput) -> (i64, i64, i64, i64) {
     let mut matrix = Array2::zeros((10, 5));
     let mut idx = 0;
@@ -152,6 +211,6 @@ mod tests {
     #[test]
     fn test_part2() {
         let input = crate::parser::parse(TEST_INPUT);
-        assert_eq!(part2(&input), "47");
+        assert_eq!(part2_z3(&input), "47");
     }
 }

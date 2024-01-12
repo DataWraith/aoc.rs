@@ -4,9 +4,12 @@ pkgs.mkShell {
     bacon
     cargo-generate
     cargo-nextest
-    clang
     just
     rustup
     stdenv
+    z3
   ];
+
+  Z3_SYS_Z3_HEADER = "${pkgs.z3.dev}/include/z3.h";
+  LIBCLANG_PATH="${pkgs.llvmPackages_14.libclang.lib}/lib";
 }
