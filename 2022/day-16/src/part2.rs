@@ -22,7 +22,7 @@ pub fn part2(input: &PuzzleInput) -> String {
             }
 
             if myself.time_left >= elephant.time_left {
-                if let Some(new_state) = open_valve(input, &myself, valve, i) {
+                if let Some(new_state) = open_valve(input, myself, valve, i) {
                     result.push((
                         (new_state, *elephant),
                         idle_until_deadline(&new_state, elephant),
@@ -40,8 +40,8 @@ pub fn part2(input: &PuzzleInput) -> String {
 
     let mut max_pressure = 0;
 
-    while let Some((myself, elephant)) = beamsearch.next(&mut successors) {
-        max_pressure = max_pressure.max(idle_until_deadline(&myself, &elephant));
+    while let Some((_state, pressure)) = beamsearch.next(&mut successors) {
+        max_pressure = max_pressure.max(pressure);
     }
 
     max_pressure.to_string()

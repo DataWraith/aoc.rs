@@ -35,8 +35,8 @@ pub fn part1(input: &PuzzleInput) -> String {
 
     let mut max_pressure = 0;
 
-    while let Some(cur) = beamsearch.next(&mut successors) {
-        max_pressure = max_pressure.max(idle_until_deadline(&cur));
+    while let Some((_state, pressure)) = beamsearch.next(&mut successors) {
+        max_pressure = max_pressure.max(pressure);
     }
 
     max_pressure.to_string()

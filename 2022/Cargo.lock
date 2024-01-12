@@ -798,7 +798,7 @@ checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
 [[package]]
 name = "utility-belt"
 version = "0.2.0"
-source = "git+https://github.com/DataWraith/utility-belt.git#72fb52ae28df22d1e951fdc9ab97068214a8a906"
+source = "git+https://github.com/DataWraith/utility-belt.git#4e5b755efe16c709c237423e2bfb49a555f8fc3d"
 dependencies = [
  "ahash",
  "derive_more",
