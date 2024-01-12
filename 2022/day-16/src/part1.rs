@@ -11,43 +11,32 @@ pub fn part1(input: &PuzzleInput) -> String {
         open_valves: 0,
     };
 
-    let beam_size = 200;
-    let mut max_pressure = 0;
+    let mut beamsearch = BeamSearch::new(200, vec![(initial_state, 0)]);
 
-    let mut cur = Vec::with_capacity(beam_size);
-    let mut next = Vec::with_capacity(beam_size);
+    let mut successors = |state: &State| {
+        let mut result = Vec::new();
 
-    cur.push((0, CmpEq(initial_state)));
+        if state.time_left == 0 {
+            return result;
+        }
 
-    loop {
-        while let Some((score, CmpEq(state))) = cur.pop() {
-            max_pressure = max_pressure.max(score);
-
-            if state.time_left == 0 {
+        for (i, (valve, _flow_rate)) in input.valve_pressures.iter().enumerate() {
+            if state.opened.contains(i) {
                 continue;
             }
 
-            for (i, (valve, _flow_rate)) in input.valve_pressures.iter().enumerate() {
-                if state.opened.contains(i) {
-                    continue;
-                }
-
-                if let Some(new_state) = open_valve(input, &state, valve, i) {
-                    next.push((idle_until_deadline(&new_state), CmpEq(new_state)));
-                }
+            if let Some(new_state) = open_valve(input, state, valve, i) {
+                result.push((new_state, idle_until_deadline(&new_state)));
             }
         }
 
-        if next.len() > beam_size {
-            next.select_nth_unstable_by_key(beam_size, |(score, _)| std::cmp::Reverse(*score));
-            next.truncate(beam_size);
-        }
+        result
+    };
 
-        std::mem::swap(&mut cur, &mut next);
+    let mut max_pressure = 0;
 
-        if cur.is_empty() {
-            break;
-        }
+    while let Some(cur) = beamsearch.next(&mut successors) {
+        max_pressure = max_pressure.max(idle_until_deadline(&cur));
     }
 
     max_pressure.to_string()

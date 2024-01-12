@@ -11,49 +11,37 @@ pub fn part2(input: &PuzzleInput) -> String {
         open_valves: 0,
     };
 
-    let beam_size = 2222;
-    let mut max_pressure = 0;
+    let mut beamsearch = BeamSearch::new(2222, vec![((initial_state, initial_state), 0)]);
 
-    let mut cur = Vec::with_capacity(beam_size);
-    let mut next = Vec::with_capacity(beam_size);
+    let mut successors = |(myself, elephant): &(State, State)| {
+        let mut result = Vec::new();
 
-    cur.push((0, CmpEq((initial_state, initial_state))));
+        for (i, (valve, _flow_rate)) in input.valve_pressures.iter().enumerate() {
+            if myself.opened.contains(i) || elephant.opened.contains(i) {
+                continue;
+            }
 
-    loop {
-        while let Some((score, CmpEq((myself, elephant)))) = cur.pop() {
-            max_pressure = max_pressure.max(score);
-
-            for (i, (valve, _flow_rate)) in input.valve_pressures.iter().enumerate() {
-                if myself.opened.contains(i) || elephant.opened.contains(i) {
-                    continue;
-                }
-
-                if myself.time_left >= elephant.time_left {
-                    if let Some(new_state) = open_valve(input, &myself, valve, i) {
-                        next.push((
-                            idle_until_deadline(&new_state, &elephant),
-                            CmpEq((new_state, elephant)),
-                        ));
-                    }
-                } else if let Some(new_state) = open_valve(input, &elephant, valve, i) {
-                    next.push((
-                        idle_until_deadline(&myself, &new_state),
-                        CmpEq((myself, new_state)),
+            if myself.time_left >= elephant.time_left {
+                if let Some(new_state) = open_valve(input, &myself, valve, i) {
+                    result.push((
+                        (new_state, *elephant),
+                        idle_until_deadline(&new_state, elephant),
                     ));
                 }
+            } else if let Some(new_state) = open_valve(input, elephant, valve, i) {
+                result.push((
+                    (*myself, new_state),
+                    idle_until_deadline(myself, &new_state),
+                ));
             }
         }
+        result
+    };
 
-        if next.len() > beam_size {
-            next.select_nth_unstable_by_key(beam_size, |(score, _)| std::cmp::Reverse(*score));
-            next.truncate(beam_size);
-        }
+    let mut max_pressure = 0;
 
-        std::mem::swap(&mut cur, &mut next);
-
-        if cur.is_empty() {
-            break;
-        }
+    while let Some((myself, elephant)) = beamsearch.next(&mut successors) {
+        max_pressure = max_pressure.max(idle_until_deadline(&myself, &elephant));
     }
 
     max_pressure.to_string()
