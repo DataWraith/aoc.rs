@@ -1,3 +1,4 @@
+use ::petgraph::graph::UnGraph;
 use nom::{
     bytes::complete::{tag, take_until},
     character::complete::{alpha1, newline, space0, space1},
@@ -5,7 +6,6 @@ use nom::{
     multi::{many1, separated_list1},
     IResult,
 };
-use ::petgraph::graph::UnGraph;
 use utility_belt::prelude::*;
 
 use crate::structs::*;

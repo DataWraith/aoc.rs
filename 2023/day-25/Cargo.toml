@@ -8,5 +8,4 @@ edition = "2021"
 [dependencies]
 nom.workspace = true
 petgraph = "0.6.4"
-rustworkx-core = "0.13.2"
 utility-belt.workspace = true
