@@ -2,6 +2,7 @@ use crate::structs::*;
 
 use utility_belt::prelude::*;
 
+#[tracing::instrument]
 pub fn part2(input: &PuzzleInput) -> String {
     todo!();
 }
