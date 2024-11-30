@@ -30,9 +30,9 @@ pub fn part2_z3(input: &PuzzleInput) -> String {
         let hvz = Int::from_i64(&ctx, h.velocity.z);
         let ht = Int::fresh_const(&ctx, "ht");
 
-        solver.assert(&(&sx + &vx * &ht - &hx - &hvx * &ht)._eq(&Int::from_i64(&ctx, 0)));
-        solver.assert(&(&sy + &vy * &ht - &hy - &hvy * &ht)._eq(&Int::from_i64(&ctx, 0)));
-        solver.assert(&(&sz + &vz * &ht - &hz - &hvz * &ht)._eq(&Int::from_i64(&ctx, 0)));
+        solver.assert(&(&sx + &vx * &ht)._eq(&(&hx + &hvx * &ht)));
+        solver.assert(&(&sy + &vy * &ht)._eq(&(&hy + &hvy * &ht)));
+        solver.assert(&(&sz + &vz * &ht)._eq(&(&hz + &hvz * &ht)));
     }
 
     assert_eq!(solver.check(), SatResult::Sat);
