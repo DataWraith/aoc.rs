@@ -1,6 +1,15 @@
 test:
      cargo nextest run --release -F winnow/debug
 
+p1:
+     cargo run --release -F p1
+
+p2:
+     cargo run --release -F p2
+
+run:
+     cargo run --release -F p1,p2
+
 generate day:
      cargo generate --vcs none -p template --name day-{{day}}
 
