@@ -1,4 +1,7 @@
 test:
+     cargo nextest run --release
+
+parser:
      cargo nextest run --release -F winnow/debug
 
 p1:
