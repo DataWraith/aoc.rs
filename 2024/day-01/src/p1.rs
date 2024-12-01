@@ -8,13 +8,11 @@ pub fn part1(input: &PuzzleInput) -> String {
     left.sort();
     right.sort();
 
-    let mut sum = 0;
-
-    for i in 0..left.len() {
-        sum += left[i].abs_diff(right[i]);
-    }
-
-    sum.to_string()
+    left.iter()
+        .zip(right.iter())
+        .map(|(l, r)| l.abs_diff(*r))
+        .sum::<u64>()
+        .to_string()
 }
 
 #[cfg(test)]
