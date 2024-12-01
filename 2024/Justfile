@@ -1,15 +1,20 @@
+[no-cd]
 test:
      cargo nextest run --release
 
+[no-cd]
 parser:
      cargo nextest run --release -F winnow/debug
 
+[no-cd]
 p1:
      cargo run --release -F p1
 
+[no-cd]
 p2:
      cargo run --release -F p2
 
+[no-cd]
 run:
      cargo run --release -F p1,p2
 
