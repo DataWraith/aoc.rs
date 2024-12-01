@@ -14,8 +14,10 @@ fn main() {
         .init();
 
     let puzzle_input = parser::parse(include_str!("../input.txt"));
+
     #[cfg(feature = "p1")]
     println!("Part 1: {}", p1::part1(&puzzle_input));
+
     #[cfg(feature = "p2")]
     println!("Part 2: {}", p2::part2(&puzzle_input));
 }
