@@ -18,7 +18,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    use utility_belt::prelude::indoc;
 
     const TEST_INPUT: &str = indoc! {"
         3   4
