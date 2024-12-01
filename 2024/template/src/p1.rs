@@ -2,7 +2,7 @@ use crate::structs::*;
 
 use utility_belt::prelude::*;
 
-#[tracing::instrument]
+#[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
     todo!();
 }
