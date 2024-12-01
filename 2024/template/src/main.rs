@@ -1,9 +1,9 @@
 use tracing_subscriber::fmt;
 use tracing_subscriber::fmt::format::FmtSpan;
 
-mod parser;
 mod p1;
 mod p2;
+mod parser;
 mod structs;
 
 fn main() {

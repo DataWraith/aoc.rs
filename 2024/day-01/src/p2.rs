@@ -4,21 +4,15 @@ use utility_belt::prelude::*;
 
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
-    let mut right_counts = HashMap::new();
+    let right_counts = input.right.iter().counts();
 
-    for right in &input.right {
-        *right_counts.entry(right).or_insert(0) += 1;
-    }
-
-    let mut sum = 0;
-
-    for left in &input.left {
-        if right_counts.contains_key(left) {
-            sum += right_counts[left] * left;
-        }
-    }
-
-    sum.to_string()
+    input
+        .left
+        .iter()
+        .map(|l| (*l as usize, *right_counts.get(l).unwrap_or(&0)))
+        .map(|(l, r)| l * r)
+        .sum::<usize>()
+        .to_string()
 }
 
 #[cfg(test)]
