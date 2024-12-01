@@ -1,8 +1,6 @@
 use crate::structs::*;
 
-use utility_belt::prelude::*;
-
-#[tracing::instrument]
+#[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
     let mut left = input.left.clone();
     let mut right = input.right.clone();
@@ -10,13 +8,13 @@ pub fn part1(input: &PuzzleInput) -> String {
     left.sort();
     right.sort();
 
-    let mut differences = Vec::new();
+    let mut sum = 0;
 
     for i in 0..left.len() {
-        differences.push(right[i].abs_diff(left[i]));
+        sum += left[i].abs_diff(right[i]);
     }
 
-    return differences.iter().sum::<u32>().to_string();
+    sum.to_string()
 }
 
 #[cfg(test)]
@@ -36,6 +34,6 @@ mod tests {
     #[test]
     fn test_part1() {
         let input = crate::parser::parse(TEST_INPUT);
-        assert_eq!(part1(&input), "TODO");
+        assert_eq!(part1(&input), "11");
     }
 }

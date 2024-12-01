@@ -1,9 +1,8 @@
-use winnow::{PResult, Parser, combinator::trace};
-
 use crate::structs::*;
 
 pub fn parse(input: &str) -> PuzzleInput {
     let lines: Vec<&str> = input.lines().collect();
+
     let mut left = Vec::new();
     let mut right = Vec::new();
 
