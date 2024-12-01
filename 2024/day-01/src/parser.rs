@@ -1,16 +1,12 @@
 use crate::structs::*;
 
+use utility_belt::prelude::*;
+
 pub fn parse(input: &str) -> PuzzleInput {
-    let lines: Vec<&str> = input.lines().collect();
+    let ints = parse_ints(input);
 
-    let mut left = Vec::new();
-    let mut right = Vec::new();
-
-    for line in lines {
-        let (l, r) = line.split_once("   ").unwrap();
-        left.push(l.parse::<u32>().unwrap());
-        right.push(r.parse::<u32>().unwrap());
-    }
+    let left = ints.iter().cloned().step_by(2).collect();
+    let right = ints.iter().cloned().skip(1).step_by(2).collect();
 
     PuzzleInput { left, right }
 }
