@@ -11,19 +11,8 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 pub fn is_safe(report: &Vec<i64>) -> bool {
-    (is_increasing(report) || is_decreasing(report)) && abs_diff_correct(report)
-}
-
-fn is_increasing(report: &Vec<i64>) -> bool {
-    report.windows(2).all(|w| w[0] < w[1])
-}
-
-fn is_decreasing(report: &Vec<i64>) -> bool {
-    report.windows(2).all(|w| w[0] > w[1])
-}
-
-fn abs_diff_correct(report: &Vec<i64>) -> bool {
-    report.windows(2).all(|w| w[0].abs_diff(w[1]) <= 3)
+    report.windows(2).all(|w| (1..=3).contains(&(w[0] - w[1])))
+        || report.windows(2).all(|w| (1..=3).contains(&(w[1] - w[0])))
 }
 
 #[cfg(test)]
