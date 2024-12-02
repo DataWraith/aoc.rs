@@ -5,11 +5,6 @@ pub fn part2(input: &PuzzleInput) -> String {
     let mut safe = 0;
 
     for report in input.reports.iter() {
-        if crate::p1::is_safe(report) {
-            safe += 1;
-            continue;
-        }
-
         for i in 0..report.len() {
             let mut cloned = report.clone();
             cloned.remove(i);
