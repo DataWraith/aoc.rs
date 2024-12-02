@@ -10,7 +10,7 @@ pub fn part1(input: &PuzzleInput) -> String {
         .to_string()
 }
 
-pub fn is_safe(report: &Vec<i64>) -> bool {
+pub fn is_safe(report: &[i64]) -> bool {
     report.windows(2).all(|w| (1..=3).contains(&(w[0] - w[1])))
         || report.windows(2).all(|w| (1..=3).contains(&(w[1] - w[0])))
 }
