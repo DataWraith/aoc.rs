@@ -23,9 +23,7 @@ fn is_decreasing(report: &Vec<i64>) -> bool {
 }
 
 fn abs_diff_correct(report: &Vec<i64>) -> bool {
-    report
-        .windows(2)
-        .all(|w| w[0].abs_diff(w[1]) >= 1 && w[0].abs_diff(w[1]) <= 3)
+    report.windows(2).all(|w| w[0].abs_diff(w[1]) <= 3)
 }
 
 #[cfg(test)]
