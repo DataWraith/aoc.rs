@@ -1,7 +1,5 @@
 use crate::structs::*;
 
-use utility_belt::prelude::*;
-
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
     let mut safe = 0;
@@ -9,14 +7,16 @@ pub fn part2(input: &PuzzleInput) -> String {
     for report in input.reports.iter() {
         if crate::p1::is_safe(report) {
             safe += 1;
-        } else {
-            for i in 0..report.len() {
-                let mut cloned = report.clone();
-                cloned.remove(i);
-                if crate::p1::is_safe(&cloned) {
-                    safe += 1;
-                    break;
-                }
+            continue;
+        }
+
+        for i in 0..report.len() {
+            let mut cloned = report.clone();
+            cloned.remove(i);
+
+            if crate::p1::is_safe(&cloned) {
+                safe += 1;
+                break;
             }
         }
     }

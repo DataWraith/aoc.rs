@@ -29,12 +29,12 @@ mod tests {
     #[test]
     fn test_part1() {
         let puzzle_input = parser::parse(include_str!("../input.txt"));
-        assert_eq!(p1::part1(&puzzle_input), "TODO");
+        assert_eq!(p1::part1(&puzzle_input), "321");
     }
 
     #[test]
     fn test_part2() {
         let puzzle_input = parser::parse(include_str!("../input.txt"));
-        assert_eq!(p2::part2(&puzzle_input), "TODO");
+        assert_eq!(p2::part2(&puzzle_input), "386");
     }
 }

@@ -1,10 +1,13 @@
 use crate::structs::*;
 
-use utility_belt::prelude::*;
-
 #[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
-    input.reports.iter().filter(|r| is_safe(r)).count().to_string()
+    input
+        .reports
+        .iter()
+        .filter(|r| is_safe(r))
+        .count()
+        .to_string()
 }
 
 pub fn is_safe(report: &Vec<i64>) -> bool {
@@ -20,9 +23,10 @@ fn is_decreasing(report: &Vec<i64>) -> bool {
 }
 
 fn abs_diff_correct(report: &Vec<i64>) -> bool {
-    report.windows(2).all(|w| (w[0] - w[1]).abs() >= 1 && (w[0] - w[1]).abs() <= 3)
+    report
+        .windows(2)
+        .all(|w| (w[0] - w[1]).abs() >= 1 && (w[0] - w[1]).abs() <= 3)
 }
-
 
 #[cfg(test)]
 mod tests {
