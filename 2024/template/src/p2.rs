@@ -13,12 +13,12 @@ mod tests {
     use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
-        TODO;
+        TODO
     "};
 
     #[test]
     fn test_part2() {
-        let input = crate::parser::parse(TEST_INPUT);
+        let input = crate::parser::part2(TEST_INPUT);
         assert_eq!(part2(&input), "TODO");
     }
 }

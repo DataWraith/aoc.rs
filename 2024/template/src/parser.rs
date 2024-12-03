@@ -6,8 +6,12 @@ fn winnow_parser<'s>(input: &mut &'s str) -> PResult<PuzzleInput> {
     Ok(PuzzleInput{})
 }
 
-pub fn parse(input: &str) -> PuzzleInput {
+pub fn part1(input: &str) -> PuzzleInput {
     winnow_parser.parse(input).unwrap()
+}
+
+pub fn part2(input: &str) -> PuzzleInput {
+    part1(input)
 }
 
 #[cfg(test)]

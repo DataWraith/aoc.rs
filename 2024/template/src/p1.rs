@@ -18,7 +18,7 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        let input = crate::parser::parse(TEST_INPUT);
+        let input = crate::parser::part1(TEST_INPUT);
         assert_eq!(part1(&input), "TODO");
     }
 }
