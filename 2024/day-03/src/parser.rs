@@ -21,8 +21,6 @@ pub fn parse2(input: &str) -> PuzzleInput {
         }
     }
 
-    dbg!(&muls);
-
     PuzzleInput { muls }
 }
 
@@ -32,8 +30,6 @@ pub fn parse(input: &str) -> PuzzleInput {
         .captures_iter(input)
         .map(|cap| cap[1].parse::<usize>().unwrap() * cap[2].parse::<usize>().unwrap())
         .collect::<Vec<_>>();
-
-    dbg!(&muls);
 
     PuzzleInput { muls }
 }

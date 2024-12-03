@@ -1,13 +1,9 @@
 use crate::structs::*;
 
-use utility_belt::prelude::*;
-use winnow::combinator::delimited;
-
 #[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
     input.muls.iter().sum::<usize>().to_string()
 }
-
 
 #[cfg(test)]
 mod tests {
