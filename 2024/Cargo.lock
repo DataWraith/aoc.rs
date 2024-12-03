@@ -105,6 +105,17 @@ dependencies = [
 name = "day-03"
 version = "0.1.0"
 dependencies = [
+ "regex",
+ "tracing",
+ "tracing-subscriber",
+ "utility-belt",
+ "winnow",
+]
+
+[[package]]
+name = "day-04"
+version = "0.1.0"
+dependencies = [
  "tracing",
  "tracing-subscriber",
  "utility-belt",
