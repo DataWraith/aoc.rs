@@ -37,11 +37,7 @@ pub fn count_xmas(row: &[char]) -> usize {
     let mut count = 0;
 
     for w in row.windows(4) {
-        if w[0] == 'X' && w[1] == 'M' && w[2] == 'A' && w[3] == 'S' {
-            count += 1;
-        }
-
-        if w[0] == 'S' && w[1] == 'A' && w[2] == 'M' && w[3] == 'X' {
+        if w == ['X', 'M', 'A', 'S'] || w == ['S', 'A', 'M', 'X'] {
             count += 1;
         }
     }
