@@ -16,19 +16,22 @@ pub fn part1(input: &PuzzleInput) -> String {
 
                     let a = *input
                         .grid
-                        .get(Coordinate::new(col as i32, row as i32))
+                        .get((col as i32, row as i32).into())
                         .unwrap_or(&'.');
+
                     let b = *input
                         .grid
-                        .get(Coordinate::new(col as i32 + 1 * dx, row as i32 + 1 * dy))
+                        .get((col as i32 + 1 * dx, row as i32 + 1 * dy).into())
                         .unwrap_or(&'.');
+
                     let c = *input
                         .grid
-                        .get(Coordinate::new(col as i32 + 2 * dx, row as i32 + 2 * dy))
+                        .get((col as i32 + 2 * dx, row as i32 + 2 * dy).into())
                         .unwrap_or(&'.');
+
                     let d = *input
                         .grid
-                        .get(Coordinate::new(col as i32 + 3 * dx, row as i32 + 3 * dy))
+                        .get((col as i32 + 3 * dx, row as i32 + 3 * dy).into())
                         .unwrap_or(&'.');
 
                     if a == 'X' && b == 'M' && c == 'A' && d == 'S' {
@@ -40,33 +43,6 @@ pub fn part1(input: &PuzzleInput) -> String {
     }
 
     count.to_string()
-}
-
-pub fn count_horizontal(input: &Grid2D<char>) -> usize {
-    let mut count = 0;
-
-    for row in 0..input.height {
-        for col in 0..input.width {
-            let a = *input
-                .get(Coordinate::new(col as i32, row as i32))
-                .unwrap_or(&'.');
-            let b = *input
-                .get(Coordinate::new(col as i32 + 1, row as i32))
-                .unwrap_or(&'.');
-            let c = *input
-                .get(Coordinate::new(col as i32 + 2, row as i32))
-                .unwrap_or(&'.');
-            let d = *input
-                .get(Coordinate::new(col as i32 + 3, row as i32))
-                .unwrap_or(&'.');
-
-            if a == 'X' && b == 'M' && c == 'A' && d == 'S' {
-                count += 2;
-            }
-        }
-    }
-
-    count
 }
 
 #[cfg(test)]
