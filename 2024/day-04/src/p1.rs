@@ -4,34 +4,49 @@ use crate::structs::*;
 pub fn part1(input: &PuzzleInput) -> String {
     let mut count = 0;
 
-    let xmas = ['X', 'M', 'A', 'S'];
+    let mut grid = input.grid.clone();
 
-    for col in 0..input.grid.width {
-        for row in 0..input.grid.height {
-            for dx in [-1i32, 0, 1] {
-                'outer: for dy in [-1i32, 0, 1] {
-                    if dx == 0 && dy == 0 {
-                        continue;
-                    }
+    // Rows forwards and backwards
+    for row in grid.row_iter() {
+        let row = row.to_owned().to_vec();
+        count += count_xmas(&row);
+    }
 
-                    for (i, &x) in xmas.iter().enumerate() {
-                        let c = input
-                            .grid
-                            .get((col + dx * i as i32, row + dy * i as i32).into())
-                            .unwrap_or(&'.');
+    // Columns forwards and backwards
+    for col in grid.col_iter() {
+        let col = col.to_owned().to_vec();
+        count += count_xmas(&col);
+    }
 
-                        if c != &x {
-                            continue 'outer;
-                        }
-                    }
+    // Diagonals top-right to bottom-left
+    for diag in grid.diag() {
+        count += count_xmas(&diag);
+    }
 
-                    count += 1;
-                }
-            }
-        }
+    grid.rotate_right();
+
+    // Diagonals top-left to bottom-right
+    for diag in grid.diag() {
+        count += count_xmas(&diag);
     }
 
     count.to_string()
+}
+
+pub fn count_xmas(row: &[char]) -> usize {
+    let mut count = 0;
+
+    for w in row.windows(4) {
+        if w[0] == 'X' && w[1] == 'M' && w[2] == 'A' && w[3] == 'S' {
+            count += 1;
+        }
+
+        if w[0] == 'S' && w[1] == 'A' && w[2] == 'M' && w[3] == 'X' {
+            count += 1;
+        }
+    }
+
+    count
 }
 
 #[cfg(test)]

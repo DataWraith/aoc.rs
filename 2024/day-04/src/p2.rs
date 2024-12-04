@@ -1,4 +1,3 @@
-
 use crate::structs::*;
 
 #[tracing::instrument(skip(input))]
@@ -7,11 +6,11 @@ pub fn part2(input: &PuzzleInput) -> String {
 
     for col in 1..(input.grid.width - 1) {
         for row in 1..(input.grid.height - 1) {
-            let center = *input.grid.get((col, row).into()).unwrap();
-            let tl = *input.grid.get((col - 1, row - 1).into()).unwrap();
-            let tr = *input.grid.get((col + 1, row - 1).into()).unwrap();
-            let bl = *input.grid.get((col - 1, row + 1).into()).unwrap();
-            let br = *input.grid.get((col + 1, row + 1).into()).unwrap();
+            let center = input.grid[(col, row).into()];
+            let tl = input.grid[(col - 1, row - 1).into()];
+            let tr = input.grid[(col + 1, row - 1).into()];
+            let bl = input.grid[(col - 1, row + 1).into()];
+            let br = input.grid[(col + 1, row + 1).into()];
 
             if center == 'A' {
                 let x = (tl, tr, bl, br);
