@@ -19,14 +19,14 @@ pub fn part1(input: &PuzzleInput) -> String {
     }
 
     // Diagonals top-right to bottom-left
-    for diag in grid.diag() {
+    for diag in grid.diagonals() {
         count += count_xmas(&diag);
     }
 
     grid.rotate_right();
 
     // Diagonals top-left to bottom-right
-    for diag in grid.diag() {
+    for diag in grid.diagonals() {
         count += count_xmas(&diag);
     }
 
