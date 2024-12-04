@@ -1,45 +1,25 @@
-use crate::structs::*;
 
-use utility_belt::prelude::*;
+use crate::structs::*;
 
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
     let mut count = 0;
 
-    for col in 0..input.grid.width {
-        for row in 0..input.grid.height {
-            let center = *input
-                .grid
-                .get((col as i32, row as i32).into())
-                .unwrap_or(&'.');
-
-            let tl = *input
-                .grid
-                .get((col as i32 - 1, row as i32 - 1).into())
-                .unwrap_or(&'.');
-
-            let tr = *input
-                .grid
-                .get((col as i32 + 1, row as i32 - 1).into())
-                .unwrap_or(&'.');
-
-            let bl = *input
-                .grid
-                .get((col as i32 - 1, row as i32 + 1).into())
-                .unwrap_or(&'.');
-
-            let br = *input
-                .grid
-                .get((col as i32 + 1, row as i32 + 1).into())
-                .unwrap_or(&'.');
+    for col in 1..(input.grid.width - 1) {
+        for row in 1..(input.grid.height - 1) {
+            let center = *input.grid.get((col, row).into()).unwrap();
+            let tl = *input.grid.get((col - 1, row - 1).into()).unwrap();
+            let tr = *input.grid.get((col + 1, row - 1).into()).unwrap();
+            let bl = *input.grid.get((col - 1, row + 1).into()).unwrap();
+            let br = *input.grid.get((col + 1, row + 1).into()).unwrap();
 
             if center == 'A' {
-                let x = vec![tl, tr, bl, br];
+                let x = (tl, tr, bl, br);
 
-                if x == vec!['M', 'S', 'M', 'S']
-                    || x == vec!['S', 'M', 'S', 'M']
-                    || x == vec!['M', 'M', 'S', 'S']
-                    || x == vec!['S', 'S', 'M', 'M']
+                if x == ('M', 'S', 'M', 'S')
+                    || x == ('S', 'M', 'S', 'M')
+                    || x == ('M', 'M', 'S', 'S')
+                    || x == ('S', 'S', 'M', 'M')
                 {
                     count += 1;
                 }
@@ -53,9 +33,8 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
-    const TEST_INPUT: &str = indoc! {"
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
         MMMSXXMASM
         MSAMXMSMSA
         AMXSXMAAMM

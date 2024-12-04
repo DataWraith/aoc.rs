@@ -1,42 +1,31 @@
 use crate::structs::*;
 
-use utility_belt::prelude::*;
-
 #[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
     let mut count = 0;
 
+    let xmas = ['X', 'M', 'A', 'S'];
+
     for col in 0..input.grid.width {
         for row in 0..input.grid.height {
-            for dx in [-1, 0, 1] {
-                for dy in [-1, 0, 1] {
+            for dx in [-1i32, 0, 1] {
+                'outer: for dy in [-1i32, 0, 1] {
                     if dx == 0 && dy == 0 {
                         continue;
                     }
 
-                    let a = *input
-                        .grid
-                        .get((col as i32, row as i32).into())
-                        .unwrap_or(&'.');
+                    for (i, &x) in xmas.iter().enumerate() {
+                        let c = input
+                            .grid
+                            .get((col + dx * i as i32, row + dy * i as i32).into())
+                            .unwrap_or(&'.');
 
-                    let b = *input
-                        .grid
-                        .get((col as i32 + 1 * dx, row as i32 + 1 * dy).into())
-                        .unwrap_or(&'.');
-
-                    let c = *input
-                        .grid
-                        .get((col as i32 + 2 * dx, row as i32 + 2 * dy).into())
-                        .unwrap_or(&'.');
-
-                    let d = *input
-                        .grid
-                        .get((col as i32 + 3 * dx, row as i32 + 3 * dy).into())
-                        .unwrap_or(&'.');
-
-                    if a == 'X' && b == 'M' && c == 'A' && d == 'S' {
-                        count += 1;
+                        if c != &x {
+                            continue 'outer;
+                        }
                     }
+
+                    count += 1;
                 }
             }
         }
@@ -48,9 +37,8 @@ pub fn part1(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
-    const TEST_INPUT: &str = indoc! {"
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
         MMMSXXMASM
         MSAMXMSMSA
         AMXSXMAAMM
