@@ -1,112 +1,74 @@
-use crate::structs::*;
+use crate::{p1::check, structs::*};
 
 use utility_belt::prelude::*;
 
+#[derive(Debug, Clone)]
+struct SearchState {
+    chosen: Vec<u32>,
+    remaining: Vec<u32>,
+}
+
 pub fn part2(input: &PuzzleInput) -> String {
     let mut dependencies = HashMap::new();
-    let mut reverse_dependencies = HashMap::new();
     let mut sum = 0;
 
     for (p1, p2) in input.rules.iter() {
         dependencies.entry(*p2).or_insert_with(Vec::new).push(*p1);
-        reverse_dependencies
-            .entry(*p1)
-            .or_insert_with(Vec::new)
-            .push(*p2);
     }
 
-    'outer: for pages in input.pages.iter() {
-        let mut result = Vec::new();
-        let mut fail = false;
+    for (i, pages) in input.pages.iter().enumerate() {
+        if check(pages, &dependencies) {
+            continue;
+        };
 
-        for page in pages.iter() {
-            for previous in result.iter() {
-                if dependencies
-                    .get(previous)
-                    .unwrap_or(&vec![])
-                    .contains(&page)
-                {
-                    fail = true;
+        let search = SearchState {
+            chosen: vec![],
+            remaining: pages.clone(),
+        };
+
+        let mut successors = |n: &SearchState| {
+            let mut succ = vec![];
+
+            'outer: for page in n.remaining.iter() {
+                for previous in n.chosen.iter() {
+                    if dependencies
+                        .get(previous)
+                        .unwrap_or(&vec![])
+                        .contains(&page)
+                    {
+                        continue 'outer;
+                    }
                 }
+
+                let mut cloned = n.chosen.clone();
+                cloned.push(*page);
+
+                succ.push(SearchState {
+                    chosen: cloned,
+                    remaining: n
+                        .remaining
+                        .iter()
+                        .cloned()
+                        .filter(|p| p != page)
+                        .collect_vec(),
+                });
             }
 
-            result.push(*page);
+            succ
+        };
+
+        let mut dfs = BrFS::new(vec![search]);
+        let mut visited = Vec::new();
+
+        while let Some(n) = dfs.next(&mut successors) {
+            visited.push(n);
         }
 
-        if !fail && result.len() == pages.len() {
-            continue 'outer;
-        }
+        let chosen = visited.last().unwrap().chosen.clone();
 
-        let start = &pages[0];
-        for start in pages.iter() {
-            let mut seen = vec![];
-            seen.push(*start);
-
-            let mut successors = |n: &u32| {
-                if seen.len() == pages.len() {
-                    return vec![];
-                }
-
-                let mut s = vec![];
-
-                'outer: for page in pages.iter() {
-                    if seen.contains(page) {
-                        continue;
-                    }
-
-                    for previous in seen.iter() {
-                        if dependencies
-                            .get(previous)
-                            .unwrap_or(&vec![])
-                            .contains(&page)
-                        {
-                            continue 'outer;
-                        }
-                    }
-
-                    s.push(*page);
-                }
-
-                seen.extend(s.iter());
-
-                //dbg!(&seen);
-
-                //if let Some(deps) = dependencies.get(&n) {
-                //for dep in deps.iter() {
-                //if !seen.contains(dep) && pages.contains(dep) {
-                //s.push(*dep);
-                //}
-                //}
-                //}
-
-                //for previous in seen.iter() {
-                //if !dependencies.get(previous).unwrap_or(&vec![]).contains(&n) {
-                //s = s.into_iter().filter(|p| *p != *n).collect_vec();
-                //}
-                //}
-
-                //for successor in s.iter() {
-                //seen.insert(*successor);
-                //}
-
-                s
-            };
-
-            let mut dfs = BrFS::new(vec![*start]);
-            let mut visited = Vec::new();
-
-            while let Some(n) = dfs.next(&mut successors) {
-                if visited.len() == pages.len() {
-                    break;
-                }
-
-                visited.push(n);
-            }
-
-            if visited.len() == pages.len() {
-                sum += visited[visited.len() / 2];
-                break;
-            }
+        if chosen.len() == pages.len() {
+            dbg!(i, input.pages.len(), &chosen);
+            sum += chosen[chosen.len() / 2];
         }
     }
 

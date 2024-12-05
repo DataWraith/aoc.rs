@@ -13,7 +13,6 @@ fn main() {
         .with_level(false)
         .init();
 
-
     #[cfg(feature = "p1")]
     {
         let puzzle_input = parser::part1(include_str!("../input.txt"));
@@ -34,7 +33,7 @@ mod tests {
     #[test]
     fn test_part1() {
         let puzzle_input = parser::part1(include_str!("../input.txt"));
-        assert_eq!(p1::part1(&puzzle_input), "TODO");
+        assert_eq!(p1::part1(&puzzle_input), "5509");
     }
 
     #[test]

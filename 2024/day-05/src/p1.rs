@@ -95,29 +95,37 @@ pub fn part1(input: &PuzzleInput) -> String {
         dependencies.entry(*p2).or_insert_with(Vec::new).push(*p1);
     }
 
-    'outer: for pages in input.pages.iter() {
-        let mut result = Vec::new();
-
-        for page in pages.iter() {
-            for previous in result.iter() {
-                if dependencies
-                    .get(previous)
-                    .unwrap_or(&vec![])
-                    .contains(&page)
-                {
-                    continue 'outer;
-                }
-            }
-
-            result.push(*page);
-        }
-
-        if result.len() == pages.len() {
+    for pages in input.pages.iter() {
+        if check(pages, &dependencies) {
             sum += pages[pages.len() / 2];
-        }
+        };
     }
 
     sum.to_string()
+}
+
+pub fn check(pages: &Vec<u32>, dependencies: &HashMap<u32, Vec<u32>>) -> bool {
+    let mut result = Vec::new();
+
+    for page in pages.iter() {
+        for previous in result.iter() {
+            if dependencies
+                .get(previous)
+                .unwrap_or(&vec![])
+                .contains(&page)
+            {
+                return false;
+            }
+        }
+
+        result.push(*page);
+    }
+
+    if result.len() == pages.len() {
+        return true;
+    }
+
+    false
 }
 
 #[cfg(test)]
