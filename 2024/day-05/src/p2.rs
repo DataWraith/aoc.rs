@@ -40,6 +40,12 @@ pub fn part2(input: &PuzzleInput) -> String {
                     }
                 }
 
+                for next in n.remaining.iter() {
+                    if dependencies.get(page).unwrap_or(&vec![]).contains(&next) {
+                        continue 'outer;
+                    }
+                }
+
                 let mut cloned = n.chosen.clone();
                 cloned.push(*page);
 
@@ -67,7 +73,6 @@ pub fn part2(input: &PuzzleInput) -> String {
         let chosen = visited.last().unwrap().chosen.clone();
 
         if chosen.len() == pages.len() {
-            dbg!(i, input.pages.len(), &chosen);
             sum += chosen[chosen.len() / 2];
         }
     }
