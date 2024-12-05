@@ -21,60 +21,16 @@ pub fn part2(input: &PuzzleInput) -> String {
             continue;
         };
 
-        let search = SearchState {
-            chosen: vec![],
-            remaining: pages.clone(),
-        };
-
-        let mut successors = |n: &SearchState| {
-            let mut succ = vec![];
-
-            'outer: for page in n.remaining.iter() {
-                for previous in n.chosen.iter() {
-                    if dependencies
-                        .get(previous)
-                        .unwrap_or(&vec![])
-                        .contains(&page)
-                    {
-                        continue 'outer;
-                    }
-                }
-
-                for next in n.remaining.iter() {
-                    if dependencies.get(page).unwrap_or(&vec![]).contains(&next) {
-                        continue 'outer;
-                    }
-                }
-
-                let mut cloned = n.chosen.clone();
-                cloned.push(*page);
-
-                succ.push(SearchState {
-                    chosen: cloned,
-                    remaining: n
-                        .remaining
-                        .iter()
-                        .cloned()
-                        .filter(|p| p != page)
-                        .collect_vec(),
-                });
+        let mut chosen = pages.clone();
+        chosen.sort_by(|a, b| {
+            if dependencies.get(b).unwrap_or(&vec![]).contains(&a) {
+                return std::cmp::Ordering::Less;
             }
 
-            succ
-        };
+            std::cmp::Ordering::Greater
+        });
 
-        let mut dfs = BrFS::new(vec![search]);
-        let mut visited = Vec::new();
-
-        while let Some(n) = dfs.next(&mut successors) {
-            visited.push(n);
-        }
-
-        let chosen = visited.last().unwrap().chosen.clone();
-
-        if chosen.len() == pages.len() {
-            sum += chosen[chosen.len() / 2];
-        }
+        sum += chosen[chosen.len() / 2];
     }
 
     sum.to_string()
