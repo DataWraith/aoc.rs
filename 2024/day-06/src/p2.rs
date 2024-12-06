@@ -27,7 +27,7 @@ pub fn part2(input: &PuzzleInput) -> String {
     let mut obstacles = HashSet::new();
 
     for (pos, dir) in visited.iter() {
-        let obstacle = *pos + dir.clone().into();
+        let obstacle = *pos + (*dir).into();
 
         if obstacle == coord {
             continue;
@@ -63,7 +63,7 @@ pub fn part2(input: &PuzzleInput) -> String {
             }
         }
 
-        if !g2.get(state.coordinate + state.direction.into()).is_none() {
+        if g2.get(state.coordinate + state.direction.into()).is_some() {
             loops_found.insert(obstacle);
         }
     }
@@ -74,7 +74,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    
 
     const TEST_INPUT: &str = indoc! {"
 ....#.....

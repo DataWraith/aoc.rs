@@ -23,7 +23,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     v.sort();
     v.dedup();
 
-    (v.len()).to_string()
+    v.len().to_string()
 }
 
 #[derive(Debug)]
@@ -66,7 +66,6 @@ pub fn guard_starting_position(grid: &Grid2D<char>) -> Coordinate {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
 ....#.....
