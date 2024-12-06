@@ -61,12 +61,9 @@ pub fn part2(input: &PuzzleInput) -> String {
             state = next_state;
 
             if !visited.insert((state.coordinate, state.direction)) {
+                loops_found.insert(obstacle);
                 break;
             }
-        }
-
-        if g2.get(state.coordinate + state.direction.into()).is_some() {
-            loops_found.insert(obstacle);
         }
     }
 
