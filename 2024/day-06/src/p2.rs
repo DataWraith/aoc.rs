@@ -12,17 +12,21 @@ pub fn part2(input: &PuzzleInput) -> String {
     let mut state = GuardState {
         coordinate: coord,
         direction: Direction::Up,
-        visited: HashSet::new(),
     };
 
+    let mut visited = Vec::new();
+
     while let Some(next_state) = state.next_state(&input.grid) {
+        visited.push((next_state.coordinate, next_state.direction));
         state = next_state;
     }
+
+    visited.push((state.coordinate, state.direction));
 
     let mut loops_found = HashSet::new();
     let mut obstacles = HashSet::new();
 
-    for (pos, dir) in state.visited.iter() {
+    for (pos, dir) in visited.iter() {
         let obstacle = *pos + dir.clone().into();
 
         if obstacle == coord {
@@ -37,31 +41,29 @@ pub fn part2(input: &PuzzleInput) -> String {
             continue;
         }
 
-        obstacles.insert((pos, obstacle, dir.clone()));
+        obstacles.insert(obstacle);
     }
 
-    for (pos, obstacle, dir) in obstacles.iter() {
-        if loops_found.contains(obstacle) {
-            continue;
-        }
-
+    for obstacle in obstacles.iter() {
         let mut g2 = input.grid.clone();
         g2.set(*obstacle, '#');
 
-        let start = *pos;
-        let start_dir = *dir;
-
         let mut state = GuardState {
-            coordinate: *start,
-            direction: start_dir,
-            visited: HashSet::new(),
+            coordinate: coord,
+            direction: Direction::Up,
         };
+
+        let mut visited = HashSet::new();
 
         while let Some(next_state) = state.next_state(&g2) {
             state = next_state;
+
+            if !visited.insert((state.coordinate, state.direction)) {
+                break;
+            }
         }
 
-        if g2.get(state.coordinate + state.direction.into()).is_some() {
+        if !g2.get(state.coordinate + state.direction.into()).is_none() {
             loops_found.insert(obstacle);
         }
     }
