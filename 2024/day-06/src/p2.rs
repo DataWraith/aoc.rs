@@ -15,13 +15,12 @@ pub fn part2(input: &PuzzleInput) -> String {
     };
 
     let mut visited = Vec::new();
+    visited.push((state.coordinate, state.direction));
 
     while let Some(next_state) = state.next_state(&input.grid) {
         visited.push((next_state.coordinate, next_state.direction));
         state = next_state;
     }
-
-    visited.push((state.coordinate, state.direction));
 
     let mut loops_found = HashSet::new();
     let mut obstacles = HashSet::new();
@@ -74,7 +73,6 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     const TEST_INPUT: &str = indoc! {"
 ....#.....
