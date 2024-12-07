@@ -29,7 +29,7 @@ fn solve_equation(current: i64, target: i64, remainder: &[i64]) -> bool {
         return false;
     }
 
-    let next = remainder.first().unwrap();
+    let next = remainder[0];
     let next_remainder = &remainder[1..];
 
     solve_equation(current + next, target, next_remainder)
@@ -41,16 +41,16 @@ mod tests {
     use super::*;
 
     const TEST_INPUT: &str = indoc! {"
-190: 10 19
-3267: 81 40 27
-83: 17 5
-156: 15 6
-7290: 6 8 6 15
-161011: 16 10 13
-192: 17 8 14
-21037: 9 7 18 13
-292: 11 6 16 20
-"};
+        190: 10 19
+        3267: 81 40 27
+        83: 17 5
+        156: 15 6
+        7290: 6 8 6 15
+        161011: 16 10 13
+        192: 17 8 14
+        21037: 9 7 18 13
+        292: 11 6 16 20
+    "};
 
     #[test]
     fn test_part1_example() {
