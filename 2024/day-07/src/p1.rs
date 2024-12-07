@@ -19,11 +19,11 @@ fn can_be_solved(target: i64, remainder: &[i64]) -> bool {
     let next = remainder.last().unwrap();
     let next_remainder = &remainder[..remainder.len() - 1];
 
-    if target > *next && can_be_solved(target - next, next_remainder) {
+    if target % next == 0 && can_be_solved(target / next, next_remainder) {
         return true;
     }
 
-    if target % next == 0 && can_be_solved(target / next, next_remainder) {
+    if target > *next && can_be_solved(target - next, next_remainder) {
         return true;
     }
 
