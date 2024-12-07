@@ -8,10 +8,7 @@ pub fn part1(input: &PuzzleInput) -> String {
         .equations
         .iter()
         .map(|(target, numbers)| {
-            let mut n: Vec<i64> = numbers.clone();
-            let first = n.remove(0);
-
-            let soln = solve_equation(first, *target, n);
+            let soln = solve_equation(0, *target, numbers);
 
             if soln {
                 *target
@@ -23,7 +20,7 @@ pub fn part1(input: &PuzzleInput) -> String {
         .to_string()
 }
 
-fn solve_equation(current: i64, target: i64, remainder: Vec<i64>) -> bool {
+fn solve_equation(current: i64, target: i64, remainder: &[i64]) -> bool {
     if current == target && remainder.is_empty() {
         return true;
     }
@@ -33,16 +30,15 @@ fn solve_equation(current: i64, target: i64, remainder: Vec<i64>) -> bool {
     }
 
     let next = remainder.first().unwrap();
-    let next_remainder = remainder[1..].to_vec();
+    let next_remainder = &remainder[1..];
 
-    solve_equation(current + next, target, next_remainder.clone())
+    solve_equation(current + next, target, next_remainder)
         || solve_equation(current * next, target, next_remainder)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     const TEST_INPUT: &str = indoc! {"
 190: 10 19
