@@ -9,8 +9,8 @@ pub fn part2(input: &PuzzleInput) -> String {
         .iter()
         .map(|(target, numbers)| {
             let mut n = numbers.clone();
-            let first = n.remove(0);
             n.reverse();
+            let first = n.pop().unwrap();
 
             let soln = solve_equation(first, *target, n);
 
