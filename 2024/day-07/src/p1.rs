@@ -8,14 +8,12 @@ pub fn part1(input: &PuzzleInput) -> String {
         .equations
         .iter()
         .map(|(target, numbers)| {
-            let mut n: Vec<i128> = numbers.iter().map(|n| *n as i128).collect();
+            let mut n: Vec<i64> = numbers.clone();
             let first = n.remove(0);
 
-            let soln = solve_equation(first, *target as i128, n);
+            let soln = solve_equation(first, *target, n);
 
-            dbg!(&soln);
-
-            if soln.is_some() {
+            if soln {
                 *target
             } else {
                 0
@@ -26,31 +24,20 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 #[memoize::memoize]
-fn solve_equation(current: i128, target: i128, remainder: Vec<i128>) -> Option<Vec<char>> {
+fn solve_equation(current: i64, target: i64, remainder: Vec<i64>) -> bool {
     if current == target && remainder.is_empty() {
-        return Some(vec![]);
+        return true;
     }
 
     if remainder.is_empty() {
-        return None;
+        return false;
     }
 
     let next = remainder.first().unwrap();
     let next_remainder = remainder[1..].to_vec();
 
-    if let Some(mut solution) = solve_equation(current + next, target, next_remainder.clone()) {
-        solution.push('+');
-        solution.reverse();
-        return Some(solution);
-    }
-
-    if let Some(mut solution) = solve_equation(current * next, target, next_remainder) {
-        solution.push('*');
-        solution.reverse();
-        return Some(solution);
-    }
-
-    None
+    solve_equation(current + next, target, next_remainder.clone())
+        || solve_equation(current * next, target, next_remainder)
 }
 
 #[cfg(test)]
