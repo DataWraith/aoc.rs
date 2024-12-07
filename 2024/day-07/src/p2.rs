@@ -29,7 +29,7 @@ fn solve_equation(current: i64, target: i64, remainder: Vec<i64>) -> bool {
         return true;
     }
 
-    if remainder.is_empty() {
+    if remainder.is_empty() || current > target {
         return false;
     }
 
