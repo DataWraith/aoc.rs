@@ -5,13 +5,8 @@ pub fn part2(input: &PuzzleInput) -> String {
     input
         .equations
         .iter()
-        .map(|(target, numbers)| {
-            if can_be_solved(*target, numbers) {
-                *target
-            } else {
-                0
-            }
-        })
+        .filter(|(target, numbers)| can_be_solved(*target, numbers))
+        .map(|(target, _)| *target)
         .sum::<i64>()
         .to_string()
 }
