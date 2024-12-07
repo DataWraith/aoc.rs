@@ -1,5 +1,5 @@
 use utility_belt::prelude::parse_ints;
-use winnow::{combinator::trace, PResult, Parser};
+use winnow::Parser;
 
 use crate::structs::*;
 

@@ -42,7 +42,7 @@ fn solve_equation(current: i64, target: i64, remainder: Vec<i64>) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    
 
     const TEST_INPUT: &str = indoc! {"
 190: 10 19
