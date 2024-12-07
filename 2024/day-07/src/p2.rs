@@ -10,6 +10,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         .map(|(target, numbers)| {
             let mut n = numbers.clone();
             let first = n.remove(0);
+            n.reverse();
 
             let soln = solve_equation(first, *target, n);
 
@@ -23,7 +24,6 @@ pub fn part2(input: &PuzzleInput) -> String {
         .to_string()
 }
 
-#[memoize::memoize]
 fn solve_equation(current: i64, target: i64, remainder: Vec<i64>) -> bool {
     if current == target && remainder.is_empty() {
         return true;
@@ -33,8 +33,8 @@ fn solve_equation(current: i64, target: i64, remainder: Vec<i64>) -> bool {
         return false;
     }
 
-    let next = remainder.first().unwrap();
-    let next_remainder = remainder[1..].to_vec();
+    let mut next_remainder = remainder.clone();
+    let next = next_remainder.pop().unwrap();
 
     if solve_equation(current + next, target, next_remainder.clone())
         || solve_equation(current * next, target, next_remainder.clone())

@@ -23,7 +23,6 @@ pub fn part1(input: &PuzzleInput) -> String {
         .to_string()
 }
 
-#[memoize::memoize]
 fn solve_equation(current: i64, target: i64, remainder: Vec<i64>) -> bool {
     if current == target && remainder.is_empty() {
         return true;
