@@ -1,16 +1,12 @@
 use crate::structs::*;
 
-use utility_belt::prelude::*;
-
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
     input
         .equations
         .iter()
         .map(|(target, numbers)| {
-            let soln = solve_equation(0, *target, numbers);
-
-            if soln {
+            if can_be_solved(*target, numbers) {
                 *target
             } else {
                 0
@@ -20,37 +16,38 @@ pub fn part2(input: &PuzzleInput) -> String {
         .to_string()
 }
 
-fn solve_equation(current: i64, target: i64, remainder: &[i64]) -> bool {
-    if current == target && remainder.is_empty() {
+fn can_be_solved(target: i64, remainder: &[i64]) -> bool {
+    if remainder.len() == 1 {
+        return remainder[0] == target;
+    }
+
+    let next = remainder.last().unwrap();
+    let next_remainder = &remainder[..remainder.len() - 1];
+
+    if target >= *next && can_be_solved(target - next, next_remainder) {
         return true;
     }
 
-    if remainder.is_empty() || current > target {
-        return false;
-    }
-
-    let next = remainder[0];
-    let next_remainder = &remainder[1..];
-
-    if solve_equation(current + next, target, next_remainder)
-        || solve_equation(current * next, target, next_remainder)
-    {
+    if target % next == 0 && can_be_solved(target / next, next_remainder) {
         return true;
     }
 
-    let left = current.to_string();
+    let left = target.to_string();
     let right = next.to_string();
-    let concated = left + &right;
-    let concated_num = concated.parse::<i64>().unwrap();
 
-    solve_equation(concated_num, target, next_remainder)
+    if left.len() > right.len() && left.ends_with(&right) {
+        let new_target = left[..(left.len() - right.len())].parse::<i64>().unwrap();
+        return can_be_solved(new_target, next_remainder);
+    }
+
+    false
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    const TEST_INPUT: &str = indoc! {"
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
         190: 10 19
         3267: 81 40 27
         83: 17 5
