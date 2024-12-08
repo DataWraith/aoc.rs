@@ -50,7 +50,7 @@ pub fn antenna_coordinates(grid: &Grid2D<char>, antenna: char) -> HashSet<Coordi
         .collect()
 }
 
-fn antipode(a: &Coordinate, b: &Coordinate) -> [Coordinate; 2] {
+pub fn antipode(a: &Coordinate, b: &Coordinate) -> [Coordinate; 2] {
     let dx = a.x - b.x;
     let dy = a.y - b.y;
 
