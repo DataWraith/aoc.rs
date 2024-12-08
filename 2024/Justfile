@@ -8,15 +8,17 @@ parser:
 
 [no-cd]
 p1:
-     cargo run --release -F p1
+     cargo run --release --bin part1
 
 [no-cd]
 p2:
-     cargo run --release -F p2
+     cargo run --release --bin part2
+
+run: p1 p2
 
 [no-cd]
-run:
-     cargo run --release -F p1,p2
+bench:
+     cargo bench
 
 generate day:
      cargo generate --vcs none -p template --name day-{{day}}

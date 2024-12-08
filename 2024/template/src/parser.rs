@@ -1,6 +1,9 @@
 use winnow::{PResult, Parser, combinator::trace};
 
-use crate::structs::*;
+#[derive(Clone, Debug)]
+pub struct PuzzleInput {
+    // Remember to make the fields pub
+}
 
 fn winnow_parser<'s>(input: &mut &'s str) -> PResult<PuzzleInput> {
     Ok(PuzzleInput{})
@@ -32,6 +35,7 @@ mod tests {
 
     #[test]
     fn test_parse() {
+        assert_ne!(TEST_INPUT, "TODO");
         assert!(trace("Puzzle", winnow_parser).parse_next(&mut TEST_INPUT.clone()).is_ok());
     }
 }

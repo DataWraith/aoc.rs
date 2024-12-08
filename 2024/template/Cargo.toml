@@ -11,6 +11,10 @@ utility-belt.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 
-[features]
-p1 = []
-p2 = []
+[dev-dependencies]
+divan.workspace = true
+
+[[bench]]
+name = "{{project-name}}"
+path = "benches/benchmarks.rs"
+harness = false
