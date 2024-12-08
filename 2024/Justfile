@@ -24,7 +24,7 @@ bench:
 
 [no-cd]
 bacon:
-     bacon nextest
+     bacon nextest -- --release
 
 generate day:
      cargo generate --vcs none -p template --name day-{{day}}
