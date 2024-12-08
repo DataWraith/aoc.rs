@@ -1,3 +1,5 @@
+default: bacon
+
 [no-cd]
 test:
      cargo nextest run --release
@@ -19,6 +21,10 @@ run: p1 p2
 [no-cd]
 bench:
      cargo bench
+
+[no-cd]
+bacon:
+     bacon test
 
 generate day:
      cargo generate --vcs none -p template --name day-{{day}}
