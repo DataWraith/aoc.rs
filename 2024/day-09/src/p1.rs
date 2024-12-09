@@ -2,89 +2,55 @@ use utility_belt::prelude::*;
 
 use crate::parser::*;
 
+pub fn make_disk(input: &PuzzleInput) -> Vec<u64> {
+    let mut disk: Vec<u64> = vec![];
+
+    for (i, &d) in input.disk.iter().enumerate() {
+        if i % 2 == 0 {
+            for _ in 0..d {
+                disk.push(i as u64 / 2);
+            }
+        } else {
+            for _ in 0..d {
+                disk.push(u64::MAX);
+            }
+        }
+    }
+
+    disk
+}
+
 #[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
-    let mut files = Vec::with_capacity(input.disk.len() * 10);
-    let mut free = Vec::with_capacity(input.disk.len() * 10);
-    input.disk.iter().step_by(2).for_each(|&d| {
-        files.push(d as usize);
-    });
+    let disk = make_disk(input);
 
-    input.disk.iter().skip(1).step_by(2).for_each(|&d| {
-        free.push(d as usize);
-    });
+    let mut fwd = 0;
+    let mut bwd = disk.len() - 1;
+    let mut defrag = Vec::with_capacity(disk.len());
 
-    let mut gaps = Vec::new();
+    while fwd <= bwd {
+        if disk[fwd] == u64::MAX {
+            defrag.push(disk[bwd]);
+            fwd += 1;
 
-    let mut free_idx = 0;
-    let mut file_idx = files.len() - 1;
+            loop {
+                bwd -= 1;
 
-    while free_idx < file_idx {
-        let mut cur_free = free[free_idx];
-        let mut cur_file = files[file_idx];
-
-        if cur_free == cur_file {
-            gaps.push(cur_file);
-            free_idx += 1;
-            file_idx -= 1;
-            continue;
-        }
-
-        if cur_free > cur_file {
-            gaps.push(cur_file);
-            free[free_idx] -= cur_file;
-            file_idx -= 1;
-            continue;
-        }
-
-        if cur_free < cur_file {
-            gaps.push(cur_free);
-            files[file_idx] -= cur_free;
-            free_idx += 1;
-            continue;
+                if disk[bwd] != u64::MAX {
+                    break;
+                }
+            }
+        } else {
+            defrag.push(disk[fwd]);
+            fwd += 1;
         }
     }
 
-    let mut files = Vec::new();
-    let mut free = Vec::new();
+    checksum(&defrag).to_string()
+}
 
-    input.disk.iter().step_by(2).for_each(|&d| {
-        for _ in 0..d {
-            files.push(d as usize);
-        }
-    });
-
-    dbg!(&files);
-
-    input.disk.iter().skip(1).step_by(2).for_each(|&d| {
-        for _ in 0..d {
-            free.push(d as usize);
-        }
-    });
-
-    let mut result = Vec::new();
-
-    loop {
-        if gaps.is_empty() {
-            break;
-        }
-
-        let g = gaps.remove(0);
-
-        for _ in 0..g {
-            result.push(files.remove(0));
-        }
-
-        let g = gaps.remove(0);
-
-        for _ in 0..g {
-            result.push(files.pop().unwrap());
-        }
-    }
-
-    dbg!(&result);
-
-    "".to_string()
+fn checksum(defrag: &[u64]) -> u64 {
+    defrag.iter().enumerate().map(|(i, &d)| d * i as u64).sum()
 }
 
 #[cfg(test)]
@@ -93,13 +59,13 @@ mod tests {
     use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
-    12345
+        2333133121414131402
     "};
 
     #[test]
     fn test_part1_example() {
         let input = crate::parser::part1(TEST_INPUT);
         assert_ne!(TEST_INPUT, "TODO");
-        assert_eq!(part1(&input), "022111222");
+        assert_eq!(part1(&input), "1928");
     }
 }
