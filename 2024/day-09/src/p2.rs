@@ -1,90 +1,75 @@
-use crate::{p1::make_disk, parser::*};
+use utility_belt::prelude::*;
+
+use crate::parser::*;
+
+pub type FileId = u64;
+
+#[derive(Debug, Clone, Copy)]
+pub struct Span {
+    pub start: u64,
+    pub size: u64,
+}
 
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
-    let disk = make_disk(input);
-    let mut contiguous = vec![];
-    let mut current_run = vec![];
+    let mut files: HashMap<FileId, Span> = HashMap::new();
+    let mut blanks: Vec<Span> = vec![];
 
-    for i in 0..(disk.len() - 1) {
-        current_run.push(disk[i]);
-        if disk[i] != disk[i + 1] {
-            contiguous.push(current_run);
-            current_run = vec![];
+    let mut fid = 0;
+    let mut cur = 0;
+
+    for (i, &d) in input.disk.iter().enumerate() {
+        if i % 2 == 0 {
+            files.insert(
+                fid,
+                Span {
+                    start: cur,
+                    size: d,
+                },
+            );
+            fid += 1;
+        } else {
+            blanks.push(Span {
+                start: cur,
+                size: d,
+            });
         }
+
+        cur += d;
     }
 
-    current_run.push(disk[disk.len() - 1]);
+    while fid > 0 {
+        fid -= 1;
 
-    if !current_run.is_empty() {
-        contiguous.push(current_run);
-    }
+        let cur_file = files.get_mut(&fid).unwrap();
 
-    let mut result = vec![];
-
-    loop {
-        if contiguous.is_empty() {
-            break;
-        }
-
-        let xs = contiguous.remove(0);
-
-        if xs.is_empty() {
-            continue;
-        }
-
-        if xs[0] != u64::MAX {
-            result.push(xs);
-            continue;
-        }
-
-        let mut found = false;
-
-        for idx in (0..contiguous.len()).rev() {
-            let ks = &contiguous[idx];
-
-            if ks.is_empty() {
-                continue;
-            }
-
-            if ks[0] == u64::MAX {
-                continue;
-            }
-
-            if ks.len() == xs.len() {
-                result.push(ks.clone());
-                contiguous[idx] = vec![u64::MAX; ks.len()];
-                found = true;
+        for (i, blank) in blanks.iter_mut().enumerate() {
+            if blank.start > cur_file.start {
                 break;
             }
 
-            if ks.len() < xs.len() {
-                let diff = xs.len() - ks.len();
-                result.push(ks.clone());
-                contiguous[idx] = vec![u64::MAX; ks.len()];
-                contiguous.insert(0, vec![u64::MAX; diff]);
-                found = true;
+            if blank.size == cur_file.size {
+                cur_file.start = blank.start;
+                blanks.remove(i);
+                break;
+            } else if blank.size > cur_file.size {
+                cur_file.start = blank.start;
+                blank.start += cur_file.size;
+                blank.size -= cur_file.size;
                 break;
             }
         }
+    }
 
-        if !found {
-            result.push(xs);
+    let mut checksum = 0;
+
+    for (fid, file) in files.iter() {
+        for pos in file.start..(file.start + file.size) {
+            checksum += pos * fid;
         }
     }
 
-    result
-        .iter()
-        .flatten()
-        .enumerate()
-        .fold(0, |acc, (i, x)| {
-            if *x != u64::MAX {
-                acc + i * *x as usize
-            } else {
-                acc
-            }
-        })
-        .to_string()
+    checksum.to_string()
 }
 
 #[cfg(test)]

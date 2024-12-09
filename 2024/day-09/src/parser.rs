@@ -6,6 +6,7 @@ pub struct PuzzleInput {
 pub fn part1(input: &str) -> PuzzleInput {
     PuzzleInput {
         disk: input
+            .trim()
             .chars()
             .filter_map(|c| c.to_digit(10).map(|d| d as u64))
             .collect(),
