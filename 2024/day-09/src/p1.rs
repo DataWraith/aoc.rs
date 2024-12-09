@@ -6,17 +6,12 @@ use crate::parser::*;
 pub fn part1(input: &PuzzleInput) -> String {
     let mut files = Vec::with_capacity(input.disk.len() * 10);
     let mut free = Vec::with_capacity(input.disk.len() * 10);
-
     input.disk.iter().step_by(2).for_each(|&d| {
-        for _ in 0..d {
         files.push(d as usize);
-        }
     });
 
     input.disk.iter().skip(1).step_by(2).for_each(|&d| {
-        for _ in 0..d {
-            free.push(d as usize);
-        }
+        free.push(d as usize);
     });
 
     let mut gaps = Vec::new();
@@ -50,12 +45,44 @@ pub fn part1(input: &PuzzleInput) -> String {
         }
     }
 
-    let mut r = files.iter().interleave(gaps.iter()).collect::<Vec<_>>();
-    r.pop();
+    let mut files = Vec::new();
+    let mut free = Vec::new();
 
-    for g in r.iter() {
-        dbg!(&g);
+    input.disk.iter().step_by(2).for_each(|&d| {
+        for _ in 0..d {
+            files.push(d as usize);
+        }
+    });
+
+    dbg!(&files);
+
+    input.disk.iter().skip(1).step_by(2).for_each(|&d| {
+        for _ in 0..d {
+            free.push(d as usize);
+        }
+    });
+
+    let mut result = Vec::new();
+
+    loop {
+        if gaps.is_empty() {
+            break;
+        }
+
+        let g = gaps.remove(0);
+
+        for _ in 0..g {
+            result.push(files.remove(0));
+        }
+
+        let g = gaps.remove(0);
+
+        for _ in 0..g {
+            result.push(files.pop().unwrap());
+        }
     }
+
+    dbg!(&result);
 
     "".to_string()
 }
