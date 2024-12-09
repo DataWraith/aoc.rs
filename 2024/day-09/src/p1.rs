@@ -8,13 +8,15 @@ pub fn part1(input: &PuzzleInput) -> String {
     let mut free = Vec::with_capacity(input.disk.len() * 10);
 
     input.disk.iter().step_by(2).for_each(|&d| {
+        for _ in 0..d {
         files.push(d as usize);
+        }
     });
 
-    dbg!(&files);
-
     input.disk.iter().skip(1).step_by(2).for_each(|&d| {
-        free.push(d as usize);
+        for _ in 0..d {
+            free.push(d as usize);
+        }
     });
 
     let mut gaps = Vec::new();
@@ -35,17 +37,24 @@ pub fn part1(input: &PuzzleInput) -> String {
 
         if cur_free > cur_file {
             gaps.push(cur_file);
-            cur_free -= cur_file;
+            free[free_idx] -= cur_file;
             file_idx -= 1;
             continue;
         }
 
         if cur_free < cur_file {
             gaps.push(cur_free);
-            cur_file -= cur_free;
+            files[file_idx] -= cur_free;
             free_idx += 1;
             continue;
         }
+    }
+
+    let mut r = files.iter().interleave(gaps.iter()).collect::<Vec<_>>();
+    r.pop();
+
+    for g in r.iter() {
+        dbg!(&g);
     }
 
     "".to_string()
@@ -57,7 +66,7 @@ mod tests {
     use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
-        2333133121414131402
+    12345
     "};
 
     #[test]
