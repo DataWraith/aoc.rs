@@ -12,7 +12,7 @@ pub struct Span {
 
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
-    let mut files: HashMap<FileId, Span> = HashMap::new();
+    let mut files: Vec<Span> = vec![];
     let mut blanks: Vec<Span> = vec![];
 
     let mut fid = 0;
@@ -20,14 +20,10 @@ pub fn part2(input: &PuzzleInput) -> String {
 
     for (i, &d) in input.disk.iter().enumerate() {
         if i % 2 == 0 {
-            files.insert(
-                fid,
-                Span {
-                    start: cur,
-                    size: d,
-                },
-            );
-            fid += 1;
+            files.push(Span {
+                start: cur,
+                size: d,
+            });
         } else {
             blanks.push(Span {
                 start: cur,
@@ -41,7 +37,7 @@ pub fn part2(input: &PuzzleInput) -> String {
     while fid > 0 {
         fid -= 1;
 
-        let cur_file = files.get_mut(&fid).unwrap();
+        let cur_file = files.get_mut(fid).unwrap();
 
         for (i, blank) in blanks.iter_mut().enumerate() {
             if blank.start > cur_file.start {
@@ -63,9 +59,9 @@ pub fn part2(input: &PuzzleInput) -> String {
 
     let mut checksum = 0;
 
-    for (fid, file) in files.iter() {
+    for (fid, file) in files.iter().enumerate() {
         for pos in file.start..(file.start + file.size) {
-            checksum += pos * fid;
+            checksum += pos * fid as u64;
         }
     }
 
