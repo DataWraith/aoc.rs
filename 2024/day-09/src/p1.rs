@@ -1,5 +1,3 @@
-use utility_belt::prelude::*;
-
 use crate::parser::*;
 
 pub fn make_disk(input: &PuzzleInput) -> Vec<u64> {
@@ -56,9 +54,8 @@ fn checksum(defrag: &[u64]) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
-    const TEST_INPUT: &str = indoc! {"
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
         2333133121414131402
     "};
 

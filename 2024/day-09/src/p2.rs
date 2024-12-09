@@ -1,10 +1,8 @@
-use utility_belt::prelude::*;
-
 use crate::{p1::make_disk, parser::*};
 
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
-    let mut disk = make_disk(input);
+    let disk = make_disk(input);
     let mut contiguous = vec![];
     let mut current_run = vec![];
 
@@ -92,9 +90,8 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
-    const TEST_INPUT: &str = indoc! {"
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
         2333133121414131402
     "};
 
