@@ -1,36 +1,32 @@
-use crate::{p1::check, structs::*};
+use crate::structs::*;
 
 use utility_belt::prelude::*;
 
-#[derive(Debug, Clone)]
-struct SearchState {
-    chosen: Vec<u32>,
-    remaining: Vec<u32>,
-}
-
 pub fn part2(input: &PuzzleInput) -> String {
-    let mut dependencies = HashMap::new();
     let mut sum = 0;
+
+    let mut dependencies = HashMap::new();
 
     for (p1, p2) in input.rules.iter() {
         dependencies.entry(*p2).or_insert_with(Vec::new).push(*p1);
     }
 
-    for (i, pages) in input.pages.iter().enumerate() {
-        if check(pages, &dependencies) {
+    let can_precede = |a: &u32, b: &u32| !dependencies.get(a).unwrap_or(&vec![]).contains(b);
+
+    for mut pages in input.pages.iter().cloned() {
+        if pages.is_sorted_by(can_precede) {
             continue;
         };
 
-        let mut chosen = pages.clone();
-        chosen.sort_by(|a, b| {
-            if dependencies.get(b).unwrap_or(&vec![]).contains(&a) {
-                return std::cmp::Ordering::Less;
+        pages.sort_by(|a, b| {
+            if can_precede(a, b) {
+                std::cmp::Ordering::Less
+            } else {
+                std::cmp::Ordering::Greater
             }
-
-            std::cmp::Ordering::Greater
         });
 
-        sum += chosen[chosen.len() / 2];
+        sum += pages[pages.len() / 2];
     }
 
     sum.to_string()
@@ -39,9 +35,8 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
-    const TEST_INPUT: &str = indoc! {"
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
         47|53
         97|13
         97|61

@@ -10,45 +10,22 @@ pub fn part1(input: &PuzzleInput) -> String {
         dependencies.entry(*p2).or_insert_with(Vec::new).push(*p1);
     }
 
+    let can_precede = |a: &u32, b: &u32| !dependencies.get(a).unwrap_or(&vec![]).contains(b);
+
     for pages in input.pages.iter() {
-        if check(pages, &dependencies) {
+        if pages.is_sorted_by(can_precede) {
             sum += pages[pages.len() / 2];
-        };
+        }
     }
 
     sum.to_string()
 }
 
-pub fn check(pages: &Vec<u32>, dependencies: &HashMap<u32, Vec<u32>>) -> bool {
-    let mut result = Vec::new();
-
-    for page in pages.iter() {
-        for previous in result.iter() {
-            if dependencies
-                .get(previous)
-                .unwrap_or(&vec![])
-                .contains(&page)
-            {
-                return false;
-            }
-        }
-
-        result.push(*page);
-    }
-
-    if result.len() == pages.len() {
-        return true;
-    }
-
-    false
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
-    const TEST_INPUT: &str = indoc! {"
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
         47|53
         97|13
         97|61

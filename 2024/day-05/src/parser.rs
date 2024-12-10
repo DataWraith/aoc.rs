@@ -15,7 +15,7 @@ pub fn part1(input: &str) -> PuzzleInput {
     }
 
     for line in pages.lines() {
-        let mut pages: Vec<u32> = line.split(',').map(|s| s.parse().unwrap()).collect();
+        let pages: Vec<u32> = line.split(',').map(|s| s.parse().unwrap()).collect();
         page_sets.push(pages);
     }
 
