@@ -22,10 +22,12 @@ pub fn part2(input: &PuzzleInput) -> String {
                 size: d,
             });
         } else {
-            blanks.push(Span {
-                start: cur,
-                size: d,
-            });
+            if d > 0 {
+                blanks.push(Span {
+                    start: cur,
+                    size: d,
+                });
+            }
         }
 
         cur += d;
