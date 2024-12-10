@@ -51,7 +51,7 @@ fn trail_head_score(input: &PuzzleInput, head: Coordinate) -> usize {
     score
 }
 
-fn trail_heads(input: &PuzzleInput) -> Vec<Coordinate> {
+pub fn trail_heads(input: &PuzzleInput) -> Vec<Coordinate> {
     input
         .map
         .iter()
@@ -60,14 +60,6 @@ fn trail_heads(input: &PuzzleInput) -> Vec<Coordinate> {
         .collect_vec()
 }
 
-fn destinations(input: &PuzzleInput) -> Vec<Coordinate> {
-    input
-        .map
-        .iter()
-        .filter(|(_, &c)| c == 9)
-        .map(|(p, _)| p)
-        .collect_vec()
-}
 
 #[cfg(test)]
 mod tests {
