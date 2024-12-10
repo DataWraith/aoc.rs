@@ -3,8 +3,8 @@ use crate::structs::*;
 use utility_belt::prelude::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let mut dependencies = HashMap::new();
     let mut sum = 0;
+    let mut dependencies = HashMap::new();
 
     for (p1, p2) in input.rules.iter() {
         dependencies.entry(*p2).or_insert_with(Vec::new).push(*p1);

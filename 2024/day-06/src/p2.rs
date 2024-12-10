@@ -46,8 +46,8 @@ pub fn part2(input: &PuzzleInput) -> String {
         obstacles.insert(obstacle);
     }
 
+    let mut g2 = input.grid.clone();
     for obstacle in obstacles.iter() {
-        let mut g2 = input.grid.clone();
         g2.set(*obstacle, '#');
 
         let mut state = GuardState {
@@ -65,6 +65,8 @@ pub fn part2(input: &PuzzleInput) -> String {
                 break;
             }
         }
+
+        g2.set(*obstacle, '.');
     }
 
     loops_found.len().to_string()

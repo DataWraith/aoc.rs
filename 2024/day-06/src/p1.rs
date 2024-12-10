@@ -1,29 +1,30 @@
-use crate::structs::*;
-
 use utility_belt::prelude::*;
+
+use crate::structs::*;
 
 #[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
     let coord = guard_starting_position(&input.grid);
-    let mut visited = Vec::new();
 
     let mut state = GuardState {
         coordinate: coord,
         direction: Direction::Up,
     };
 
-    visited.push((state.coordinate, state.direction));
+    let mut coords_visited = 1;
+    let mut visited = input.grid.map(|_x| false);
+    visited.set(state.coordinate, true);
 
     while let Some(next_state) = state.next_state(&input.grid) {
-        visited.push((next_state.coordinate, next_state.direction));
+        if visited.get(next_state.coordinate) == Some(&false) {
+            coords_visited += 1;
+            visited.set(next_state.coordinate, true);
+        }
+
         state = next_state;
     }
 
-    let mut v = visited.iter().map(|(c, _)| c).collect::<Vec<_>>();
-    v.sort();
-    v.dedup();
-
-    v.len().to_string()
+    coords_visited.to_string()
 }
 
 #[derive(Debug)]
@@ -58,8 +59,8 @@ impl GuardState {
 
 pub fn guard_starting_position(grid: &Grid2D<char>) -> Coordinate {
     grid.iter()
-        .find(|(c, x)| **x == '^')
-        .map(|(c, x)| c)
+        .find(|(_c, x)| **x == '^')
+        .map(|(c, _x)| c)
         .unwrap()
 }
 
