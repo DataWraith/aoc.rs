@@ -16,7 +16,7 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 fn trail_head_score(input: &PuzzleInput, head: Coordinate) -> usize {
-    let mut start = head;
+    let start = head;
     let mut seen = HashSet::new();
 
     let mut successors = move |p: &Coordinate| {

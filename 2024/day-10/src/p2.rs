@@ -15,40 +15,21 @@ pub fn part2(input: &PuzzleInput) -> String {
     scores.iter().sum::<usize>().to_string()
 }
 
-fn destinations(input: &PuzzleInput) -> Vec<Coordinate> {
-    input
-        .map
-        .iter()
-        .filter(|(_, &c)| c == 9)
-        .map(|(p, _)| p)
-        .collect_vec()
-}
-
 fn trail_destination_score(input: &PuzzleInput, head: Coordinate) -> usize {
-    let destinations = destinations(input);
+    let start = head;
 
-    let mut seen = HashSet::new();
-
-    let mut successors = move |p: &(Coordinate, Vec<Coordinate>)| {
-        let (current, trail) = p;
-
+    let mut successors = move |p: &Coordinate| {
         let mut result = Vec::new();
 
-        if *current == head {
+        if input.map.get(*p) == Some(&9) {
             return result;
         }
 
         for dir in Direction::cardinal() {
-            let neighbor = current.neighbor(dir);
-
+            let neighbor = p.neighbor(dir);
             if let Some(n) = input.map.get(neighbor) {
-                if *n + 1 == *input.map.get(*current).unwrap() {
-                    let mut trail = trail.clone();
-                    trail.push(neighbor);
-
-                    if seen.insert((neighbor, trail.clone())) {
-                        result.push((neighbor, trail));
-                    }
+                if *n == input.map.get(*p).unwrap() + 1 {
+                    result.push(neighbor);
                 }
             }
         }
@@ -57,14 +38,23 @@ fn trail_destination_score(input: &PuzzleInput, head: Coordinate) -> usize {
     };
 
     let mut score = 0;
-    let mut bfs = BrFS::new(destinations.iter().map(|d| (*d, vec![*d])).collect_vec());
-    while let Some((next, _d)) = bfs.next(&mut successors) {
-        if next == head {
+    let mut bfs = BrFS::new(vec![start]);
+    while let Some(next) = bfs.next(&mut successors) {
+        if input.map.get(next) == Some(&9) {
             score += 1;
         }
     }
 
     score
+}
+
+fn destinations(input: &PuzzleInput) -> Vec<Coordinate> {
+    input
+        .map
+        .iter()
+        .filter(|(_, &c)| c == 9)
+        .map(|(p, _)| p)
+        .collect_vec()
 }
 
 #[cfg(test)]
