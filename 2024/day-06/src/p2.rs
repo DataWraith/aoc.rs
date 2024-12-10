@@ -55,14 +55,22 @@ pub fn part2(input: &PuzzleInput) -> String {
             direction: Direction::Up,
         };
 
-        let mut visited = HashSet::new();
+        let mut visited = g2.map(|_| DirectionSet::empty());
+
+        let mut initial_dirset = DirectionSet::empty();
+        initial_dirset.insert(state.direction);
+        visited.set(state.coordinate, initial_dirset);
 
         while let Some(next_state) = state.next_state(&g2) {
             state = next_state;
 
-            if !visited.insert((state.coordinate, state.direction)) {
-                loops_found.insert(obstacle);
-                break;
+            if let Some(dirs) = visited.get_mut(state.coordinate) {
+                if dirs.contains(state.direction) {
+                    loops_found.insert(obstacle);
+                    break;
+                }
+
+                dirs.insert(state.direction);
             }
         }
 
