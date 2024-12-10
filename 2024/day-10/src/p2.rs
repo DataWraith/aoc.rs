@@ -48,30 +48,20 @@ fn trail_destination_score(input: &PuzzleInput, head: Coordinate) -> usize {
     score
 }
 
-fn destinations(input: &PuzzleInput) -> Vec<Coordinate> {
-    input
-        .map
-        .iter()
-        .filter(|(_, &c)| c == 9)
-        .map(|(p, _)| p)
-        .collect_vec()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
-    const TEST_INPUT: &str = indoc! {"
-89010123
-78121874
-87430965
-96549874
-45678903
-32019012
-01329801
-10456732
-"};
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
+        89010123
+        78121874
+        87430965
+        96549874
+        45678903
+        32019012
+        01329801
+        10456732
+    "};
 
     #[test]
     fn test_part2_example() {

@@ -7,8 +7,6 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_part1() {
         let puzzle_input = day_10::parser::part1(include_str!("../../input.txt"));

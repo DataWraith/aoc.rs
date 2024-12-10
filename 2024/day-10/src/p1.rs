@@ -29,10 +29,8 @@ fn trail_head_score(input: &PuzzleInput, head: Coordinate) -> usize {
         for dir in Direction::cardinal() {
             let neighbor = p.neighbor(dir);
             if let Some(n) = input.map.get(neighbor) {
-                if *n == input.map.get(*p).unwrap() + 1 {
-                    if seen.insert(neighbor) {
-                        result.push(neighbor);
-                    }
+                if *n == input.map.get(*p).unwrap() + 1 && seen.insert(neighbor) {
+                    result.push(neighbor);
                 }
             }
         }
@@ -60,22 +58,20 @@ pub fn trail_heads(input: &PuzzleInput) -> Vec<Coordinate> {
         .collect_vec()
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
-    const TEST_INPUT: &str = indoc! {"
-89010123
-78121874
-87430965
-96549874
-45678903
-32019012
-01329801
-10456732
-"};
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
+        89010123
+        78121874
+        87430965
+        96549874
+        45678903
+        32019012
+        01329801
+        10456732
+    "};
 
     #[test]
     fn test_part1_example() {
