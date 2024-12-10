@@ -36,7 +36,7 @@ pub fn part2(input: &PuzzleInput) -> String {
     for cur_file in files.iter_mut().rev() {
         for (i, blank) in blanks.iter_mut().enumerate() {
             if blank.start > cur_file.start {
-                blanks.remove(i);
+                blanks.swap_remove(i);
                 break;
             }
 
