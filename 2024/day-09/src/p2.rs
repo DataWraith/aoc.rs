@@ -1,5 +1,3 @@
-use utility_belt::prelude::*;
-
 use crate::parser::*;
 
 pub type FileId = u64;
@@ -15,7 +13,6 @@ pub fn part2(input: &PuzzleInput) -> String {
     let mut files: Vec<Span> = vec![];
     let mut blanks: Vec<Span> = vec![];
 
-    let mut fid = 0;
     let mut cur = 0;
 
     for (i, &d) in input.disk.iter().enumerate() {
@@ -34,13 +31,10 @@ pub fn part2(input: &PuzzleInput) -> String {
         cur += d;
     }
 
-    while fid > 0 {
-        fid -= 1;
-
-        let cur_file = files.get_mut(fid).unwrap();
-
+    for cur_file in files.iter_mut().rev() {
         for (i, blank) in blanks.iter_mut().enumerate() {
             if blank.start > cur_file.start {
+                blanks.remove(i);
                 break;
             }
 
@@ -58,7 +52,6 @@ pub fn part2(input: &PuzzleInput) -> String {
     }
 
     let mut checksum = 0;
-
     for (fid, file) in files.iter().enumerate() {
         for pos in file.start..(file.start + file.size) {
             checksum += pos * fid as u64;
