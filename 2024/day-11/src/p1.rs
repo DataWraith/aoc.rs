@@ -31,25 +31,21 @@ pub fn blink_many(input: &[u64], count: usize) -> usize {
 }
 
 pub fn blink(stone: &u64) -> Vec<u64> {
-    let mut result = Vec::new();
-
     if *stone == 0 {
-        result.push(1);
-        return result;
+        return vec![1];
     }
 
     if stone.ilog10() % 2 == 1 {
         let mut stone_str = stone.to_string();
         let right_str = stone_str.split_off(stone_str.len() / 2);
 
-        result.push(stone_str.parse::<u64>().unwrap());
-        result.push(right_str.parse::<u64>().unwrap());
-        return result;
+        return vec![
+            stone_str.parse::<u64>().unwrap(),
+            right_str.parse::<u64>().unwrap(),
+        ];
     }
 
-    result.push(*stone * 2024);
-
-    result
+    vec![*stone * 2024]
 }
 
 #[cfg(test)]
