@@ -1,51 +1,41 @@
-use utility_belt::prelude::*;
-
-use crate::{p1::trail_heads, parser::*};
+use crate::parser::*;
 
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
-    let heads = trail_heads(input);
-    let mut scores = Vec::new();
+    let mut ratings = input
+        .map
+        .map(|&square| if square == 9 { 1 } else { 0usize });
 
-    for head in heads {
-        let score = trail_destination_score(input, head);
-        scores.push(score);
+    let mut terrain = vec![Vec::new(); 9];
+
+    for (c, &square) in input.map.iter() {
+        if square != 9 {
+            terrain[square as usize].push(c);
+        }
     }
 
-    scores.iter().sum::<usize>().to_string()
-}
+    for height in (0..9).rev() {
+        for c in terrain[height].iter() {
+            let mut sum = 0;
 
-fn trail_destination_score(input: &PuzzleInput, head: Coordinate) -> usize {
-    let start = head;
-
-    let mut successors = move |p: &Coordinate| {
-        let mut result = Vec::new();
-
-        if input.map.get(*p) == Some(&9) {
-            return result;
-        }
-
-        for dir in Direction::cardinal() {
-            let neighbor = p.neighbor(dir);
-            if let Some(n) = input.map.get(neighbor) {
-                if *n == input.map.get(*p).unwrap() + 1 {
-                    result.push(neighbor);
+            for neighbor in c.neighbors() {
+                if let Some(&neighbor_height) = input.map.get(neighbor) {
+                    if neighbor_height == height as u8 + 1 {
+                        sum += ratings[neighbor];
+                    }
                 }
             }
-        }
 
-        result
-    };
-
-    let mut score = 0;
-    let mut bfs = BrFS::new(vec![start]);
-    while let Some(next) = bfs.next(&mut successors) {
-        if input.map.get(next) == Some(&9) {
-            score += 1;
+            ratings[*c] = sum;
         }
     }
 
-    score
+    let mut sum = 0;
+    for c in terrain[0].iter() {
+        sum += ratings[*c];
+    }
+
+    sum.to_string()
 }
 
 #[cfg(test)]
