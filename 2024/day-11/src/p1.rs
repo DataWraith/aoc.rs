@@ -39,6 +39,7 @@ pub fn blink(stone: &String) -> Vec<String> {
     } else if stone.len() % 2 == 0 {
         let right = stone.split_off(stone.len() / 2);
         let right = right.trim_start_matches("0");
+
         result.push(stone.clone());
 
         if right.is_empty() {
