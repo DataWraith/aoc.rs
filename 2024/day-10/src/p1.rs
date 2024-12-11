@@ -21,10 +21,6 @@ fn trail_head_score(input: &PuzzleInput, head: Coordinate) -> usize {
     let mut successors = move |p: &Coordinate| {
         let mut result = Vec::new();
 
-        if input.map.get(*p) == Some(&9) {
-            return result;
-        }
-
         for neighbor in p.neighbors() {
             if let Some(n) = input.map.get(neighbor) {
                 if *n == input.map[*p] + 1 && !seen[neighbor] {
