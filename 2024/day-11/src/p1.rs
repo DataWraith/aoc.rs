@@ -8,21 +8,13 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 pub fn blink_many(input: &[u64], count: usize) -> usize {
-    let mut states = HashMap::new();
-
-    for stone in input.iter() {
-        states
-            .entry(*stone)
-            .and_modify(|c| *c += 1)
-            .or_insert(1usize);
-    }
+    let states = Counter::from(input.iter().cloned());
 
     (0..count)
         .fold(states, |states, _| {
             state_iteration(&states, |input, _| blink(input), vec![()])
         })
-        .values()
-        .sum::<usize>()
+        .count_sum()
 }
 
 pub fn blink(stone: &u64) -> Vec<u64> {
