@@ -1,4 +1,4 @@
-#![feature(linked_list_cursors)]
+#![feature(gen_blocks)]
 
 pub mod p1;
 pub mod p2;

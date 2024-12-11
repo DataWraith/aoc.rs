@@ -11,15 +11,16 @@ pub fn blink_many(input: &[u64], count: usize) -> usize {
     let states = Counter::from(input.iter().cloned());
 
     let counts = (0..count).fold(states, |states, _| {
-        state_iteration(&states, |input, _| blink(input), vec![()])
+        state_iteration(&states, |input, _| blink(*input), vec![()])
     });
 
     counts.count_sum()
 }
 
-pub fn blink(stone: &u64) -> Vec<u64> {
-    if *stone == 0 {
-        return vec![1];
+pub gen fn blink(stone: u64) -> u64 {
+    if stone == 0 {
+        yield 1;
+        return;
     }
 
     // If the number of digits is even, split the number into two halves
@@ -27,13 +28,12 @@ pub fn blink(stone: &u64) -> Vec<u64> {
         let mut stone_str = stone.to_string();
         let right_str = stone_str.split_off(stone_str.len() / 2);
 
-        return vec![
-            stone_str.parse::<u64>().unwrap(),
-            right_str.parse::<u64>().unwrap(),
-        ];
+        yield stone_str.parse::<u64>().unwrap();
+        yield right_str.parse::<u64>().unwrap();
+        return;
     }
 
-    vec![*stone * 2024]
+    yield stone * 2024;
 }
 
 #[cfg(test)]
