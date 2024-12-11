@@ -11,7 +11,7 @@ pub fn blink_many(input: &[u64], count: usize) -> usize {
     let states = Counter::from(input.iter().cloned());
 
     let counts = (0..count).fold(states, |states, _| {
-        state_iteration(&states, |input, _| blink(*input), vec![()])
+        state_iteration(&states, |input, _| blink(*input), ())
     });
 
     counts.count_sum()
