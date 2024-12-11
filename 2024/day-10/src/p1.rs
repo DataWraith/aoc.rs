@@ -16,8 +16,7 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 fn trail_head_score(input: &PuzzleInput, head: Coordinate) -> usize {
-    let start = head;
-    let mut seen = HashSet::new();
+    let mut seen = input.map.map(|_square| false);
 
     let mut successors = move |p: &Coordinate| {
         let mut result = Vec::new();
@@ -26,10 +25,10 @@ fn trail_head_score(input: &PuzzleInput, head: Coordinate) -> usize {
             return result;
         }
 
-        for dir in Direction::cardinal() {
-            let neighbor = p.neighbor(dir);
+        for neighbor in p.neighbors() {
             if let Some(n) = input.map.get(neighbor) {
-                if *n == input.map.get(*p).unwrap() + 1 && seen.insert(neighbor) {
+                if *n == input.map[*p] + 1 && !seen[neighbor] {
+                    seen[neighbor] = true;
                     result.push(neighbor);
                 }
             }
@@ -39,7 +38,7 @@ fn trail_head_score(input: &PuzzleInput, head: Coordinate) -> usize {
     };
 
     let mut score = 0;
-    let mut bfs = BrFS::new(vec![start]);
+    let mut bfs = BrFS::new(vec![head]);
     while let Some(next) = bfs.next(&mut successors) {
         if input.map.get(next) == Some(&9) {
             score += 1;
