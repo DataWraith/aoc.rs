@@ -23,13 +23,11 @@ pub gen fn blink(stone: u64) -> u64 {
         return;
     }
 
-    // If the number of digits is even, split the number into two halves
-    if stone.ilog10() % 2 == 1 {
-        let mut stone_str = stone.to_string();
-        let right_str = stone_str.split_off(stone_str.len() / 2);
+    let num_digits = stone.ilog10() + 1;
 
-        yield stone_str.parse::<u64>().unwrap();
-        yield right_str.parse::<u64>().unwrap();
+    if num_digits % 2 == 0 {
+        yield stone / 10u64.pow(num_digits / 2);
+        yield stone % 10u64.pow(num_digits / 2);
         return;
     }
 
