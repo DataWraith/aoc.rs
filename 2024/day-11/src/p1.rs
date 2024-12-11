@@ -10,11 +10,11 @@ pub fn part1(input: &PuzzleInput) -> String {
 pub fn blink_many(input: &[u64], count: usize) -> usize {
     let states = Counter::from(input.iter().cloned());
 
-    (0..count)
-        .fold(states, |states, _| {
-            state_iteration(&states, |input, _| blink(input), vec![()])
-        })
-        .count_sum()
+    let counts = (0..count).fold(states, |states, _| {
+        state_iteration(&states, |input, _| blink(input), vec![()])
+    });
+
+    counts.count_sum()
 }
 
 pub fn blink(stone: &u64) -> Vec<u64> {
