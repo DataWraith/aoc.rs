@@ -1,18 +1,16 @@
+use rayon::prelude::*;
+
 use utility_belt::prelude::*;
 
 use crate::parser::*;
 
 #[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
-    let heads = trail_heads(input);
-    let mut scores = Vec::new();
-
-    for head in heads {
-        let score = trail_head_score(input, head);
-        scores.push(score);
-    }
-
-    scores.iter().sum::<usize>().to_string()
+    trail_heads(input)
+        .par_iter()
+        .map(|head| trail_head_score(input, *head))
+        .sum::<usize>()
+        .to_string()
 }
 
 fn trail_head_score(input: &PuzzleInput, head: Coordinate) -> usize {
