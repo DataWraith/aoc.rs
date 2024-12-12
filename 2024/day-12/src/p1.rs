@@ -6,7 +6,7 @@ use crate::parser::*;
 pub fn part1(input: &PuzzleInput) -> String {
     let mut sum = 0;
 
-    for region in find_regions3(input).into_iter() {
+    for region in find_regions3(&input.garden).into_iter() {
         let mut border = HashMap::new();
 
         for coord in region.iter() {
@@ -17,30 +17,25 @@ pub fn part1(input: &PuzzleInput) -> String {
             }
         }
 
-        dbg!(input.garden[*region.iter().min().unwrap()]);
-        dbg!(&border.values().sum::<i32>());
-        dbg!(&border.len());
-        dbg!(&region.len());
-
         sum += border.values().sum::<i32>() * region.len() as i32;
     }
 
     sum.to_string()
 }
 
-pub fn find_regions3(input: &PuzzleInput) -> Vec<HashSet<Coordinate>> {
+pub fn find_regions3(input: &Grid2D<char>) -> Vec<HashSet<Coordinate>> {
     let mut union_find = UnionFind::default();
     let mut sets = HashMap::new();
     let mut result = vec![];
 
-    for (coord, &plant) in input.garden.iter() {
+    for (coord, &plant) in input.iter() {
         let set = union_find.make_set();
         sets.insert(coord, set);
     }
 
-    for (coord, &plant) in input.garden.iter() {
+    for (coord, &plant) in input.iter() {
         for neighbor in coord.neighbors() {
-            if let Some(neighbor_plant) = input.garden.get(neighbor) {
+            if let Some(neighbor_plant) = input.get(neighbor) {
                 if *neighbor_plant == plant {
                     let _ = union_find.union(sets[&coord], sets[&neighbor]);
                 }
