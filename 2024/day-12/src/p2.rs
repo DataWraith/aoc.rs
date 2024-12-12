@@ -1,25 +1,27 @@
 use utility_belt::prelude::*;
 
-use crate::{p1::find_regions3, parser::*};
+use crate::{p1::find_regions, parser::*};
 
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
     let mut sum = 0;
 
-    for region in find_regions3(&input.garden).into_iter() {
+    let input = input.garden.zoom(4);
+
+    for region in find_regions(&input).into_iter() {
         let mut union_find_horizontal = UnionFind::default();
         let mut union_find_vertical = UnionFind::default();
         let mut sets_horizontal = HashMap::new();
         let mut sets_vertical = HashMap::new();
 
-        let id = input.garden[*region.iter().next().unwrap()];
+        let id = input[*region.iter().next().unwrap()];
 
         let mut border = HashSet::new();
 
         for coord in region.iter() {
-            for neighbor in coord.neighbors() {
+            for neighbor in coord.moore_neighbors() {
                 if !region.contains(&neighbor) {
-                    border.insert(coord);
+                    border.insert(neighbor);
                 }
             }
         }
@@ -35,158 +37,56 @@ pub fn part2(input: &PuzzleInput) -> String {
             let right = coord.neighbor(Direction::Right);
 
             if border.contains(&right) {
-                let _ =
-                    union_find_horizontal.union(sets_horizontal[&coord], sets_horizontal[&right]);
+                union_find_horizontal
+                    .union(sets_horizontal[&coord], sets_horizontal[&right])
+                    .expect("Foo");
             }
 
             let down = coord.neighbor(Direction::Down);
 
             if border.contains(&down) {
-                let _ = union_find_vertical.union(sets_vertical[&coord], sets_vertical[&down]);
+                union_find_vertical
+                    .union(sets_vertical[&coord], sets_vertical[&down])
+                    .expect("Foo");
             }
         }
 
-        let horizontal_roots = union_find_horizontal.roots();
-        let vertical_roots = union_find_vertical.roots();
+        let mut horizontal_count = 0;
+        let mut horizontal_counted = HashSet::new();
 
-        dbg!(&id, horizontal_roots.len(), vertical_roots.len(),);
-        sum += (horizontal_roots.len() + vertical_roots.len()) * region.len();
-    }
+        for (coord, set_h) in sets_horizontal.iter() {
+            let root = union_find_horizontal.find(*set_h).unwrap();
+            let size = union_find_horizontal.size_of_set(root).unwrap_or(0);
 
-    return sum.to_string();
-
-    let mut sum = 0;
-    let input = input.garden.zoom(4);
-
-    dbg!(&input);
-
-    for region in find_regions3(&input).into_iter() {
-        let mut border = HashSet::new();
-
-        for coord in region.iter() {
-            for neighbor in coord.moore_neighbors() {
-                if !region.contains(&neighbor) {
-                    border.insert(neighbor);
-                }
-            }
-        }
-
-        let mut coords = border.iter().cloned().collect_vec();
-        coords.sort_by_key(|c| (c.y, c.x));
-
-        // RRRRIICCFF
-        // RRRRIICCCF
-        // VVRRRCCFFF
-        // VVRCCCJFFF
-        // VVVVCJJCFE
-        // VVIVCCJJEE
-        // VVIIICJJEE
-        // MIIxxxJJEE
-        // MIIx_xxEEE
-        // MMMx__xEEE
-        //    xxxx
-        //dbg!(&id);
-
-        if region.len() == 1 {
-            sum += 4;
-            continue;
-        }
-
-        let mut region_sum = 0;
-        let mut subtract = 0;
-
-        let mut visited = HashSet::new();
-
-        loop {
-            if coords.is_empty() {
-                break;
-            }
-
-            let mut cur = coords.remove(0);
-            let mut cur_dir = Direction::Right;
-
-            if visited.contains(&cur) {
+            if !horizontal_counted.insert(root) {
                 continue;
             }
 
-            'outer: loop {
-                let next = cur.neighbor(cur_dir);
-
-                if !visited.insert(next) {
-                    break;
-                }
-
-                if border.contains(&next) {
-                    visited.insert(cur);
-                    cur = next;
-                    continue;
-                }
-
-                let left = cur_dir.turn_left_90();
-                let right = cur_dir.turn_right_90();
-
-                let left_coord = cur.neighbor(left);
-                let right_coord = cur.neighbor(right);
-
-                let left_inside = region.contains(&left_coord);
-                let left_border = border.contains(&left_coord);
-                let right_inside = region.contains(&right_coord);
-                let right_border = border.contains(&right_coord);
-
-                if left_border && !right_border {
-                    cur_dir = left;
-                    region_sum += 1;
-                    continue;
-                }
-
-                if right_border && !left_border {
-                    cur_dir = right;
-                    region_sum += 1;
-                    continue;
-                }
-
-                if left_border && right_border {
-                    if visited.contains(&left_coord) && visited.contains(&right_coord) {
-                        panic!("both");
-                    }
-
-                    if visited.contains(&left_coord) {
-                        cur_dir = right;
-                    } else {
-                        cur_dir = left;
-                    }
-
-                    continue;
-                }
-
-                panic!("neither");
-
-                /*
-                if region.contains(&next) {
-                    let left = cur_dir.turn_left_90();
-                    cur_dir = left;
-
-                    let left_next = cur.neighbor(left);
-
-                    if !region.contains(&left_next) {
-                        region_sum += 1;
-                        continue;
-                    }
-                }
-
-                let right = cur_dir.turn_right_90();
-                cur_dir = right;
-                region_sum += 1;
-                */
+            if size > 1 {
+                horizontal_count += 1;
             }
         }
 
-        //dbg!(&id, subtract, &region_sum - subtract, region.len() / 16);
-        sum += (region_sum - subtract) * region.len() as i32 / 16;
-        //dbg!(&sum);
+        let mut vertical_count = 0;
+        let mut vertical_counted = HashSet::new();
+
+        for (coord, set_v) in sets_vertical.iter() {
+            let root = union_find_vertical.find(*set_v).unwrap();
+            let size = union_find_vertical.size_of_set(root).unwrap_or(0);
+
+            if !vertical_counted.insert(root) {
+                continue;
+            }
+
+            if size > 1 {
+                vertical_count += 1;
+            }
+        }
+
+        sum += (horizontal_count + vertical_count) * region.len() / 16;
     }
 
-    sum.to_string()
+    return sum.to_string();
 }
 // -----1
 // EEEEE|

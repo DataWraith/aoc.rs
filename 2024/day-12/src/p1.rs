@@ -6,7 +6,7 @@ use crate::parser::*;
 pub fn part1(input: &PuzzleInput) -> String {
     let mut sum = 0;
 
-    for region in find_regions3(&input.garden).into_iter() {
+    for region in find_regions(&input.garden).into_iter() {
         let mut border = HashMap::new();
 
         for coord in region.iter() {
@@ -23,7 +23,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     sum.to_string()
 }
 
-pub fn find_regions3(input: &Grid2D<char>) -> Vec<HashSet<Coordinate>> {
+pub fn find_regions(input: &Grid2D<char>) -> Vec<HashSet<Coordinate>> {
     let mut union_find = UnionFind::default();
     let mut sets = HashMap::new();
     let mut result = vec![];
