@@ -28,7 +28,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     sum.to_string()
 }
 
-fn find_regions3(input: &PuzzleInput) -> Vec<HashSet<Coordinate>> {
+pub fn find_regions3(input: &PuzzleInput) -> Vec<HashSet<Coordinate>> {
     let mut union_find = UnionFind::default();
     let mut sets = HashMap::new();
     let mut result = vec![];
