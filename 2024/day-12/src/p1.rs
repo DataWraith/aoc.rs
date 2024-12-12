@@ -4,14 +4,34 @@ use crate::parser::*;
 
 #[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
-    find_regions3(input);
-    todo!("day_12::p1::part1");
-}
+    let mut sum = 0;
 
+    for region in find_regions3(input).into_iter() {
+        let mut border = HashMap::new();
+
+        for coord in region.iter() {
+            for neighbor in coord.neighbors() {
+                if !region.contains(&neighbor) {
+                    border.entry(coord).and_modify(|c| *c += 1).or_insert(1);
+                }
+            }
+        }
+
+        dbg!(input.garden[*region.iter().min().unwrap()]);
+        dbg!(&border.values().sum::<i32>());
+        dbg!(&border.len());
+        dbg!(&region.len());
+
+        sum += border.values().sum::<i32>() * region.len() as i32;
+    }
+
+    sum.to_string()
+}
 
 fn find_regions3(input: &PuzzleInput) -> Vec<HashSet<Coordinate>> {
     let mut union_find = UnionFind::default();
     let mut sets = HashMap::new();
+    let mut result = vec![];
 
     for (coord, &plant) in input.garden.iter() {
         let set = union_find.make_set();
@@ -33,51 +53,14 @@ fn find_regions3(input: &PuzzleInput) -> Vec<HashSet<Coordinate>> {
 
         for (coord, &set) in sets.iter() {
             if union_find.find(set) == Some(root) {
-                plot.insert(coord);
+                plot.insert(*coord);
             }
         }
 
-        let mut next_plot = HashSet::new();
-
-        for coord in plot.iter() {
-            next_plot.extend(coord.neighbors());
-
-            for neighbor in coord.neighbors() {
-                next_plot.insert(neighbor);
-            }
-        }
-
-        let mut reg_fence = Vec::new();
-
-        let mut cur = *next_plot.iter().min().unwrap();
-
-        'outer: loop {
-            reg_fence.push(cur);
-
-            for neighbor in cur.neighbors() {
-                if reg_fence.contains(&neighbor) {
-                    continue;
-                }
-
-                if next_plot.contains(&neighbor) {
-                    cur = neighbor;
-                    continue 'outer;
-                }
-            }
-
-            if reg_fence.len() == next_plot.len() {
-                break;
-            }
-        }
-
-        let vertices = reg_fence.into_iter().map(|c| (c.x, c.y)).collect_vec();
-
-        let area = polygon_area(&vertices) + (1 + vertices.len() as i32) / 2;
-
-        dbg!(&area);
+        result.push(plot);
     }
 
-    todo!()
+    result
 }
 
 /*
@@ -240,16 +223,17 @@ mod tests {
     use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
-AAAA
-BBCD
-BBCC
-EEEC
+OOOOO
+OXOXO
+OOOOO
+OXOXO
+OOOOO
 "};
 
     #[test]
     fn test_part1_example() {
         let input = crate::parser::part1(TEST_INPUT);
         assert_ne!(TEST_INPUT, "TODO");
-        assert_eq!(part1(&input), "140");
+        assert_eq!(part1(&input), "772");
     }
 }
