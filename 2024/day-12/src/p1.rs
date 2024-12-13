@@ -7,20 +7,26 @@ pub fn part1(input: &PuzzleInput) -> String {
     let mut sum = 0;
 
     for region in find_regions(&input.garden).into_iter() {
-        let mut border = HashMap::new();
+        let border = generate_border(&region);
 
-        for coord in region.iter() {
-            for neighbor in coord.neighbors() {
-                if !region.contains(&neighbor) {
-                    border.entry(coord).and_modify(|c| *c += 1).or_insert(1);
-                }
-            }
-        }
-
-        sum += border.values().sum::<i32>() * region.len() as i32;
+        sum += border.values().sum::<usize>() * region.len();
     }
 
     sum.to_string()
+}
+
+pub fn generate_border(region: &HashSet<Coordinate>) -> HashMap<Coordinate, usize> {
+    let mut border = HashMap::new();
+
+    for coord in region.iter() {
+        for neighbor in coord.neighbors() {
+            if !region.contains(&neighbor) {
+                border.entry(neighbor).and_modify(|c| *c += 1).or_insert(1);
+            }
+        }
+    }
+
+    border
 }
 
 pub fn find_regions(input: &Grid2D<char>) -> Vec<HashSet<Coordinate>> {
@@ -57,161 +63,6 @@ pub fn find_regions(input: &Grid2D<char>) -> Vec<HashSet<Coordinate>> {
 
     result
 }
-
-/*
-fn find_regions2(input: &PuzzleInput) -> Vec<HashSet<Coordinate>> {
-    let mut coordinates = HashMap::new();
-    let mut regions = vec![];
-
-    input.garden.iter().for_each(|(coord, &plant)| {
-        coordinates.entry(plant).or_insert(Vec::new()).push(coord);
-    });
-
-    for (plant, coords) in coordinates.iter_mut() {
-        let mut fence = HashSet::new();
-
-        for coord in coords.iter() {
-            for neighbor in coord.moore_neighbors() {
-                if input.garden.get(neighbor).is_none() {
-                    fence.insert(neighbor);
-                } else if input.garden.get(neighbor).unwrap() != plant {
-                    fence.insert(neighbor);
-                }
-            }
-        }
-
-        regions.push(fence);
-    }
-
-    for region in regions.iter() {
-        let mut reg_fence = Vec::new();
-
-        let mut cur = *region.iter().min().unwrap();
-
-        'outer: loop {
-            reg_fence.push(cur);
-
-            for neighbor in cur.neighbors() {
-                if reg_fence.contains(&neighbor) {
-                    continue;
-                }
-
-                if region.contains(&neighbor) {
-                    cur = neighbor;
-                    continue 'outer;
-                }
-            }
-
-            if reg_fence.len() == region.len() {
-                break;
-            }
-        }
-
-        let vertices = reg_fence.into_iter().map(|c| (c.x, c.y)).collect_vec();
-
-        dbg!(&vertices);
-
-        let area = polygon_area(&vertices) + vertices.len() as i32 / 2 + 1;
-
-        dbg!(&area);
-    }
-
-    regions
-}
-*/
-/*
-fn find_regions(
-    input: &PuzzleInput,
-    seed: Coordinate,
-    cols: Vec<Coordinate>,
-    rows: Vec<Coordinate>,
-) {
-    let mut coordinates = vec![];
-
-    let mut plant = input.garden[seed];
-
-    dbg!(&cols);
-
-    'outer: for (r, row) in rows.iter().enumerate() {
-        for (c, col) in cols.iter().enumerate() {
-            let r = r as i32;
-            let c = c as i32;
-
-            if let Some(x) = input.garden.get(Coordinate::new(c + 1, r)) {
-                if *x != plant {
-                    coordinates.push(Coordinate::new(c - 1, r));
-                    continue 'outer;
-                }
-            } else {
-                coordinates.push(Coordinate::new(c - 1, r));
-            }
-
-            if let Some(x) = input.garden.get(Coordinate::new(c, r + 1)) {
-                if *x != plant {
-                    coordinates.push(Coordinate::new(c, r - 1));
-                    break 'outer;
-                }
-            } else {
-                coordinates.push(Coordinate::new(c, r - 1));
-            }
-        }
-    }
-
-    coordinates = coordinates.into_iter().collect_vec();
-
-    dbg!(&coordinates);
-    dbg!(coordinates.len());
-}
-
-fn find_cols(input: &PuzzleInput) -> Vec<Coordinate> {
-    let mut col_boundaries = vec![];
-
-    for (r, row) in input.garden.row_iter().enumerate() {
-        col_boundaries.push((r as i32, -1));
-
-        let mut c = 0i32;
-        for w in row.windows(2) {
-            if w[0] != w[1] {
-                col_boundaries.push((r as i32, c));
-            }
-            c += 1;
-        }
-
-        col_boundaries.push((r as i32, c));
-    }
-
-    col_boundaries
-        .into_iter()
-        .filter(|(_, c)| *c >= 0)
-        .map(|(r, c)| Coordinate::new(c, r))
-        .collect()
-}
-
-fn find_rows(input: &PuzzleInput) -> Vec<Coordinate> {
-
-    let mut row_boundaries = vec![];
-
-    for (c, col) in input.garden.col_iter().enumerate() {
-        row_boundaries.push((-1i32, c as i32));
-
-        let mut r = 0i32;
-        for w in col.windows(2) {
-            if w[0] != w[1] {
-                row_boundaries.push((r + 1, c as i32));
-            }
-            r += 1;
-        }
-
-        row_boundaries.push((r as i32 + 1, c as i32));
-    }
-
-    row_boundaries
-        .into_iter()
-        .map(|(r, c)| Coordinate::new(c, r))
-        .collect()
-}
-
-*/
 #[cfg(test)]
 mod tests {
     use super::*;

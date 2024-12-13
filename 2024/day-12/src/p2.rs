@@ -1,42 +1,38 @@
 use utility_belt::prelude::*;
 
-use crate::{p1::find_regions, parser::*};
+use crate::{
+    p1::{find_regions, generate_border},
+    parser::*,
+};
 
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
     let mut sum = 0;
 
-    let input = input.garden.zoom(4);
+    let input = input.garden.zoom(3);
+    let zoom_divisor = 9;
 
     for region in find_regions(&input).into_iter() {
         let mut union_find_horizontal = UnionFind::default();
         let mut union_find_vertical = UnionFind::default();
+
         let mut sets_horizontal = HashMap::new();
         let mut sets_vertical = HashMap::new();
 
-        let id = input[*region.iter().next().unwrap()];
+        let mut border = generate_border(&region);
 
-        let mut border = HashSet::new();
-
-        for coord in region.iter() {
-            for neighbor in coord.moore_neighbors() {
-                if !region.contains(&neighbor) {
-                    border.insert(neighbor);
-                }
-            }
-        }
-
-        for coord in border.iter() {
+        for (coord, _count) in border.iter() {
             let set_h = union_find_horizontal.make_set();
             let set_v = union_find_vertical.make_set();
+
             sets_horizontal.insert(**coord, set_h);
             sets_vertical.insert(**coord, set_v);
         }
 
-        for coord in border.iter() {
+        for (coord, _count) in border.iter() {
             let right = coord.neighbor(Direction::Right);
 
-            if border.contains(&right) {
+            if border.contains_key(&right) {
                 union_find_horizontal
                     .union(sets_horizontal[&coord], sets_horizontal[&right])
                     .expect("Foo");
@@ -44,7 +40,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
             let down = coord.neighbor(Direction::Down);
 
-            if border.contains(&down) {
+            if border.contains_key(&down) {
                 union_find_vertical
                     .union(sets_vertical[&coord], sets_vertical[&down])
                     .expect("Foo");
@@ -83,17 +79,11 @@ pub fn part2(input: &PuzzleInput) -> String {
             }
         }
 
-        sum += (horizontal_count + vertical_count) * region.len() / 16;
+        sum += (horizontal_count + vertical_count) * region.len() / zoom_divisor;
     }
 
     return sum.to_string();
 }
-// -----1
-// EEEEE|
-// E----2
-// EEEEE
-// EXXXX
-// EEEEE
 
 #[cfg(test)]
 mod tests {
