@@ -13,7 +13,6 @@ fn main() {
         .with_level(false)
         .init();
 
-
     #[cfg(feature = "p1")]
     {
         let puzzle_input = parser::part1(include_str!("../input.txt"));

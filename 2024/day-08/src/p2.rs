@@ -66,7 +66,6 @@ pub fn antinodes(a: &Coordinate, b: &Coordinate, width: i32, height: i32) -> Vec
 mod tests {
     use super::*;
 
-
     const TEST_INPUT: &str = indoc! {"
         ............
         ........0...

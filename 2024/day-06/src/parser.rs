@@ -1,4 +1,3 @@
-
 use crate::structs::*;
 
 pub fn part1(input: &str) -> PuzzleInput {

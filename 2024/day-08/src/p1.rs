@@ -59,7 +59,6 @@ pub fn all_antinodes(w: i32, h: i32, coordinates: &HashSet<Coordinate>) -> HashS
 mod tests {
     use super::*;
 
-
     const TEST_INPUT: &str = indoc! {"
         ............
         ........0...
