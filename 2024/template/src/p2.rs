@@ -19,7 +19,7 @@ mod tests {
     #[test]
     fn test_part2_example() {
         let input = crate::parser::part2(TEST_INPUT);
-        assert_ne!(TEST_INPUT, "TODO");
+        assert_ne!(TEST_INPUT, "TODO\n");
         assert_eq!(part2(&input), "TODO");
     }
 }
