@@ -1,5 +1,5 @@
 use glam::U64Vec2;
-use utility_belt::prelude::Itertools;
+use utility_belt::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
@@ -21,11 +21,7 @@ pub fn part1(input: &str) -> PuzzleInput {
     let games = input.split("\n\n");
 
     for g in games.into_iter() {
-        let coordinates = g
-            .split(|c: char| !c.is_ascii_digit())
-            .filter(|w| !w.is_empty())
-            .map(|w| w.parse::<u64>().unwrap())
-            .collect_vec();
+        let coordinates = parse_uints(g);
 
         let offset_a = U64Vec2::new(coordinates[0], coordinates[1]);
         let offset_b = U64Vec2::new(coordinates[2], coordinates[3]);

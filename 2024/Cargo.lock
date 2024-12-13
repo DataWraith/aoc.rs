@@ -1115,8 +1115,8 @@ checksum = "adb9e6ca4f869e1180728b7950e35922a7fc6397f7b641499e8f3ef06e50dc83"
 
 [[package]]
 name = "utility-belt"
-version = "0.2024.0"
-source = "git+https://github.com/DataWraith/utility-belt.git?rev=42383c58d5dc#42383c58d5dc983c21062c855774049b384c2ab6"
+version = "0.2024.1"
+source = "git+https://github.com/DataWraith/utility-belt.git?rev=99c6a733e1a5#99c6a733e1a50994297894e67dcdc9515b48018e"
 dependencies = [
  "ahash",
  "derive_more",
@@ -1132,7 +1132,6 @@ dependencies = [
  "rangetools",
  "rstest",
  "tinyvec",
- "winnow",
 ]
 
 [[package]]
