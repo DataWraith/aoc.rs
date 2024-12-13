@@ -1,8 +1,6 @@
+use ndarray::Array1;
+use num::{BigInt, BigRational, Zero};
 use utility_belt::prelude::*;
-use z3::{
-    ast::{Ast, Int},
-    SatResult, Solver,
-};
 
 use crate::parser::*;
 
@@ -17,65 +15,35 @@ pub fn part1(input: &PuzzleInput) -> String {
     result
         .iter()
         .map(|(a, b)| 3 * a + b)
-        .sum::<usize>()
+        .sum::<BigInt>()
         .to_string()
 }
 
-fn calculate_num_button_presses(claw_game: ClawGame, part2: bool) -> Option<(usize, usize)> {
-    let mut threshold = u64::MAX;
-    let mut previous = None;
+fn calculate_num_button_presses(claw_game: ClawGame, part2: bool) -> Option<(BigInt, BigInt)> {
+    let mut matrix = Array2::zeros((2, 3));
 
-    for _i in 0.. {
-        let cfg = z3::Config::new();
-        let ctx = z3::Context::new(&cfg);
+    let t = if part2 { 10000000000000 } else { 0 };
 
-        let a = Int::new_const(&ctx, "a");
-        let b = Int::new_const(&ctx, "b");
+    matrix[[0, 0]] = BigRational::new((claw_game.offset_a.x).into(), 1.into());
+    matrix[[0, 1]] = BigRational::new((claw_game.offset_b.x).into(), 1.into());
+    matrix[[0, 2]] = BigRational::new((claw_game.prize.x + t).into(), 1.into());
+    matrix[[1, 0]] = BigRational::new((claw_game.offset_a.y).into(), 1.into());
+    matrix[[1, 1]] = BigRational::new((claw_game.offset_b.y).into(), 1.into());
+    matrix[[1, 2]] = BigRational::new((claw_game.prize.y + t).into(), 1.into());
 
-        let prize_x = Int::from_u64(&ctx, claw_game.prize.x);
-        let prize_y = Int::from_u64(&ctx, claw_game.prize.y);
-        let t = Int::from_u64(&ctx, threshold);
-        let m = if part2 {
-            Int::from_u64(&ctx, 10000000000000)
-        } else {
-            Int::from_u64(&ctx, 0)
-        };
+    let mut ans: Array1<BigRational> = Array1::zeros(2).view().to_owned();
+    let soln = gauss_jordan(matrix.to_owned(), &mut ans, BigRational::zero());
 
-        let solver = Solver::new(&ctx);
-
-        solver
-            .assert(&(&a * claw_game.offset_a.x + &b * claw_game.offset_b.x)._eq(&(&m + &prize_x)));
-        solver
-            .assert(&(&a * claw_game.offset_a.y + &b * claw_game.offset_b.y)._eq(&(&m + &prize_y)));
-        solver.assert(&(&a * 3u64 + &b).lt(&t));
-
-        let result = solver.check();
-
-        if result == SatResult::Unsat {
-            return previous;
+    if soln == Solution::Unique {
+        // Make sure that we get integer coordinates -- fractional coordinates don't count as hit.
+        if *ans[0].denom() != BigInt::from(1) || *ans[1].denom() != BigInt::from(1) {
+            return None;
         }
 
-        let a = solver
-            .get_model()
-            .unwrap()
-            .eval(&a, true)
-            .unwrap()
-            .as_u64()
-            .unwrap();
-
-        let b = solver
-            .get_model()
-            .unwrap()
-            .eval(&b, true)
-            .unwrap()
-            .as_u64()
-            .unwrap();
-
-        previous = Some((a as usize, b as usize));
-        threshold = a * 3 + b;
+        Some((ans[0].to_integer(), ans[1].to_integer()))
+    } else {
+        None
     }
-
-    previous
 }
 
 #[cfg(test)]
