@@ -8,7 +8,6 @@ pub fn part1(input: &PuzzleInput) -> String {
 
     for region in find_regions(&input.garden).into_iter() {
         let border = generate_border(&region);
-
         sum += border.values().sum::<usize>() * region.len();
     }
 
@@ -66,7 +65,7 @@ pub fn find_regions(input: &Grid2D<char>) -> Vec<HashSet<Coordinate>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    use utility_belt::prelude::indoc;
 
     const TEST_INPUT: &str = indoc! {"
 OOOOO

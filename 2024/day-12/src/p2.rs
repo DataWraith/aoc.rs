@@ -19,7 +19,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         let mut sets_horizontal = HashMap::new();
         let mut sets_vertical = HashMap::new();
 
-        let mut border = generate_border(&region);
+        let border = generate_border(&region);
 
         for (coord, _count) in border.iter() {
             let set_h = union_find_horizontal.make_set();
@@ -35,7 +35,7 @@ pub fn part2(input: &PuzzleInput) -> String {
             if border.contains_key(&right) {
                 union_find_horizontal
                     .union(sets_horizontal[&coord], sets_horizontal[&right])
-                    .expect("Foo");
+                    .expect("Expected union to succeed");
             }
 
             let down = coord.neighbor(Direction::Down);
@@ -43,14 +43,14 @@ pub fn part2(input: &PuzzleInput) -> String {
             if border.contains_key(&down) {
                 union_find_vertical
                     .union(sets_vertical[&coord], sets_vertical[&down])
-                    .expect("Foo");
+                    .expect("Expected union to succeed");
             }
         }
 
         let mut horizontal_count = 0;
         let mut horizontal_counted = HashSet::new();
 
-        for (coord, set_h) in sets_horizontal.iter() {
+        for (_coord, set_h) in sets_horizontal.iter() {
             let root = union_find_horizontal.find(*set_h).unwrap();
             let size = union_find_horizontal.size_of_set(root).unwrap_or(0);
 
@@ -66,7 +66,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         let mut vertical_count = 0;
         let mut vertical_counted = HashSet::new();
 
-        for (coord, set_v) in sets_vertical.iter() {
+        for (_coord, set_v) in sets_vertical.iter() {
             let root = union_find_vertical.find(*set_v).unwrap();
             let size = union_find_vertical.size_of_set(root).unwrap_or(0);
 
@@ -88,7 +88,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    use utility_belt::prelude::indoc;
 
     const TEST_INPUT4: &str = indoc! {"
 AAAAAA
