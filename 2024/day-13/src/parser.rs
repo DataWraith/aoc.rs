@@ -6,6 +6,7 @@ use utility_belt::prelude::*;
 pub struct PuzzleInput {
     // Remember to make the fields pub
     pub games: Vec<ClawGame>,
+    pub part2: bool,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -50,7 +51,10 @@ pub fn part1(input: &str) -> PuzzleInput {
         });
     }
 
-    PuzzleInput { games: result }
+    PuzzleInput {
+        games: result,
+        part2: false,
+    }
 }
 
 pub fn part2(input: &str) -> PuzzleInput {
