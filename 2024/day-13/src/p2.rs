@@ -1,10 +1,20 @@
+use glam::U64Vec2;
 use utility_belt::prelude::*;
 
 use crate::parser::*;
 
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
-    todo!("day_13::p2::part2");
+    let mut new_games = vec![];
+
+    for game in input.games.iter() {
+        new_games.push(ClawGame {
+            prize: game.prize + U64Vec2::new(10000000000000,10000000000000),
+            ..*game
+        })
+    }
+
+    crate::p1::part1(&PuzzleInput { games: new_games })
 }
 
 #[cfg(test)]

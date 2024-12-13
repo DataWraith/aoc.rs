@@ -1,4 +1,5 @@
 use cached::proc_macro::cached;
+use glam::U64Vec2;
 use utility_belt::prelude::*;
 
 use crate::parser::*;
@@ -19,43 +20,92 @@ pub fn part1(input: &PuzzleInput) -> String {
 
 #[cached]
 fn calculate_num_button_presses(claw_game: ClawGame) -> Option<(usize, usize)> {
-    if claw_game.prize == Coordinate::new(0, 0) {
+    if claw_game.prize.x == 0 && claw_game.prize.y == 0 {
         return Some((0, 0));
     }
 
-    let mut min = usize::MAX;
-    let mut result = None;
+    if claw_game.prize.x == claw_game.offset_a.x && claw_game.prize.y == claw_game.offset_a.y {
+        return Some((1, 0));
+    }
 
-    if claw_game.prize >= claw_game.offset_a {
-        let a_game = ClawGame {
-            prize: claw_game.prize - claw_game.offset_a,
-            ..claw_game
-        };
+    if claw_game.prize.x == claw_game.offset_b.x && claw_game.prize.y == claw_game.offset_b.y {
+        return Some((0, 1));
+    }
 
-        if let Some(m) = calculate_num_button_presses(a_game).map(|(a, b)| (a + 1, b)) {
-            let c = m.0 * 3 + m.1;
+    let mut result: Option<(usize, usize)> = None;
+    let mut result2: Option<(usize, usize)> = None;
 
-            if c < min {
-                min = c;
-                result = Some(m);
+    let a_presses_x = gcd(claw_game.prize.x, claw_game.offset_a.x);
+    let a_presses_y = gcd(claw_game.prize.y, claw_game.offset_a.y);
+    let a_presses = if a_presses_x == 1 {
+        a_presses_y
+    } else {
+        a_presses_x
+    };
+    let a_presses = a_presses.max(1);
+
+    for ap in (1..=a_presses).rev() {
+        let progress = U64Vec2::new(ap * claw_game.offset_a.x, ap * claw_game.offset_a.y);
+
+        if claw_game.prize.x >= progress.x && claw_game.prize.y >= progress.y {
+            let new_game = ClawGame {
+                prize: claw_game.prize - progress,
+                ..claw_game
+            };
+
+            if let Some((a, b)) = calculate_num_button_presses(new_game) {
+                if result.is_none()
+                    || result.unwrap().0 * 3 + result.unwrap().1
+                        > (ap as usize + a) * 3 + b as usize
+                {
+                    result = Some((a + ap as usize, b));
+                }
             }
         }
     }
 
-    if claw_game.prize >= claw_game.offset_b {
-        let b_game = ClawGame {
-            prize: claw_game.prize - claw_game.offset_b,
-            ..claw_game
-        };
+    let b_presses_x = gcd(claw_game.prize.x, claw_game.offset_b.x);
+    let b_presses_y = gcd(claw_game.prize.y, claw_game.offset_b.y);
+    let b_presses = if b_presses_x == 1 {
+        b_presses_y
+    } else {
+        b_presses_x
+    };
+    let b_presses = b_presses.max(1);
 
-        if let Some(m) = calculate_num_button_presses(b_game).map(|(a, b)| (a, b + 1)) {
-            let c = m.0 * 3 + m.1;
+    for bp in (1..=b_presses).rev() {
+        let progress = U64Vec2::new(bp * claw_game.offset_b.x, bp * claw_game.offset_b.y);
 
-            if c < min {
-                min = c;
-                result = Some(m);
+        if claw_game.prize.x >= progress.x && claw_game.prize.y >= progress.y {
+            let new_game = ClawGame {
+                prize: claw_game.prize - progress,
+                ..claw_game
+            };
+
+            if let Some((a, b)) = calculate_num_button_presses(new_game) {
+                if result2.is_none()
+                    || result2.unwrap().0 * 3 + result2.unwrap().1 > a * 3 + b + bp as usize
+                {
+                    result2 = Some((a, b + bp as usize));
+                }
             }
         }
+    }
+
+    if result.is_none() && result2.is_none() {
+        return None;
+    }
+
+    if result.is_none() {
+        return result2;
+    }
+
+    if result2.is_none() {
+        return result;
+    }
+
+    if result.unwrap().0 * 3 + result.unwrap().1 > result2.unwrap().0 * 3 + result2.unwrap().1 {
+        return result2;
     }
 
     result
