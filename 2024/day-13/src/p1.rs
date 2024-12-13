@@ -25,15 +25,15 @@ fn calculate_num_button_presses(claw_game: ClawGame, part2: bool) -> Option<(usi
     let mut threshold = u64::MAX;
     let mut previous = None;
 
-    for i in 0.. {
+    for _i in 0.. {
         let cfg = z3::Config::new();
         let ctx = z3::Context::new(&cfg);
 
         let a = Int::new_const(&ctx, "a");
         let b = Int::new_const(&ctx, "b");
 
-        let prize_x = Int::from_u64(&ctx, claw_game.prize.x as u64);
-        let prize_y = Int::from_u64(&ctx, claw_game.prize.y as u64);
+        let prize_x = Int::from_u64(&ctx, claw_game.prize.x);
+        let prize_y = Int::from_u64(&ctx, claw_game.prize.y);
         let t = Int::from_u64(&ctx, threshold);
         let m = if part2 {
             Int::from_u64(&ctx, 10000000000000)
@@ -81,7 +81,6 @@ fn calculate_num_button_presses(claw_game: ClawGame, part2: bool) -> Option<(usi
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
 Button A: X+94, Y+34

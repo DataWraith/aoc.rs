@@ -1,6 +1,5 @@
 use glam::U64Vec2;
 use regex::Regex;
-use utility_belt::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
