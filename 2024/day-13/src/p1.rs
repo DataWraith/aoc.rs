@@ -9,7 +9,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     let result = input
         .games
         .iter()
-        .filter_map(|g| calculate_num_button_presses(g.clone(), input.part2))
+        .filter_map(|g| calculate_num_button_presses(g.clone(), input.offset))
         .collect_vec();
 
     result
@@ -19,17 +19,16 @@ pub fn part1(input: &PuzzleInput) -> String {
         .to_string()
 }
 
-fn calculate_num_button_presses(claw_game: ClawGame, part2: bool) -> Option<(BigInt, BigInt)> {
+fn calculate_num_button_presses(claw_game: ClawGame, offset: u64) -> Option<(BigInt, BigInt)> {
     let mut matrix = Array2::zeros((2, 3));
 
-    let t = if part2 { 10000000000000 } else { 0 };
 
     matrix[[0, 0]] = BigRational::new((claw_game.offset_a.x).into(), 1.into());
     matrix[[0, 1]] = BigRational::new((claw_game.offset_b.x).into(), 1.into());
-    matrix[[0, 2]] = BigRational::new((claw_game.prize.x + t).into(), 1.into());
+    matrix[[0, 2]] = BigRational::new((claw_game.prize.x + offset).into(), 1.into());
     matrix[[1, 0]] = BigRational::new((claw_game.offset_a.y).into(), 1.into());
     matrix[[1, 1]] = BigRational::new((claw_game.offset_b.y).into(), 1.into());
-    matrix[[1, 2]] = BigRational::new((claw_game.prize.y + t).into(), 1.into());
+    matrix[[1, 2]] = BigRational::new((claw_game.prize.y + offset).into(), 1.into());
 
     let mut ans: Array1<BigRational> = Array1::zeros(2).view().to_owned();
     let soln = gauss_jordan(matrix.to_owned(), &mut ans, BigRational::zero());

@@ -279,7 +279,6 @@ dependencies = [
  "glam",
  "ndarray",
  "num",
- "regex",
  "tracing",
  "tracing-subscriber",
  "utility-belt",

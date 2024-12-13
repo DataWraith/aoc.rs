@@ -1,11 +1,11 @@
 use glam::U64Vec2;
-use regex::Regex;
+use utility_belt::prelude::Itertools;
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
     // Remember to make the fields pub
     pub games: Vec<ClawGame>,
-    pub part2: bool,
+    pub offset: u64,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -21,27 +21,15 @@ pub fn part1(input: &str) -> PuzzleInput {
     let games = input.split("\n\n");
 
     for g in games.into_iter() {
-        let lines = g.lines().collect::<Vec<_>>();
+        let coordinates = g
+            .split(|c: char| !c.is_ascii_digit())
+            .filter(|w| !w.is_empty())
+            .map(|w| w.parse::<u64>().unwrap())
+            .collect_vec();
 
-        let re = Regex::new(r"X\+(\d+), Y\+(\d+)").unwrap();
-
-        let mut offset_a = U64Vec2::ZERO;
-        let mut offset_b = U64Vec2::ZERO;
-        let mut prize = U64Vec2::ZERO;
-
-        for (_, [x, y]) in re.captures_iter(lines[0]).map(|c| c.extract()) {
-            offset_a = U64Vec2::new(x.parse::<u64>().unwrap(), y.parse::<u64>().unwrap());
-        }
-
-        for (_, [x, y]) in re.captures_iter(lines[1]).map(|c| c.extract()) {
-            offset_b = U64Vec2::new(x.parse::<u64>().unwrap(), y.parse::<u64>().unwrap());
-        }
-
-        let re = Regex::new(r"X=(\d+), Y=(\d+)").unwrap();
-
-        for (_, [x, y]) in re.captures_iter(lines[2]).map(|c| c.extract()) {
-            prize = U64Vec2::new(x.parse::<u64>().unwrap(), y.parse::<u64>().unwrap());
-        }
+        let offset_a = U64Vec2::new(coordinates[0], coordinates[1]);
+        let offset_b = U64Vec2::new(coordinates[2], coordinates[3]);
+        let prize = U64Vec2::new(coordinates[4], coordinates[5]);
 
         result.push(ClawGame {
             offset_a,
@@ -52,7 +40,7 @@ pub fn part1(input: &str) -> PuzzleInput {
 
     PuzzleInput {
         games: result,
-        part2: false,
+        offset: 0,
     }
 }
 
