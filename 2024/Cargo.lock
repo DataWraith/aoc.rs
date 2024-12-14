@@ -286,6 +286,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "day-14"
+version = "0.1.0"
+dependencies = [
+ "divan",
+ "tracing",
+ "tracing-subscriber",
+ "utility-belt",
+ "winnow",
+]
+
+[[package]]
 name = "derive_more"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1115,8 +1126,8 @@ checksum = "adb9e6ca4f869e1180728b7950e35922a7fc6397f7b641499e8f3ef06e50dc83"
 
 [[package]]
 name = "utility-belt"
-version = "0.2024.1"
-source = "git+https://github.com/DataWraith/utility-belt.git?rev=99c6a733e1a5#99c6a733e1a50994297894e67dcdc9515b48018e"
+version = "0.2024.2"
+source = "git+https://github.com/DataWraith/utility-belt.git?rev=43bfd2b61cf3#43bfd2b61cf363694b5aaec9b9e11f93d0ffed94"
 dependencies = [
  "ahash",
  "derive_more",
