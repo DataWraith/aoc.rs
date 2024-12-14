@@ -1,12 +1,8 @@
-use winnow::{PResult, Parser, combinator::trace};
+use utility_belt::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
     // Remember to make the fields pub
-}
-
-fn winnow_parser<'s>(input: &mut &'s str) -> PResult<PuzzleInput> {
-    Ok(PuzzleInput{})
 }
 
 pub fn part1(input: &str) -> PuzzleInput {
@@ -17,7 +13,7 @@ pub fn part1(input: &str) -> PuzzleInput {
     // 3. Winnow parser?
     // 4. ???
 
-    winnow_parser.parse(input).unwrap()
+    PuzzleInput{}
 }
 
 pub fn part2(input: &str) -> PuzzleInput {
