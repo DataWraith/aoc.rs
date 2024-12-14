@@ -1,5 +1,3 @@
-use std::collections::BTreeSet;
-
 use utility_belt::prelude::*;
 
 use crate::parser::*;
@@ -16,7 +14,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     sum.to_string()
 }
 
-pub fn generate_border(region: &BTreeSet<Coordinate>) -> Vec<Coordinate> {
+pub fn generate_border(region: &HashSet<Coordinate>) -> Vec<Coordinate> {
     let mut border = Vec::new();
 
     for coord in region.iter() {
@@ -30,40 +28,39 @@ pub fn generate_border(region: &BTreeSet<Coordinate>) -> Vec<Coordinate> {
     border
 }
 
-// Find all connected regions with plants of the same type using a
-// Breadth-First Search.
-pub fn find_regions(input: &Grid2D<char>) -> Vec<BTreeSet<Coordinate>> {
-    let mut seen = input.map(|_| false);
-    let mut result = vec![];
+pub fn find_regions(input: &Grid2D<char>) -> Vec<HashSet<Coordinate>> {
+    let mut sets = input.map(|_| 0);
+    let mut union_find = UnionFind::default();
 
-    for (coord, &plant) in input.iter() {
-        if seen[coord] {
-            continue;
-        }
-
-        let mut region = BTreeSet::new();
-        let mut q = VecDeque::from([coord]);
-
-        while let Some(c) = q.pop_front() {
-            if seen[c] {
-                continue;
-            } else {
-                seen[c] = true;
-            }
-
-            region.insert(c);
-
-            q.extend(
-                c.neighbors()
-                    .into_iter()
-                    .filter(|&n| input.get(n) == Some(&plant) && !seen[n]),
-            );
-        }
-
-        result.push(region);
+    for (coord, _) in input.iter() {
+        sets[coord] = union_find.make_set();
     }
 
-    result
+    for (coord, &plant) in input.iter() {
+        for neighbor in [
+            coord.neighbor(Direction::Right),
+            coord.neighbor(Direction::Down),
+        ] {
+            if let Some(neighbor_plant) = input.get(neighbor) {
+                if *neighbor_plant == plant {
+                    let _ = union_find.union(sets[coord], sets[neighbor]);
+                }
+            }
+        }
+    }
+
+    let mut regions = HashMap::new();
+
+    for (coord, &set) in sets.iter() {
+        let root = union_find.find(set);
+
+        regions
+            .entry(root)
+            .or_insert_with(HashSet::new)
+            .insert(coord);
+    }
+
+    regions.into_values().collect()
 }
 #[cfg(test)]
 mod tests {
