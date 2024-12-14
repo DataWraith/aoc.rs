@@ -4,7 +4,7 @@ use crate::parser::*;
 
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
-    for i in 0..=6446 {
+    for i in 0.. {
         let mut robot_grid = Grid2D::new(101, 103, '.');
 
         for robot in input.robots.iter() {
@@ -21,14 +21,9 @@ pub fn part2(input: &PuzzleInput) -> String {
         let picture = format!("{}\ni: {}", robot_grid, i);
 
         if picture.contains("###############################") {
-            println!("{}", picture);
-
-            // Wait for user to press enter, in case the picture does not show a
-            // christmas tree
-            let mut buf = String::new();
-            std::io::stdin().read_line(&mut buf).unwrap();
+            return i.to_string();
         }
     }
 
-    "".to_string()
+    unreachable!()
 }
