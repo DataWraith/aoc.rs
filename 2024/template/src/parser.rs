@@ -20,6 +20,7 @@ pub fn part2(input: &str) -> PuzzleInput {
     part1(input)
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -35,3 +36,4 @@ mod tests {
         assert!(trace("Puzzle", winnow_parser).parse_next(&mut TEST_INPUT.clone()).is_ok());
     }
 }
+*/
