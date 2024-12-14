@@ -30,17 +30,7 @@ pub fn part2(input: &PuzzleInput) -> String {
             grid.set(robot.position, true);
         }
 
-        let mut count = 0;
-
-        for robot in trajectories.iter() {
-            if grid.get(robot.position.neighbor(Direction::Right)) == Some(&true) {
-                count += 1;
-            }
-        }
-
-        if count >= 200 {
-            return i.to_string();
-        }
+        return i.to_string();
     }
 
     unreachable!()
