@@ -1,3 +1,5 @@
+use std::collections::BTreeSet;
+
 use utility_belt::prelude::*;
 
 use crate::parser::*;
@@ -8,19 +10,19 @@ pub fn part1(input: &PuzzleInput) -> String {
 
     for region in find_regions(&input.garden).into_iter() {
         let border = generate_border(&region);
-        sum += border.values().sum::<usize>() * region.len();
+        sum += border.len() * region.len();
     }
 
     sum.to_string()
 }
 
-pub fn generate_border(region: &HashSet<Coordinate>) -> HashMap<Coordinate, usize> {
-    let mut border = HashMap::new();
+pub fn generate_border(region: &BTreeSet<Coordinate>) -> Vec<Coordinate> {
+    let mut border = Vec::new();
 
     for coord in region.iter() {
         for neighbor in coord.neighbors() {
             if !region.contains(&neighbor) {
-                border.entry(neighbor).and_modify(|c| *c += 1).or_insert(1);
+                border.push(neighbor);
             }
         }
     }
@@ -28,36 +30,37 @@ pub fn generate_border(region: &HashSet<Coordinate>) -> HashMap<Coordinate, usiz
     border
 }
 
-pub fn find_regions(input: &Grid2D<char>) -> Vec<HashSet<Coordinate>> {
-    let mut union_find = UnionFind::default();
-    let mut sets = HashMap::new();
+// Find all connected regions with plants of the same type using a
+// Breadth-First Search.
+pub fn find_regions(input: &Grid2D<char>) -> Vec<BTreeSet<Coordinate>> {
+    let mut seen = input.map(|_| false);
     let mut result = vec![];
 
-    for (coord, _plant) in input.iter() {
-        let set = union_find.make_set();
-        sets.insert(coord, set);
-    }
-
     for (coord, &plant) in input.iter() {
-        for neighbor in coord.neighbors() {
-            if let Some(neighbor_plant) = input.get(neighbor) {
-                if *neighbor_plant == plant {
-                    let _ = union_find.union(sets[&coord], sets[&neighbor]);
-                }
-            }
-        }
-    }
-
-    for root in union_find.roots() {
-        let mut plot = HashSet::new();
-
-        for (coord, &set) in sets.iter() {
-            if union_find.find(set) == Some(root) {
-                plot.insert(*coord);
-            }
+        if seen[coord] {
+            continue;
         }
 
-        result.push(plot);
+        let mut region = BTreeSet::new();
+        let mut q = VecDeque::from([coord]);
+
+        while let Some(c) = q.pop_front() {
+            if seen[c] {
+                continue;
+            } else {
+                seen[c] = true;
+            }
+
+            region.insert(c);
+
+            q.extend(
+                c.neighbors()
+                    .into_iter()
+                    .filter(|&n| input.get(n) == Some(&plant) && !seen[n]),
+            );
+        }
+
+        result.push(region);
     }
 
     result

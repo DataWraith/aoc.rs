@@ -25,6 +25,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
         let mut sides = 0;
 
+        // https://tildes.net/~comp.advent_of_code/1kmj/day_12_garden_groups#comment-ec08
         while let Some((coord, direction)) = perimeter.pop_first() {
             sides += 1;
 
@@ -39,6 +40,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
             loop {
                 cur += left.into();
+
                 if !perimeter.remove(&(cur, direction)) {
                     break;
                 }
@@ -48,6 +50,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
             loop {
                 cur += right.into();
+
                 if !perimeter.remove(&(cur, direction)) {
                     break;
                 }
