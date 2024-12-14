@@ -11,6 +11,8 @@ pub fn part2(input: &PuzzleInput) -> String {
             robot.step();
         }
 
+        // Interestingly, creating a grid from scratch here is faster than
+        // reusing a single grid that is updated in place.
         let mut grid = Grid2D::new(101, 103, false);
 
         for robot in trajectories.iter() {
