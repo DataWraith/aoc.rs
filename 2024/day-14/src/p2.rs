@@ -4,23 +4,28 @@ use crate::parser::*;
 
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
-    for i in 0.. {
-        let mut robot_grid = Grid2D::new(101, 103, '.');
+    let mut trajectories = input.robots.clone();
 
-        for robot in input.robots.iter() {
-            let pos = robot.position + robot.velocity * i;
-
-            let final_pos = Coordinate::new(
-                pos.x.rem_euclid(robot_grid.width),
-                pos.y.rem_euclid(robot_grid.height),
-            );
-
-            robot_grid[final_pos] = '#';
+    for i in 1.. {
+        for robot in trajectories.iter_mut() {
+            robot.step();
         }
 
-        let picture = format!("{}\ni: {}", robot_grid, i);
+        let mut grid = Grid2D::new(101, 103, false);
 
-        if picture.contains("###############################") {
+        for robot in trajectories.iter() {
+            grid.set(robot.position, true);
+        }
+
+        let mut count = 0;
+
+        for robot in trajectories.iter() {
+            if grid.get(robot.position.neighbor(Direction::Right)) == Some(&true) {
+                count += 1;
+            }
+        }
+
+        if count >= 200 {
             return i.to_string();
         }
     }

@@ -6,6 +6,16 @@ pub struct Robot {
     pub velocity: Coordinate,
 }
 
+impl Robot {
+    pub fn step(&mut self) {
+        self.position += self.velocity;
+        self.position = Coordinate::new(
+            self.position.x.rem_euclid(101),
+            self.position.y.rem_euclid(103),
+        );
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
     // Remember to make the fields pub
