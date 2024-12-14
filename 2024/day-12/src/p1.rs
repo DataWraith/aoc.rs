@@ -33,7 +33,7 @@ pub fn find_regions(input: &Grid2D<char>) -> Vec<HashSet<Coordinate>> {
     let mut sets = HashMap::new();
     let mut result = vec![];
 
-    for (coord, &plant) in input.iter() {
+    for (coord, _plant) in input.iter() {
         let set = union_find.make_set();
         sets.insert(coord, set);
     }

@@ -1,85 +1,60 @@
+use std::collections::BTreeSet;
+
 use utility_belt::prelude::*;
 
-use crate::{
-    p1::{find_regions, generate_border},
-    parser::*,
-};
+use crate::{p1::find_regions, parser::*};
 
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
     let mut sum = 0;
 
-    let input = input.garden.zoom(3);
-    let zoom_divisor = 9;
+    for region in find_regions(&input.garden).into_iter() {
+        let mut perimeter: BTreeSet<(Coordinate, Direction)> = BTreeSet::new();
 
-    for region in find_regions(&input).into_iter() {
-        let mut union_find_horizontal = UnionFind::default();
-        let mut union_find_vertical = UnionFind::default();
+        for coord in region.iter() {
+            for direction in Direction::cardinal() {
+                let neighbor = coord.neighbor(direction);
 
-        let mut sets_horizontal = HashMap::new();
-        let mut sets_vertical = HashMap::new();
-
-        let border = generate_border(&region);
-
-        for (coord, _count) in border.iter() {
-            let set_h = union_find_horizontal.make_set();
-            let set_v = union_find_vertical.make_set();
-
-            sets_horizontal.insert(**coord, set_h);
-            sets_vertical.insert(**coord, set_v);
-        }
-
-        for (coord, _count) in border.iter() {
-            let right = coord.neighbor(Direction::Right);
-
-            if border.contains_key(&right) {
-                union_find_horizontal
-                    .union(sets_horizontal[&coord], sets_horizontal[&right])
-                    .expect("Expected union to succeed");
-            }
-
-            let down = coord.neighbor(Direction::Down);
-
-            if border.contains_key(&down) {
-                union_find_vertical
-                    .union(sets_vertical[&coord], sets_vertical[&down])
-                    .expect("Expected union to succeed");
+                if !region.contains(&neighbor) {
+                    // Since we started inside the region, we must be just
+                    // outside the region now, exactly on one of the sides.
+                    perimeter.insert((neighbor, direction));
+                }
             }
         }
 
-        let mut horizontal_count = 0;
-        let mut horizontal_counted = HashSet::new();
+        let mut sides = 0;
 
-        for (_coord, set_h) in sets_horizontal.iter() {
-            let root = union_find_horizontal.find(*set_h).unwrap();
-            let size = union_find_horizontal.size_of_set(root).unwrap_or(0);
+        while let Some((coord, direction)) = perimeter.pop_first() {
+            sides += 1;
 
-            if !horizontal_counted.insert(root) {
-                continue;
+            // Since coord is on the perimeter and we are pointing outwards, we
+            // can turn left/right to walk the side boundary and remove all
+            // points on that boundary so that we don't double-count them while
+            // iterating over the perimeter.
+            let left = direction.turn_left_90();
+            let right = direction.turn_right_90();
+
+            let mut cur = coord;
+
+            loop {
+                cur += left.into();
+                if !perimeter.remove(&(cur, direction)) {
+                    break;
+                }
             }
 
-            if size > 1 {
-                horizontal_count += 1;
+            cur = coord;
+
+            loop {
+                cur += right.into();
+                if !perimeter.remove(&(cur, direction)) {
+                    break;
+                }
             }
         }
 
-        let mut vertical_count = 0;
-        let mut vertical_counted = HashSet::new();
-
-        for (_coord, set_v) in sets_vertical.iter() {
-            let root = union_find_vertical.find(*set_v).unwrap();
-            let size = union_find_vertical.size_of_set(root).unwrap_or(0);
-
-            if !vertical_counted.insert(root) {
-                continue;
-            }
-
-            if size > 1 {
-                vertical_count += 1;
-            }
-        }
-
-        sum += (horizontal_count + vertical_count) * region.len() / zoom_divisor;
+        sum += sides * region.len();
     }
 
     return sum.to_string();
