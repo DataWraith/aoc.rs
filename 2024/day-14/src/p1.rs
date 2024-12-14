@@ -6,12 +6,14 @@ use crate::parser::*;
 pub fn part1(input: &PuzzleInput) -> String {
     let x_center = 101 / 2;
     let y_center = 103 / 2;
+    let map_size = IVec2::new(101, 103);
+
     let mut counts = [0; 4];
 
     for robot in input.robots.iter() {
         let pos = robot.position + robot.velocity * 100;
 
-        let final_pos = Coordinate::new(pos.x.rem_euclid(101), pos.y.rem_euclid(103));
+        let final_pos = pos.rem_euclid(map_size);
 
         if final_pos.x < x_center && final_pos.y < y_center {
             counts[0] += 1;
