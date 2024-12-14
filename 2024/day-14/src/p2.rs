@@ -30,6 +30,13 @@ pub fn part2(input: &PuzzleInput) -> String {
             grid.set(robot.position, true);
         }
 
+        // The non-overlapping check is enough to find the answer for my input,
+        // but you can also check for long horizontal lines to rule out false
+        // positives.
+
+        // Print the grid for debugging
+        // println!("{}", grid.map(|&b| if b { '#' } else { '.' }));
+
         return i.to_string();
     }
 

@@ -31,14 +31,17 @@ pub fn part2(input: &PuzzleInput) -> String {
     for (pos, dir) in visited.iter() {
         let obstacle = *pos + (*dir).into();
 
+        // Can't place an obstacle on the starting position
         if obstacle == coord {
             continue;
         }
 
+        // Can't place an obstacle outside the lab
         if input.grid.get(obstacle).is_none() {
             continue;
         }
 
+        // Can't place an obstacle on an obstacle
         if input.grid.get(obstacle).unwrap() == &'#' {
             continue;
         }
@@ -47,6 +50,7 @@ pub fn part2(input: &PuzzleInput) -> String {
     }
 
     let mut g2 = input.grid.clone();
+
     for obstacle in obstacles.iter() {
         g2.set(*obstacle, '#');
 

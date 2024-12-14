@@ -21,8 +21,10 @@ pub fn part1(input: &PuzzleInput) -> String {
 
 fn calculate_num_button_presses(claw_game: ClawGame, offset: u64) -> Option<(BigInt, BigInt)> {
     let mut matrix = Array2::zeros((2, 3));
+    let mut answer: Array1<BigRational> = Array1::zeros(2).view().to_owned();
 
-
+    // f64 is not enough precision for this problem apparently, so we need to
+    // use BigRational instead. That's fairly slow, unfortunately.
     matrix[[0, 0]] = BigRational::new((claw_game.offset_a.x).into(), 1.into());
     matrix[[0, 1]] = BigRational::new((claw_game.offset_b.x).into(), 1.into());
     matrix[[0, 2]] = BigRational::new((claw_game.prize.x + offset).into(), 1.into());
@@ -30,19 +32,18 @@ fn calculate_num_button_presses(claw_game: ClawGame, offset: u64) -> Option<(Big
     matrix[[1, 1]] = BigRational::new((claw_game.offset_b.y).into(), 1.into());
     matrix[[1, 2]] = BigRational::new((claw_game.prize.y + offset).into(), 1.into());
 
-    let mut ans: Array1<BigRational> = Array1::zeros(2).view().to_owned();
-    let soln = gauss_jordan(matrix.to_owned(), &mut ans, BigRational::zero());
+    let soln = gauss_jordan(matrix, &mut answer, BigRational::zero());
 
-    if soln == Solution::Unique {
-        // Make sure that we get integer coordinates -- fractional coordinates don't count as hit.
-        if *ans[0].denom() != BigInt::from(1) || *ans[1].denom() != BigInt::from(1) {
-            return None;
-        }
-
-        Some((ans[0].to_integer(), ans[1].to_integer()))
-    } else {
-        None
+    if soln != Solution::Unique {
+        return None;
     }
+
+    // Make sure that we get integer coordinates -- fractional coordinates don't count as hit.
+    if *answer[0].denom() != BigInt::from(1) || *answer[1].denom() != BigInt::from(1) {
+        return None;
+    }
+
+    Some((answer[0].to_integer(), answer[1].to_integer()))
 }
 
 #[cfg(test)]

@@ -12,16 +12,15 @@ pub fn part1(input: &PuzzleInput) -> String {
 
     for robot in input.robots.iter() {
         let pos = robot.position + robot.velocity * 100;
+        let pos = pos.rem_euclid(map_size);
 
-        let final_pos = pos.rem_euclid(map_size);
-
-        if final_pos.x < x_center && final_pos.y < y_center {
+        if pos.x < x_center && pos.y < y_center {
             counts[0] += 1;
-        } else if final_pos.x < x_center && final_pos.y > y_center {
+        } else if pos.x < x_center && pos.y > y_center {
             counts[1] += 1;
-        } else if final_pos.x > x_center && final_pos.y < y_center {
+        } else if pos.x > x_center && pos.y < y_center {
             counts[2] += 1;
-        } else if final_pos.x > x_center && final_pos.y > y_center {
+        } else if pos.x > x_center && pos.y > y_center {
             counts[3] += 1;
         }
     }
