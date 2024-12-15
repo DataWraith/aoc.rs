@@ -1,48 +1,40 @@
+use std::iter::successors;
+
 use utility_belt::prelude::*;
 
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let result = run_robot(input);
-
-    let mut sum = 0;
-    for (coord, c) in result.iter() {
-        if c == &'O' {
-            sum += 100 * coord.y + coord.x;
-        }
-    }
-
-    sum.to_string()
+    run_robot(input)
+        .iter()
+        .filter(|(_, &c)| c == 'O')
+        .map(|(coord, _)| 100 * coord.y + coord.x)
+        .sum::<i32>()
+        .to_string()
 }
 
 pub fn run_robot(input: &PuzzleInput) -> Grid2D<char> {
     let mut grid = input.warehouse.clone();
+
+    // Find the robot's starting position and remove it from the grid
     let mut robot_pos = grid.iter().find(|(_, c)| **c == '@').unwrap().0;
+    grid.set(robot_pos, '.');
 
     'outer: for robot_move in input.robot_moves.iter() {
         let dir: Direction = (*robot_move).try_into().unwrap();
 
-        let mut cur = robot_pos;
-
-        loop {
-            let next = cur + dir;
-            let c = grid[next];
-
-            if c == '#' {
+        for pos in successors(Some(robot_pos + dir), |&pos| Some(pos + dir)) {
+            if grid[pos] == '#' {
                 continue 'outer;
             }
 
-            cur = next;
-
-            if c == '.' {
+            if grid[pos] == '.' {
+                grid.set(pos, 'O');
+                robot_pos += dir;
+                grid.set(robot_pos, '.');
                 break;
             }
         }
-
-        grid[cur] = 'O';
-        grid[robot_pos] = '.';
-        robot_pos += dir;
-        grid[robot_pos] = '@';
     }
 
     grid
