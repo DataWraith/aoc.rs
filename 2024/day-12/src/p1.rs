@@ -61,6 +61,7 @@ pub fn find_regions(input: &Grid2D<char>) -> Vec<HashSet<Coordinate>> {
 
     regions.into_values().collect()
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
