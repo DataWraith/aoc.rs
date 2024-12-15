@@ -55,10 +55,6 @@ pub fn push_boxes(grid: &mut Grid2D<char>, box_pos: Coordinate, dir: Direction) 
         return;
     }
 
-    if grid[box_pos] == '#' {
-        return;
-    }
-
     if dir == Direction::Left || dir == Direction::Right {
         let mut cur = box_pos;
         let mut next;
@@ -80,25 +76,26 @@ pub fn push_boxes(grid: &mut Grid2D<char>, box_pos: Coordinate, dir: Direction) 
         }
 
         grid.set(next, '.');
-    } else {
-        let second_half_dir = if grid[box_pos] == '[' {
-            Direction::Right
-        } else {
-            Direction::Left
-        };
-
-        let opposite_bracket = if grid[box_pos] == '[' { ']' } else { '[' };
-
-        // Recursively push the boxes
-        push_boxes(grid, box_pos + dir, dir);
-        push_boxes(grid, box_pos + dir + second_half_dir, dir);
-
-        // Move the box itself
-        grid.set(box_pos + dir, grid[box_pos]);
-        grid.set(box_pos + dir + second_half_dir, opposite_bracket);
-        grid.set(box_pos, '.');
-        grid.set(box_pos + second_half_dir, '.');
+        return;
     }
+
+    let second_half_dir = if grid[box_pos] == '[' {
+        Direction::Right
+    } else {
+        Direction::Left
+    };
+
+    let opposite_bracket = if grid[box_pos] == '[' { ']' } else { '[' };
+
+    // Recursively push the boxes
+    push_boxes(grid, box_pos + dir, dir);
+    push_boxes(grid, box_pos + dir + second_half_dir, dir);
+
+    // Move the box itself
+    grid.set(box_pos + dir, grid[box_pos]);
+    grid.set(box_pos + dir + second_half_dir, opposite_bracket);
+    grid.set(box_pos, '.');
+    grid.set(box_pos + second_half_dir, '.');
 }
 
 pub fn run_robot(input: &PuzzleInput) -> Grid2D<char> {
