@@ -2,7 +2,6 @@ use utility_belt::prelude::*;
 
 use crate::parser::*;
 
-#[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
     let x_center = 101 / 2;
     let y_center = 103 / 2;

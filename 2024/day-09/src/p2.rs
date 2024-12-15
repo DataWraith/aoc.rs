@@ -8,7 +8,6 @@ pub struct Span {
     pub size: u64,
 }
 
-#[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
     let mut files: Vec<Span> = vec![];
     let mut blanks: Vec<Span> = vec![];

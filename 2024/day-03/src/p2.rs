@@ -1,6 +1,5 @@
 use crate::structs::*;
 
-#[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
     input.muls.iter().sum::<usize>().to_string()
 }

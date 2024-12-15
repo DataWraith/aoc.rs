@@ -1,6 +1,5 @@
 use crate::structs::*;
 
-#[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
     let mut left = input.left.clone();
     let mut right = input.right.clone();

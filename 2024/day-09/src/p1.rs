@@ -18,7 +18,6 @@ pub fn make_disk(input: &PuzzleInput) -> Vec<u64> {
     disk
 }
 
-#[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
     let disk = make_disk(input);
 

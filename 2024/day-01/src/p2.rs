@@ -2,7 +2,6 @@ use crate::structs::*;
 
 use utility_belt::prelude::*;
 
-#[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
     let right_counts = input.right.iter().counts();
 

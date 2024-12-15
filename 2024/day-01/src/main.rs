@@ -1,18 +1,9 @@
-use tracing_subscriber::fmt;
-use tracing_subscriber::fmt::format::FmtSpan;
-
 mod p1;
 mod p2;
 mod parser;
 mod structs;
 
 fn main() {
-    fmt::fmt()
-        .with_span_events(FmtSpan::CLOSE)
-        .with_target(false)
-        .with_level(false)
-        .init();
-
     let puzzle_input = parser::parse(include_str!("../input.txt"));
 
     #[cfg(feature = "p1")]

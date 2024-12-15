@@ -5,7 +5,6 @@ use crate::{
 
 use utility_belt::prelude::*;
 
-#[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
     let freqs = frequencies(&input.grid);
     let mut total = HashSet::new();

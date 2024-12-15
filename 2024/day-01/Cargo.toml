@@ -8,8 +8,6 @@ edition = "2021"
 [dependencies]
 winnow.workspace = true
 utility-belt.workspace = true
-tracing.workspace = true
-tracing-subscriber.workspace = true
 
 [features]
 default = ["p1", "p2"]

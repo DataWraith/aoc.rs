@@ -8,8 +8,6 @@ edition = "2021"
 [dependencies]
 winnow.workspace = true
 utility-belt.workspace = true
-tracing.workspace = true
-tracing-subscriber.workspace = true
 glam = "0.29.2"
 ndarray = "0.16.1"
 num = "0.4.3"

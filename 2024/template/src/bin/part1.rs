@@ -1,6 +1,4 @@
 fn main() {
-    tracing_subscriber::fmt::init();
-
     let puzzle_input = {{crate_name}}::parser::part1(include_str!("../../input.txt"));
     println!("Part 1: {}", {{crate_name}}::p1::part1(&puzzle_input));
 }

@@ -1,6 +1,5 @@
 use crate::parser::*;
 
-#[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
     let mut ratings = input
         .map

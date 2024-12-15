@@ -4,7 +4,6 @@ use utility_belt::prelude::*;
 
 use crate::parser::*;
 
-#[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
     let result = input
         .games

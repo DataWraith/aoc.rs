@@ -4,7 +4,6 @@ use utility_belt::prelude::*;
 
 use crate::{p1::find_regions, parser::*};
 
-#[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
     let mut sum = 0;
 

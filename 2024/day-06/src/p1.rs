@@ -2,7 +2,6 @@ use utility_belt::prelude::*;
 
 use crate::structs::*;
 
-#[tracing::instrument(skip(input))]
 pub fn part1(input: &PuzzleInput) -> String {
     let coord = guard_starting_position(&input.grid);
 
