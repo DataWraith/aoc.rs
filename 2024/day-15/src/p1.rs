@@ -40,24 +40,10 @@ pub fn run_robot(input: &PuzzleInput) -> Grid2D<char> {
             }
         }
 
-        loop {
-            let next = cur - dir.into();
-
-            if next == robot_pos {
-                grid.set(cur, '@');
-                grid.set(next, '.');
-                break;
-            }
-
-            if grid[next] == 'O' {
-                grid.set(cur, 'O');
-                grid.set(next, '.');
-            }
-
-            cur = next;
-        }
-
+        grid[cur] = 'O';
+        grid[robot_pos] = '.';
         robot_pos = robot_pos + dir.into();
+        grid[robot_pos] = '@';
     }
 
     grid
