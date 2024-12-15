@@ -4,28 +4,7 @@ use crate::parser::*;
 
 #[tracing::instrument(skip(input))]
 pub fn part2(input: &PuzzleInput) -> String {
-    let mut warehouse = Grid2D::new(input.warehouse.width() * 2, input.warehouse.height(), '.');
-
-    input.warehouse.iter().for_each(|(coord, c)| {
-        let x = coord.x * 2;
-        let y = coord.y;
-
-        if *c == 'O' {
-            warehouse.set((x, y).into(), '[');
-            warehouse.set((x + 1, y).into(), ']');
-        } else if *c == '@' {
-            warehouse.set((x, y).into(), '@');
-            warehouse.set((x + 1, y).into(), '.');
-        } else {
-            warehouse.set((x, y).into(), *c);
-            warehouse.set((x + 1, y).into(), *c);
-        }
-    });
-
-    let result = run_robot(&PuzzleInput {
-        warehouse,
-        robot_moves: input.robot_moves.clone(),
-    });
+    let result = run_robot(input);
 
     // GPS Coordinates
     let mut sum = 0;

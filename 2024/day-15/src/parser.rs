@@ -18,5 +18,12 @@ pub fn part1(input: &str) -> PuzzleInput {
 }
 
 pub fn part2(input: &str) -> PuzzleInput {
-    part1(input)
+    let (warehouse, robot_moves) = input.split_once("\n\n").unwrap();
+    let warehouse = format!("{}\n", warehouse);
+    let warehouse = warehouse.replace("#", "##").replace("O", "[]").replace(".", "..").replace("@", "@.");
+
+    PuzzleInput {
+        warehouse: (warehouse.as_str()).into(),
+        robot_moves: robot_moves.chars().filter(|c| *c != '\n').collect(),
+    }
 }
