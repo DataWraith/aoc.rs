@@ -59,49 +59,47 @@ pub fn push_box(grid: &mut Grid2D<char>, box_pos: Coordinate, dir: Direction) {
         return;
     }
 
-    if can_push_box(grid, box_pos, dir) {
-        if dir == Direction::Left || dir == Direction::Right {
-            let mut cur = box_pos;
-            let mut next;
+    if dir == Direction::Left || dir == Direction::Right {
+        let mut cur = box_pos;
+        let mut next;
 
-            loop {
-                next = cur + dir.into();
+        loop {
+            next = cur + dir.into();
 
-                if grid[next] == '.' {
-                    break;
-                }
-
-                cur = next;
+            if grid[next] == '.' {
+                break;
             }
 
-            while next != box_pos {
-                grid.set(next, grid[cur]);
-                grid.set(cur, '.');
-                next = cur;
-                cur = cur.neighbor(dir.opposite());
-            }
-        } else {
-            let second_half_dir = if grid[box_pos] == '[' {
-                Direction::Right
-            } else {
-                Direction::Left
-            };
-
-            let opposite_bracket = if grid[box_pos] == '[' { ']' } else { '[' };
-
-            // Recursively push the boxes
-            push_box(grid, box_pos + dir.into(), dir);
-            push_box(grid, box_pos + dir.into() + second_half_dir.into(), dir);
-
-            // Move the box itself
-            grid.set(box_pos + dir.into(), grid[box_pos]);
-            grid.set(
-                box_pos + dir.into() + second_half_dir.into(),
-                opposite_bracket,
-            );
-            grid.set(box_pos, '.');
-            grid.set(box_pos + second_half_dir.into(), '.');
+            cur = next;
         }
+
+        while next != box_pos {
+            grid.set(next, grid[cur]);
+            grid.set(cur, '.');
+            next = cur;
+            cur = cur.neighbor(dir.opposite());
+        }
+    } else {
+        let second_half_dir = if grid[box_pos] == '[' {
+            Direction::Right
+        } else {
+            Direction::Left
+        };
+
+        let opposite_bracket = if grid[box_pos] == '[' { ']' } else { '[' };
+
+        // Recursively push the boxes
+        push_box(grid, box_pos + dir.into(), dir);
+        push_box(grid, box_pos + dir.into() + second_half_dir.into(), dir);
+
+        // Move the box itself
+        grid.set(box_pos + dir.into(), grid[box_pos]);
+        grid.set(
+            box_pos + dir.into() + second_half_dir.into(),
+            opposite_bracket,
+        );
+        grid.set(box_pos, '.');
+        grid.set(box_pos + second_half_dir.into(), '.');
     }
 }
 
