@@ -14,14 +14,14 @@ pub fn part2(input: &PuzzleInput) -> String {
 }
 
 pub fn can_push_boxes(grid: &Grid2D<char>, box_pos: Coordinate, dir: Direction) -> bool {
-    if grid[box_pos] == '.' {
-        // Can push into an empty space
-        return true;
-    }
-
     if grid[box_pos] == '#' {
         // Can't push into a wall
         return false;
+    }
+
+    if grid[box_pos] == '.' {
+        // Can push into an empty space
+        return true;
     }
 
     match dir {
