@@ -51,7 +51,7 @@ pub fn find_regions(input: &Grid2D<char>) -> Vec<HashSet<Coordinate>> {
     let mut regions = HashMap::new();
 
     for (coord, &set) in sets.iter() {
-        let root = union_find.find(set);
+        let root = union_find.find(set).unwrap();
 
         regions
             .entry(root)
