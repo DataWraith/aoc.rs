@@ -60,8 +60,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
         let mut visited = g2.map(|_| DirectionSet::empty());
 
-        let mut initial_dirset = DirectionSet::empty();
-        initial_dirset.insert(state.direction);
+        let initial_dirset: DirectionSet = state.direction.into();
         visited.set(state.coordinate, initial_dirset);
 
         while let Some(next_state) = state.next_state(&g2) {

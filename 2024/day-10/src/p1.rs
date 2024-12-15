@@ -21,6 +21,7 @@ fn trail_head_score(input: &PuzzleInput, head: Coordinate) -> usize {
     while let Some(p) = q.pop_front() {
         if input.map.get(p) == Some(&9) {
             score += 1;
+            continue;
         }
 
         for neighbor in p.neighbors() {

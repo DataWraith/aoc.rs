@@ -121,9 +121,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-deque"
-version = "0.8.5"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "613f8cc01fe9cf1a3eb3d7f488fd2fa8388403e97039e2f73692932e291a770d"
+checksum = "9dd111b7b7f7d55b72c0a6ae361660ee5853c9af73f70c3c2ef6858b950e2e51"
 dependencies = [
  "crossbeam-epoch",
  "crossbeam-utils",
@@ -140,9 +140,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-utils"
-version = "0.8.20"
+version = "0.8.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22ec99545bb0ed0ea7bb9b8e1e9122ea386ff8a48c0922e43f36d45ab09e0e80"
+checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
 name = "day-01"
@@ -980,8 +980,8 @@ checksum = "adb9e6ca4f869e1180728b7950e35922a7fc6397f7b641499e8f3ef06e50dc83"
 
 [[package]]
 name = "utility-belt"
-version = "0.2024.6"
-source = "git+https://github.com/DataWraith/utility-belt.git?rev=9ab40b1ae211#9ab40b1ae211c08e4406cc54f0c348aa553271ed"
+version = "0.2024.7"
+source = "git+https://github.com/DataWraith/utility-belt.git?rev=7dbddbc3d5e6#7dbddbc3d5e69946dbec0bc6ff326f1071a2a5bc"
 dependencies = [
  "ahash",
  "derive_more",
