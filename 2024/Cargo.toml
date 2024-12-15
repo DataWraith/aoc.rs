@@ -6,7 +6,7 @@ default-members = ["day-*"]
 
 [workspace.dependencies]
 divan = "0.1"
-utility-belt = { git = "https://github.com/DataWraith/utility-belt.git", rev="a3c8d88e" }
+utility-belt = { git = "https://github.com/DataWraith/utility-belt.git", rev="f573300543c7" }
 winnow = "0.6"
 tracing = "0.1"
 tracing-subscriber = "0.3"
