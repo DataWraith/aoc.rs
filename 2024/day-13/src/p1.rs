@@ -5,14 +5,10 @@ use utility_belt::prelude::*;
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let result = input
+    input
         .games
         .iter()
         .filter_map(|g| calculate_num_button_presses(g.clone(), input.offset))
-        .collect_vec();
-
-    result
-        .iter()
         .map(|(a, b)| 3 * a + b)
         .sum::<BigInt>()
         .to_string()
