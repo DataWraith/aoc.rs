@@ -29,18 +29,18 @@ pub fn can_push_box(grid: &mut Grid2D<char>, box_pos: Coordinate, dir: Direction
 
     match dir {
         Direction::Left | Direction::Right => {
-            let next = box_pos + dir.into();
+            let next = box_pos + dir;
             return can_push_box(grid, next, dir);
         }
 
         Direction::Up | Direction::Down => {
-            let next_pos1 = box_pos + dir.into();
+            let next_pos1 = box_pos + dir;
             let next_pos2 = box_pos
-                + dir.into()
+                + dir
                 + if grid[box_pos] == '[' {
-                    Direction::Right.into()
+                    Direction::Right
                 } else {
-                    Direction::Left.into()
+                    Direction::Left
                 };
 
             return can_push_box(grid, next_pos1, dir) && can_push_box(grid, next_pos2, dir);
@@ -64,7 +64,7 @@ pub fn push_box(grid: &mut Grid2D<char>, box_pos: Coordinate, dir: Direction) {
         let mut next;
 
         loop {
-            next = cur + dir.into();
+            next = cur + dir;
 
             if grid[next] == '.' {
                 break;
@@ -89,17 +89,14 @@ pub fn push_box(grid: &mut Grid2D<char>, box_pos: Coordinate, dir: Direction) {
         let opposite_bracket = if grid[box_pos] == '[' { ']' } else { '[' };
 
         // Recursively push the boxes
-        push_box(grid, box_pos + dir.into(), dir);
-        push_box(grid, box_pos + dir.into() + second_half_dir.into(), dir);
+        push_box(grid, box_pos + dir, dir);
+        push_box(grid, box_pos + dir + second_half_dir, dir);
 
         // Move the box itself
-        grid.set(box_pos + dir.into(), grid[box_pos]);
-        grid.set(
-            box_pos + dir.into() + second_half_dir.into(),
-            opposite_bracket,
-        );
+        grid.set(box_pos + dir, grid[box_pos]);
+        grid.set(box_pos + dir + second_half_dir, opposite_bracket);
         grid.set(box_pos, '.');
-        grid.set(box_pos + second_half_dir.into(), '.');
+        grid.set(box_pos + second_half_dir, '.');
     }
 }
 
@@ -110,11 +107,11 @@ pub fn run_robot(input: &PuzzleInput) -> Grid2D<char> {
     for robot_move in input.robot_moves.iter() {
         let dir: Direction = (*robot_move).try_into().unwrap();
 
-        if can_push_box(&mut grid, robot_pos + dir.into(), dir) {
-            push_box(&mut grid, robot_pos + dir.into(), dir);
+        if can_push_box(&mut grid, robot_pos + dir, dir) {
+            push_box(&mut grid, robot_pos + dir, dir);
             grid.set(robot_pos, '.');
-            grid.set(robot_pos + dir.into(), '@');
-            robot_pos = robot_pos + dir.into();
+            grid.set(robot_pos + dir, '@');
+            robot_pos = robot_pos + dir;
         }
     }
 

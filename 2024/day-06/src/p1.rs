@@ -35,7 +35,7 @@ pub struct GuardState {
 
 impl GuardState {
     pub fn next_state(&self, grid: &Grid2D<char>) -> Option<GuardState> {
-        let next_coord = self.coordinate + self.direction.into();
+        let next_coord = self.coordinate + self.direction;
 
         if let Some(c) = grid.get(next_coord) {
             if *c == '#' {

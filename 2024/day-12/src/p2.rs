@@ -39,7 +39,7 @@ pub fn part2(input: &PuzzleInput) -> String {
             let mut cur = coord;
 
             loop {
-                cur += left.into();
+                cur += left;
 
                 if !perimeter.remove(&(cur, direction)) {
                     break;
@@ -49,7 +49,7 @@ pub fn part2(input: &PuzzleInput) -> String {
             cur = coord;
 
             loop {
-                cur += right.into();
+                cur += right;
 
                 if !perimeter.remove(&(cur, direction)) {
                     break;

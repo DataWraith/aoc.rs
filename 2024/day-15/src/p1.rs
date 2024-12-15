@@ -26,7 +26,7 @@ pub fn run_robot(input: &PuzzleInput) -> Grid2D<char> {
         let mut cur = robot_pos;
 
         loop {
-            let next = cur + dir.into();
+            let next = cur + dir;
             let c = grid[next];
 
             if c == '#' {
@@ -42,7 +42,7 @@ pub fn run_robot(input: &PuzzleInput) -> Grid2D<char> {
 
         grid[cur] = 'O';
         grid[robot_pos] = '.';
-        robot_pos = robot_pos + dir.into();
+        robot_pos = robot_pos + dir;
         grid[robot_pos] = '@';
     }
 

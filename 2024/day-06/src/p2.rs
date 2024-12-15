@@ -29,7 +29,7 @@ pub fn part2(input: &PuzzleInput) -> String {
     // and use the previuos step as starting point to find the loop. But this is fast enough.
 
     for (pos, dir) in visited.iter() {
-        let obstacle = *pos + (*dir).into();
+        let obstacle = *pos + (*dir);
 
         // Can't place an obstacle on the starting position
         if obstacle == coord {
