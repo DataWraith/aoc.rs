@@ -1,4 +1,5 @@
 use std::collections::BTreeSet;
+use std::iter::successors;
 
 use utility_belt::prelude::*;
 
@@ -35,23 +36,13 @@ pub fn part2(input: &PuzzleInput) -> String {
             let left = direction.turn_left_90();
             let right = direction.turn_right_90();
 
-            let mut cur = coord;
-
-            loop {
-                cur += left;
-
-                if !perimeter.remove(&(cur, direction)) {
-                    break;
-                }
-            }
-
-            cur = coord;
-
-            loop {
-                cur += right;
-
-                if !perimeter.remove(&(cur, direction)) {
-                    break;
+            for perpendicular in [left, right] {
+                for pos in successors(Some(coord + perpendicular), |&pos| {
+                    Some(pos + perpendicular)
+                }) {
+                    if !perimeter.remove(&(pos, direction)) {
+                        break;
+                    }
                 }
             }
         }
