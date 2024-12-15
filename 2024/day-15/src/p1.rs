@@ -42,7 +42,7 @@ pub fn run_robot(input: &PuzzleInput) -> Grid2D<char> {
 
         grid[cur] = 'O';
         grid[robot_pos] = '.';
-        robot_pos = robot_pos + dir;
+        robot_pos += dir;
         grid[robot_pos] = '@';
     }
 

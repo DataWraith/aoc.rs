@@ -18,7 +18,7 @@ pub fn part2(input: &PuzzleInput) -> String {
     sum.to_string()
 }
 
-pub fn can_push_boxes(grid: &mut Grid2D<char>, box_pos: Coordinate, dir: Direction) -> bool {
+pub fn can_push_boxes(grid: &Grid2D<char>, box_pos: Coordinate, dir: Direction) -> bool {
     if grid[box_pos] == '.' {
         return true;
     }
@@ -30,7 +30,7 @@ pub fn can_push_boxes(grid: &mut Grid2D<char>, box_pos: Coordinate, dir: Directi
     match dir {
         Direction::Left | Direction::Right => {
             let next = box_pos + dir;
-            return can_push_boxes(grid, next, dir);
+            can_push_boxes(grid, next, dir)
         }
 
         Direction::Up | Direction::Down => {
@@ -43,7 +43,7 @@ pub fn can_push_boxes(grid: &mut Grid2D<char>, box_pos: Coordinate, dir: Directi
                     Direction::Left
                 };
 
-            return can_push_boxes(grid, next_pos1, dir) && can_push_boxes(grid, next_pos2, dir);
+            can_push_boxes(grid, next_pos1, dir) && can_push_boxes(grid, next_pos2, dir)
         }
 
         _ => false,
@@ -105,11 +105,11 @@ pub fn run_robot(input: &PuzzleInput) -> Grid2D<char> {
     for robot_move in input.robot_moves.iter() {
         let dir: Direction = (*robot_move).try_into().unwrap();
 
-        if can_push_boxes(&mut grid, robot_pos + dir, dir) {
+        if can_push_boxes(&grid, robot_pos + dir, dir) {
             push_boxes(&mut grid, robot_pos + dir, dir);
             grid.set(robot_pos, '.');
             grid.set(robot_pos + dir, '@');
-            robot_pos = robot_pos + dir;
+            robot_pos += dir;
         }
     }
 
