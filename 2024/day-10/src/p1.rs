@@ -14,28 +14,23 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 fn trail_head_score(input: &PuzzleInput, head: Coordinate) -> usize {
-    let mut seen = input.map.map(|_square| false);
+    let mut score = 0;
 
-    let mut successors = move |p: &Coordinate| {
-        let mut result = Vec::new();
+    let mut seen = input.map.map(|_square| false);
+    let mut q = VecDeque::from([head]);
+
+    while let Some(p) = q.pop_front() {
+        if input.map.get(p) == Some(&9) {
+            score += 1;
+        }
 
         for neighbor in p.neighbors() {
             if let Some(n) = input.map.get(neighbor) {
-                if *n == input.map[*p] + 1 && !seen[neighbor] {
+                if *n == input.map[p] + 1 && !seen[neighbor] {
                     seen[neighbor] = true;
-                    result.push(neighbor);
+                    q.push_back(neighbor);
                 }
             }
-        }
-
-        result
-    };
-
-    let mut score = 0;
-    let mut bfs = BrFS::new(vec![head]);
-    while let Some(next) = bfs.next(&mut successors) {
-        if input.map.get(next) == Some(&9) {
-            score += 1;
         }
     }
 
