@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 winnow.workspace = true
 utility-belt.workspace = true
+petgraph = "0.6.5"
 
 [dev-dependencies]
 divan.workspace = true
