@@ -59,12 +59,12 @@ pub fn follow_path(
             return (next, len);
         }
 
-        if grid.get(next) == Some(&'E') {
-            return (next, len);
-        }
-
         if grid.get(next) == Some(&'#') {
             return (cur, len - 1);
+        }
+
+        if grid.get(next) == Some(&'E') {
+            return (next, len);
         }
 
         len += 1;
@@ -162,32 +162,18 @@ pub fn search(input: &PuzzleInput) -> Vec<State> {
             let left_dir = state.direction.turn_left_90();
             let right_dir = state.direction.turn_right_90();
 
-            let left_coord = state.position.neighbor(left_dir);
-            let right_coord = state.position.neighbor(right_dir);
+            for dir in [left_dir, right_dir] {
+                let coord = state.position.neighbor(dir);
 
-            let left_free = input.maze.get(left_coord) == Some(&'.')
-                || input.maze.get(left_coord) == Some(&'E');
-            let right_free = input.maze.get(right_coord) == Some(&'.')
-                || input.maze.get(right_coord) == Some(&'E');
+                if input.maze.get(coord) == Some(&'.') || input.maze.get(coord) == Some(&'E') {
+                    let turn = State {
+                        direction: dir,
+                        number_of_turns: state.number_of_turns + 1,
+                        ..state.clone()
+                    };
 
-            if left_free {
-                let turn_left = State {
-                    direction: left_dir,
-                    number_of_turns: state.number_of_turns + 1,
-                    ..state.clone()
-                };
-
-                q.push(turn_left);
-            }
-
-            if right_free {
-                let turn_right = State {
-                    direction: right_dir,
-                    number_of_turns: state.number_of_turns + 1,
-                    ..state.clone()
-                };
-
-                q.push(turn_right);
+                    q.push(turn);
+                }
             }
         }
 
