@@ -47,7 +47,7 @@ pub fn follow_path(
     cur: Coordinate,
     dir: Direction,
     grid: &Grid2D<char>,
-    junctions: &HashSet<Coordinate>,
+    junctions: &Grid2D<bool>,
 ) -> (Coordinate, usize) {
     let mut cur = cur;
     let mut len = 1;
@@ -55,7 +55,7 @@ pub fn follow_path(
     loop {
         let next = cur + dir;
 
-        if junctions.contains(&next) {
+        if junctions.get(next) == Some(&true) {
             return (next, len);
         }
 
@@ -158,7 +158,7 @@ pub fn search(input: &PuzzleInput) -> Vec<State> {
         }
 
         // If we are at a junction or corner, we can try to turn left or right.
-        if junctions.contains(&state.position) || hit_a_wall {
+        if junctions.get(state.position) == Some(&true) || hit_a_wall {
             let left_dir = state.direction.turn_left_90();
             let right_dir = state.direction.turn_right_90();
 
@@ -202,10 +202,10 @@ pub fn search(input: &PuzzleInput) -> Vec<State> {
     best
 }
 
-pub fn junctions(maze: &Grid2D<char>) -> HashSet<Coordinate> {
-    let mut junctions = HashSet::new();
+pub fn junctions(maze: &Grid2D<char>) -> Grid2D<bool> {
+    let mut junctions = maze.map(|_| false);
 
-    junctions.insert(maze.iter().find(|(_, &c)| c == 'S').unwrap().0);
+    junctions.set(maze.iter().find(|(_, &c)| c == 'S').unwrap().0, true);
 
     for (coord, &c) in maze.iter() {
         if c != '.' {
@@ -220,7 +220,7 @@ pub fn junctions(maze: &Grid2D<char>) -> HashSet<Coordinate> {
         }
 
         if count > 2 {
-            junctions.insert(coord);
+            junctions.set(coord, true);
         }
     }
 
