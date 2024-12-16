@@ -1,6 +1,6 @@
 use std::{
     cmp::Ordering,
-    collections::{BTreeSet, BinaryHeap},
+    collections::{BTreeMap, BTreeSet, BinaryHeap},
 };
 
 use __std_iter::successors;
@@ -81,7 +81,7 @@ pub fn race(input: &PuzzleInput, tabu: &HashSet<(Coordinate, Direction)>) -> Sta
     let end = input.maze.iter().find(|(_, &c)| c == 'E').unwrap().0;
 
     let mut q = BinaryHeap::new();
-    let mut visited = BTreeSet::new();
+    let mut visited = BTreeMap::new();
 
     q.push(State {
         position: start,
@@ -92,31 +92,42 @@ pub fn race(input: &PuzzleInput, tabu: &HashSet<(Coordinate, Direction)>) -> Sta
         heuristic: start.manhattan_distance(end) as usize,
     });
 
+    q.push(State {
+        position: start,
+        direction: Direction::Up,
+        straight: 0,
+        turn: 1,
+        path: vec![start],
+        heuristic: start.manhattan_distance(end) as usize,
+    });
+
     let mut best: Vec<State> = vec![];
 
     while let Some(state) = q.pop() {
-        if visited.contains(&(state.position, state.direction)) {
-            continue;
+        if let Some(prev_g) = visited.get(&(state.position, state.direction)) {
+            if state.score() > *prev_g {
+                continue;
+            }
         }
 
-        visited.insert((state.position, state.direction));
+        visited.insert((state.position, state.direction), state.score());
 
         if visited.len() % 1000 == 0 {
             println!("{}", visited.len());
         }
 
         if false || state.position == end {
-            let mut grid = input.maze.clone();
-            let c = match state.direction {
-                Direction::Right => '>',
-                Direction::Down => 'v',
-                Direction::Left => '<',
-                Direction::Up => '^',
-                _ => unreachable!(),
-            };
-            grid.set(state.position, c);
-            println!("{}\n", grid);
-            dbg!(&state);
+            //let mut grid = input.maze.clone();
+            //let c = match state.direction {
+            //    Direction::Right => '>',
+            //    Direction::Down => 'v',
+            //    Direction::Left => '<',
+            //    Direction::Up => '^',
+            //    _ => unreachable!(),
+            //};
+            //grid.set(state.position, c);
+            //println!("{}\n", grid);
+            //dbg!(&state);
             //std::thread::sleep(std::time::Duration::from_millis(500));
             if !best.is_empty() {
                 if state.score() < best[0].score() {
@@ -178,7 +189,7 @@ pub fn race(input: &PuzzleInput, tabu: &HashSet<(Coordinate, Direction)>) -> Sta
         }
     }
 
-    dbg!(&best);
+    //dbg!(&best);
 
     let mut covered = input.maze.map(|_| false);
 
