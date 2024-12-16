@@ -11,7 +11,8 @@ use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
     let mut tabu = HashSet::new();
-    return race(input, &tabu).to_string();
+    let state = race(input, &tabu);
+    return state.score().to_string();
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -25,7 +26,7 @@ pub struct State {
 }
 
 impl State {
-    fn score(&self) -> usize {
+    pub fn score(&self) -> usize {
         self.straight + self.turn * 1000
     }
 }
@@ -73,7 +74,7 @@ pub fn follow_path(
     (cur, dir, len)
 }
 
-pub fn race(input: &PuzzleInput, tabu: &HashSet<(Coordinate, Direction)>) -> usize {
+pub fn race(input: &PuzzleInput, tabu: &HashSet<(Coordinate, Direction)>) -> State {
     let junctions = junctions(&input.maze);
 
     let start = input.maze.iter().find(|(_, &c)| c == 'S').unwrap().0;
@@ -202,7 +203,7 @@ pub fn race(input: &PuzzleInput, tabu: &HashSet<(Coordinate, Direction)>) -> usi
 
     dbg!(&covered.iter().filter(|(_, &c)| c).count());
 
-    return best[0].score();
+    return best[0].clone();
 }
 
 pub fn junctions(maze: &Grid2D<char>) -> HashSet<Coordinate> {
