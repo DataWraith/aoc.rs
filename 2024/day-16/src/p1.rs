@@ -3,13 +3,15 @@ use std::{
     collections::{BTreeSet, BinaryHeap},
 };
 
+use __std_iter::successors;
 use petgraph::graph::{DiGraph, NodeIndex};
 use utility_belt::prelude::*;
 
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    return race(input).to_string();
+    let mut tabu = HashSet::new();
+    return race(input, &tabu).to_string();
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -19,6 +21,7 @@ pub struct State {
     pub heuristic: usize,
     pub straight: usize,
     pub turn: usize,
+    pub path: Vec<Coordinate>,
 }
 
 impl State {
@@ -70,7 +73,7 @@ pub fn follow_path(
     (cur, dir, len)
 }
 
-pub fn race(input: &PuzzleInput) -> usize {
+pub fn race(input: &PuzzleInput, tabu: &HashSet<(Coordinate, Direction)>) -> usize {
     let junctions = junctions(&input.maze);
 
     let start = input.maze.iter().find(|(_, &c)| c == 'S').unwrap().0;
@@ -84,10 +87,11 @@ pub fn race(input: &PuzzleInput) -> usize {
         direction: Direction::Right,
         straight: 0,
         turn: 0,
+        path: vec![start],
         heuristic: start.manhattan_distance(end) as usize,
     });
 
-    let mut best = usize::MAX;
+    let mut best: Vec<State> = vec![];
 
     while let Some(state) = q.pop() {
         if visited.contains(&(state.position, state.direction)) {
@@ -113,8 +117,14 @@ pub fn race(input: &PuzzleInput) -> usize {
             println!("{}\n", grid);
             dbg!(&state);
             //std::thread::sleep(std::time::Duration::from_millis(500));
-            if state.position == end {
-                best = state.score().min(best);
+            if !best.is_empty() {
+                if state.score() < best[0].score() {
+                    best.clear();
+                }
+            }
+
+            if state.position == end && (best.len() == 0 || state.score() <= best[0].score()) {
+                best.push(state.clone());
             }
         }
 
@@ -125,10 +135,13 @@ pub fn race(input: &PuzzleInput) -> usize {
 
         if fwd_free {
             let n = state.position.neighbor(state.direction);
+            let mut path = state.path.clone();
+            path.push(next);
             let mut fwd = State {
                 position: next,
                 straight: state.straight + len,
                 heuristic: n.manhattan_distance(end) as usize,
+                path,
                 ..state.clone()
             };
 
@@ -150,7 +163,7 @@ pub fn race(input: &PuzzleInput) -> usize {
             let mut turn_right = State {
                 direction: state.direction.turn_right_90(),
                 turn: state.turn + 1,
-                ..state
+                ..state.clone()
             };
 
             let n = turn_right.position.neighbor(turn_right.direction);
@@ -158,9 +171,38 @@ pub fn race(input: &PuzzleInput) -> usize {
                 q.push(turn_right);
             }
         }
+
+        if !best.is_empty() && state.score() > best[0].score() {
+            break;
+        }
     }
 
-    return best;
+    dbg!(&best);
+
+    let mut covered = input.maze.map(|_| false);
+
+    for b in best.iter() {
+        for path in b.path.windows(2) {
+            let towards = path[0].towards(path[1]);
+            covered.set(path[0], true);
+
+            for c in successors(Some(path[0]), |&c| Some(c.neighbor(towards))) {
+                covered.set(c, true);
+                if c == path[1] {
+                    break;
+                }
+            }
+        }
+    }
+
+    println!(
+        "{}",
+        covered.map(|&c| if c { 'o' } else { '.' }).to_string()
+    );
+
+    dbg!(&covered.iter().filter(|(_, &c)| c).count());
+
+    return best[0].score();
 }
 
 pub fn junctions(maze: &Grid2D<char>) -> HashSet<Coordinate> {
