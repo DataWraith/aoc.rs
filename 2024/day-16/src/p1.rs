@@ -80,11 +80,7 @@ pub fn follow_path(
 fn heuristic(cur: Coordinate, dir: Direction, end: Coordinate) -> usize {
     let mut h = cur.manhattan_distance(end) as usize;
 
-    if dir == Direction::Left {
-        h += 1000;
-    }
-
-    if dir == Direction::Down {
+    if dir == Direction::Left || dir == Direction::Down {
         h += 1000;
     }
 
@@ -143,7 +139,7 @@ pub fn search(input: &PuzzleInput) -> Vec<State> {
         // Did we hit a wall?
         let hit_a_wall = len == 0;
 
-        // If we didn't hit a wall, this is a junction, and we can proceed forwards.
+        // If we didn't hit a wall, this is a crossing, and we can proceed forwards.
         if !hit_a_wall {
             // Update the list of waypoints
             let mut waypoints = state.waypoints.clone();
