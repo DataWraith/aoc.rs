@@ -3,11 +3,11 @@ use utility_belt::prelude::*;
 use crate::{p1::Machine, parser::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let mut stack = VecDeque::new();
-    stack.push_front(0);
+    let mut q = VecDeque::new();
+    q.push_front(0);
 
-    for k in 0.. {
-        let a = stack.pop_front().unwrap();
+    loop {
+        let a = q.pop_front().unwrap();
 
         'bits: for x in 0..8 {
             let register = (a << 3) + x;
@@ -21,11 +21,7 @@ pub fn part2(input: &PuzzleInput) -> String {
                 output: vec![],
             };
 
-            println!("*********** {register} {x} ***********");
-
             while let Some(_) = machine.step() {}
-
-            println!("{}", machine.output.iter().copied().join(", "));
 
             for (a, b) in machine.output.iter().rev().zip(input.program.iter().rev()) {
                 if a != b {
@@ -37,18 +33,15 @@ pub fn part2(input: &PuzzleInput) -> String {
                 return register.to_string();
             }
 
-            println!("FOUND");
-            stack.push_back(register);
+            q.push_back(register);
         }
     }
-
-    unreachable!();
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    use utility_belt::prelude::indoc;
 
     const TEST_INPUT: &str = indoc! {"
         Register A: 2024

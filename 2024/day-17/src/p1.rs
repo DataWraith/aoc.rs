@@ -170,7 +170,7 @@ impl From<u64> for Instruction {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    use utility_belt::prelude::indoc;
 
     const TEST_INPUT: &str = indoc! {"
         Register A: 729
