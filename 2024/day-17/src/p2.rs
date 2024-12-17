@@ -3,52 +3,35 @@ use utility_belt::prelude::*;
 use crate::{p1::Machine, parser::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let mut machine = Machine {
-        a: input.register_a,
-        b: input.register_b,
-        c: input.register_c,
-        program: input.program.clone(),
-        instr_ptr: 0,
-        output: vec![],
-    };
+    let a = 236539226447469u64;
+        let mut machine = Machine {
+            a: a,
+            b: input.register_b,
+            c: input.register_c,
+            program: input.program.clone(),
+            instr_ptr: 0,
+            output: vec![],
+        };
 
-    let mut sequence = vec![vec![]; input.program.len()];
-    let mut prev = vec![0; input.program.len()];
-    let mut found = vec![0];
-    let mut move_by = 1;
-    let target = 0;
+        println!("*********** {a} ***********");
+        let mut count = 0;
 
-    'outer: for i in (0..100_000).step_by(move_by) {
-        let mut m = machine.clone();
-        m.a = i;
+        'outer: while let Some(_) = machine.step() {
+            let mut xnput = String::new();
+            std::io::stdin().read_line(&mut xnput).unwrap();
 
-        'middle: while let Some(_) = m.step() {
-            for (j, target) in input.program.iter().enumerate() {
-                if j >= m.output.len() {
-                    continue 'middle;
+            for (i, o) in machine.output.iter().enumerate() {
+                if o != &input.program[i] {
+                    break 'outer;
                 }
 
-                if m.output[j] == *target {
-                    sequence[j].push(i);
-                    prev[j] = i;
-                    continue 'outer;
-                }
-
-                if m.output[j] != *target {
-                    continue 'outer;
+                if i == 15 && machine.a == 0 {
+                    println!("SOLVED");
                 }
             }
-
-            return i.to_string();
         }
-    }
 
-    let x = 0;
-    dbg!(&sequence[x].first());
-    sequence[x].dedup_by(|a, b| (*b - *a) == 0 || (*b - *a) == move_by as u64);
-    dbg!(&sequence[x][0..100]);
-
-    todo!();
+    todo!()
 }
 
 #[cfg(test)]
