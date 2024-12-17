@@ -3,35 +3,46 @@ use utility_belt::prelude::*;
 use crate::{p1::Machine, parser::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let a = 236539226447469u64;
-        let mut machine = Machine {
-            a: a,
-            b: input.register_b,
-            c: input.register_c,
-            program: input.program.clone(),
-            instr_ptr: 0,
-            output: vec![],
-        };
+    let mut stack = VecDeque::new();
+    stack.push_front(0);
 
-        println!("*********** {a} ***********");
-        let mut count = 0;
+    for k in 0.. {
+        let a = stack.pop_front().unwrap();
 
-        'outer: while let Some(_) = machine.step() {
-            let mut xnput = String::new();
-            std::io::stdin().read_line(&mut xnput).unwrap();
+        'bits: for x in 0..8 {
+            let register = (a << 3) + x;
 
-            for (i, o) in machine.output.iter().enumerate() {
-                if o != &input.program[i] {
-                    break 'outer;
-                }
+            let mut machine = Machine {
+                a: register,
+                b: input.register_b,
+                c: input.register_c,
+                program: input.program.clone(),
+                instr_ptr: 0,
+                output: vec![],
+            };
 
-                if i == 15 && machine.a == 0 {
-                    println!("SOLVED");
+            println!("*********** {register} {x} ***********");
+
+            while let Some(_) = machine.step() {}
+
+            println!("{}", machine.output.iter().copied().join(", "));
+
+            for (a, b) in machine.output.iter().rev().zip(input.program.iter().rev()) {
+                if a != b {
+                    continue 'bits;
                 }
             }
-        }
 
-    todo!()
+            if machine.output.len() == 16 {
+                return register.to_string();
+            }
+
+            println!("FOUND");
+            stack.push_back(register);
+        }
+    }
+
+    unreachable!();
 }
 
 #[cfg(test)]
