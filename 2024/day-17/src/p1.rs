@@ -24,7 +24,7 @@ pub fn run_machine(input: &PuzzleInput) -> Machine {
     machine
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Machine {
     pub a: u64,
     pub b: u64,
