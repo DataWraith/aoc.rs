@@ -12,9 +12,13 @@ pub fn part2(input: &PuzzleInput) -> String {
         output: vec![],
     };
 
-    'outer: for i in 0.. {
-        dbg!(i);
+    let mut sequence = vec![vec![]; input.program.len()];
+    let mut prev = vec![0; input.program.len()];
+    let mut found = vec![0];
+    let mut move_by = 1;
+    let target = 0;
 
+    'outer: for i in (0..100_000).step_by(move_by) {
         let mut m = machine.clone();
         m.a = i;
 
@@ -22,6 +26,12 @@ pub fn part2(input: &PuzzleInput) -> String {
             for (j, target) in input.program.iter().enumerate() {
                 if j >= m.output.len() {
                     continue 'middle;
+                }
+
+                if m.output[j] == *target {
+                    sequence[j].push(i);
+                    prev[j] = i;
+                    continue 'outer;
                 }
 
                 if m.output[j] != *target {
@@ -33,7 +43,12 @@ pub fn part2(input: &PuzzleInput) -> String {
         }
     }
 
-    unreachable!()
+    let x = 0;
+    dbg!(&sequence[x].first());
+    sequence[x].dedup_by(|a, b| (*b - *a) == 0 || (*b - *a) == move_by as u64);
+    dbg!(&sequence[x][0..100]);
+
+    todo!();
 }
 
 #[cfg(test)]
