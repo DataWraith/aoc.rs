@@ -5,23 +5,24 @@ use crate::parser::*;
 pub fn part1(input: &PuzzleInput) -> String {
     let mut memory = Grid2D::new(input.width, input.height, '.');
 
+    // Mark the fallen bytes
     for c in input.bytes.iter().take(input.to_simulate) {
         memory.set(*c, '#');
     }
 
+    // And find the shortest path to the bottom right using Breadth-First Search
     let mut q = VecDeque::new();
     q.push_back((Coordinate::new(0, 0), 0));
 
-    while let Some(c) = q.pop_front() {
-        if c.0 == Coordinate::new(input.width as i32 - 1, input.height as i32 - 1) {
-            return c.1.to_string();
+    while let Some((c, cost)) = q.pop_front() {
+        if c == Coordinate::new(input.width as i32 - 1, input.height as i32 - 1) {
+            return cost.to_string();
         }
 
-        for d in Direction::cardinal() {
-            let nc = c.0 + d;
+        for nc in c.neighbors() {
             if memory.get(nc) == Some(&'.') {
                 memory.set(nc, 'o');
-                q.push_back((nc, c.1 + 1));
+                q.push_back((nc, cost + 1));
             }
         }
     }
@@ -32,7 +33,7 @@ pub fn part1(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    use utility_belt::prelude::indoc;
 
     const TEST_INPUT: &str = indoc! {"
 5,4
