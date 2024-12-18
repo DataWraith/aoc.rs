@@ -2,21 +2,15 @@ use utility_belt::prelude::*;
 
 use crate::parser::*;
 
-pub fn part1(input: &PuzzleInput) -> String {
-    let mut memory = Grid2D::new(input.width, input.height, '.');
+pub fn breadth_first_search(memory: &Grid2D<char>) -> Option<usize> {
+    let mut memory = memory.clone();
 
-    // Mark the fallen bytes
-    for c in input.bytes.iter().take(input.to_simulate) {
-        memory.set(*c, '#');
-    }
-
-    // And find the shortest path to the bottom right using Breadth-First Search
     let mut q = VecDeque::new();
     q.push_back((Coordinate::new(0, 0), 0));
 
     while let Some((c, cost)) = q.pop_front() {
-        if c == Coordinate::new(input.width as i32 - 1, input.height as i32 - 1) {
-            return cost.to_string();
+        if c == Coordinate::new(memory.width as i32 - 1, memory.height as i32 - 1) {
+            return Some(cost);
         }
 
         for nc in c.neighbors() {
@@ -27,7 +21,21 @@ pub fn part1(input: &PuzzleInput) -> String {
         }
     }
 
-    unreachable!()
+    None
+}
+
+pub fn part1(input: &PuzzleInput) -> String {
+    let mut memory = Grid2D::new(input.width, input.height, '.');
+
+    // Mark the fallen bytes
+    for c in input.bytes.iter().take(input.to_simulate) {
+        memory.set(*c, '#');
+    }
+
+    // Find the shortest path to the bottom right
+    let cost = breadth_first_search(&memory);
+
+    cost.unwrap().to_string()
 }
 
 #[cfg(test)]
