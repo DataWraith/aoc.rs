@@ -4,124 +4,55 @@ use utility_belt::prelude::*;
 
 use crate::parser::*;
 
+const MAX_VAL: i32 = 999;
+
 pub fn part2(input: &PuzzleInput) -> String {
-    let mut memory = Grid2D::new(input.width, input.height, 0);
-
-    let mut q = VecDeque::new();
-
-    q.push_back((
-        Coordinate::new(input.width as i32 - 1, input.height as i32 - 1),
-        1,
-    ));
-
-    memory.set(
-        Coordinate::new(input.width as i32 - 1, input.height as i32 - 1),
-        1,
-    );
-
-    while let Some(c) = q.pop_front() {
-        for d in Direction::cardinal() {
-            let nc = c.0 + d;
-
-            if memory.get(nc) == Some(&0) {
-                memory.set(nc, c.1 + 1);
-                q.push_back((nc, c.1 + 1));
-            }
-        }
-    }
-
-    dbg!(&memory.map(|x| if *x == 999 {
-        "###".to_string()
-    } else {
-        format!("{:03}", x)
-    }));
-
-    let max_val = 999;
+    let mut memory = Grid2D::new(input.width, input.height, false);
+    let mut path: Option<HashSet<Coordinate>> = None;
 
     'outer: for byte_coord in input.bytes.iter() {
         if byte_coord.x == input.width as i32 - 1 && byte_coord.y == input.height as i32 - 1 {
             return format!("{},{}", byte_coord.x, byte_coord.y);
         }
 
-        let prev_cost = *memory.get(*byte_coord).unwrap();
-        memory.set(*byte_coord, max_val);
+        memory.set(*byte_coord, true);
 
-        q.clear();
+        if path.is_none() || path.clone().unwrap().contains(byte_coord) {
+            let start = Coordinate::new(0, 0);
+            let end = Coordinate::new(input.width as i32 - 1, input.height as i32 - 1);
+            let mut visited = memory.map(|_| false);
+            let m2 = memory.clone();
 
-        for d in Direction::cardinal() {
-            let nc = *byte_coord + d;
-
-            if memory.get(nc).is_none() {
-                continue;
-            }
-
-            if *memory.get(nc).unwrap() == max_val {
-                continue;
-            }
-
-            q.push_back((nc, prev_cost + 1));
-        }
-
-        dbg!(&memory.map(|x| if *x == 999 {
-            "###".to_string()
-        } else {
-            format!("{:03}", x)
-        }));
-        dbg!(&byte_coord);
-
-        let mut found = false;
-        let mut visited = memory.map(|_| max_val);
-
-        while let Some((cur, _cost)) = q.pop_front() {
-            let cost = *memory.get(cur).unwrap();
-
-            if cur == Coordinate::new(input.width as i32 - 1, input.height as i32 - 1) {
-                found = true;
-                continue;
-            }
-
-            if *visited.get(cur).unwrap() == cost {
-                continue;
-            }
-
-            visited.set(cur, cost);
-
-            if cost == max_val {
-                continue;
-            }
-
-            let mut min_cost = max_val;
-
-            for n in cur.neighbors() {
-                if memory.get(n).is_none() {
-                    continue;
+            let successors = move |c: &Coordinate| {
+                if *c == end {
+                    return vec![];
                 }
 
-                min_cost = min_cost.min(1 + *memory.get(n).unwrap());
-            }
+                let neighbors = c
+                    .neighbors()
+                    .filter(|n| m2.get(*n).is_some())
+                    .filter(|n| *m2.get(*n).unwrap() == false)
+                    .filter(|n| *visited.get(*n).unwrap() == false)
+                    .map(|n| (n, 1))
+                    .collect_vec();
 
-            if min_cost == max_val {
-                memory.set(cur, max_val);
-            } else if *memory.get(cur).unwrap() != min_cost + 1 {
-                memory.set(cur, min_cost);
-                q.push_back((cur, min_cost));
-            }
+                neighbors.iter().for_each(|n| {
+                    visited.set(n.0, true);
+                });
 
-            if min_cost == prev_cost {
-                found = true;
-                continue;
-            }
+                neighbors
+            };
 
-            for n in cur.neighbors() {
-                if memory.get(n).is_none() {
-                    continue;
-                }
-
-                q.push_back((n, 0)); //(min_cost + 1).min(*neighbor_cost)));
-            }
+            path = astar(
+                &start,
+                successors,
+                |c| *c == end,
+                |c| c.manhattan_distance(end),
+            )
+            .map(|(path, cost)| path.iter().cloned().collect::<HashSet<_>>());
         }
 
-        if !found {
+        if path.is_none() {
             return format!("{},{}", byte_coord.x, byte_coord.y);
         }
     }
