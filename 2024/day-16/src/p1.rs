@@ -1,12 +1,19 @@
 use std::{
     cmp::Ordering,
     collections::{BTreeMap, BinaryHeap},
+    rc::Rc,
 };
 
 use std::iter::successors;
 use utility_belt::prelude::*;
 
 use crate::parser::*;
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Waypoints {
+    current: Coordinate,
+    previous: Option<Rc<Waypoints>>,
+}
 
 pub fn part1(input: &PuzzleInput) -> String {
     search(input).0.to_string()
@@ -19,7 +26,7 @@ pub struct State {
     pub heuristic: usize,
     pub straight_steps: usize,
     pub number_of_turns: usize,
-    pub waypoints: Vec<Coordinate>,
+    pub waypoints: Rc<Waypoints>,
 }
 
 impl State {
@@ -59,7 +66,7 @@ fn heuristic(cur: Coordinate, dir: Direction, end: Coordinate) -> usize {
 }
 
 // Runs the A* algorithm to find the shortest path from start to end.
-pub fn search(input: &PuzzleInput) -> (usize, Vec<Vec<Coordinate>>) {
+pub fn search(input: &PuzzleInput) -> (usize, Grid2D<bool>) {
     let start = input.maze.iter().find(|(_, &c)| c == 'S').unwrap().0;
     let end = input.maze.iter().find(|(_, &c)| c == 'E').unwrap().0;
 
@@ -69,6 +76,11 @@ pub fn search(input: &PuzzleInput) -> (usize, Vec<Vec<Coordinate>>) {
     let mut q = BinaryHeap::new();
     let mut lowest_cost = BTreeMap::new();
 
+    let start_wp = Rc::new(Waypoints {
+        current: start,
+        previous: None,
+    });
+
     // Starting states
     q.push(State {
         position: start,
@@ -76,7 +88,7 @@ pub fn search(input: &PuzzleInput) -> (usize, Vec<Vec<Coordinate>>) {
         straight_steps: 0,
         number_of_turns: 0,
         heuristic: heuristic(start, Direction::Right, end),
-        waypoints: vec![start],
+        waypoints: start_wp.clone(),
     });
 
     q.push(State {
@@ -85,7 +97,7 @@ pub fn search(input: &PuzzleInput) -> (usize, Vec<Vec<Coordinate>>) {
         straight_steps: 0,
         number_of_turns: 1,
         heuristic: heuristic(start, Direction::Right, end),
-        waypoints: vec![start],
+        waypoints: start_wp,
     });
 
     while let Some(state) = q.pop() {
@@ -125,8 +137,10 @@ pub fn search(input: &PuzzleInput) -> (usize, Vec<Vec<Coordinate>>) {
             let mut next_states = Vec::new();
 
             if input.maze.get(pos) == Some(&'E') {
-                let mut waypoints = state.waypoints.clone();
-                waypoints.push(pos);
+                let waypoints = Rc::new(Waypoints {
+                    current: pos,
+                    previous: Some(state.waypoints.clone()),
+                });
 
                 let next_state = State {
                     position: pos,
@@ -153,8 +167,10 @@ pub fn search(input: &PuzzleInput) -> (usize, Vec<Vec<Coordinate>>) {
                     || input.maze.get(next_pos) == Some(&'E')
                     || input.maze.get(next_pos) == Some(&'S')
                 {
-                    let mut waypoints = state.waypoints.clone();
-                    waypoints.push(pos);
+                    let waypoints = Rc::new(Waypoints {
+                        current: pos,
+                        previous: Some(state.waypoints.clone()),
+                    });
 
                     let next_state = State {
                         position: pos,
@@ -190,7 +206,29 @@ pub fn search(input: &PuzzleInput) -> (usize, Vec<Vec<Coordinate>>) {
         }
     }
 
-    (best_score, best_waypoints)
+    let mut seen = input.maze.map(|_| false);
+
+    for wp in best_waypoints {
+        seen[wp.current] = true;
+
+        let mut current = wp;
+
+        while let Some(prev) = current.previous.clone() {
+            let a = current.current;
+            let b = prev.current;
+            let dir = a.towards(b);
+
+            let mut pos = a;
+            while pos != b {
+                pos = pos.neighbor(dir);
+                seen[pos] = true;
+            }
+
+            current = prev;
+        }
+    }
+
+    (best_score, seen)
 }
 
 #[cfg(test)]
