@@ -22,16 +22,19 @@ pub fn count_possibilities(
         return *c;
     }
 
+    if design.len() == 0 {
+        return 1;
+    }
+
     let mut count = 0;
 
-    for pattern in input.patterns.iter() {
-        if pattern == design {
-            count += 1;
+    for prefix_len in (1..=input.longest_pattern).rev() {
+        if prefix_len > design.len() {
             continue;
         }
 
-        if design.starts_with(pattern) {
-            count += count_possibilities(input, &design[pattern.len()..], cache);
+        if input.patterns.contains(&design[..prefix_len]) {
+            count += count_possibilities(input, &design[prefix_len..], cache);
         }
     }
 
