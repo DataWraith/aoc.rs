@@ -50,7 +50,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         sum += sides * region.len();
     }
 
-    return sum.to_string();
+    sum.to_string()
 }
 
 #[cfg(test)]

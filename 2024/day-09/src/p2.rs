@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::parser::*;
 
 pub type FileId = u64;
@@ -20,13 +22,11 @@ pub fn part2(input: &PuzzleInput) -> String {
                 start: cur,
                 size: d,
             });
-        } else {
-            if d > 0 {
-                blanks.push(Span {
-                    start: cur,
-                    size: d,
-                });
-            }
+        } else if d > 0 {
+            blanks.push(Span {
+                start: cur,
+                size: d,
+            });
         }
 
         cur += d;
@@ -35,19 +35,23 @@ pub fn part2(input: &PuzzleInput) -> String {
     for cur_file in files.iter_mut().rev() {
         for (i, blank) in blanks.iter_mut().enumerate() {
             if blank.start > cur_file.start {
-                blanks.swap_remove(i);
                 break;
             }
 
-            if blank.size == cur_file.size {
-                cur_file.start = blank.start;
-                blanks.remove(i);
-                break;
-            } else if blank.size > cur_file.size {
-                cur_file.start = blank.start;
-                blank.start += cur_file.size;
-                blank.size -= cur_file.size;
-                break;
+            match blank.size.cmp(&cur_file.size) {
+                Ordering::Equal => {
+                    cur_file.start = blank.start;
+                    blanks.remove(i);
+                    break;
+                }
+
+                Ordering::Greater => {
+                    cur_file.start = blank.start;
+                    blank.start += cur_file.size;
+                    blank.size -= cur_file.size;
+                }
+
+                _ => {}
             }
         }
     }

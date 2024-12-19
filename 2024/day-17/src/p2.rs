@@ -21,7 +21,7 @@ pub fn part2(input: &PuzzleInput) -> String {
                 output: vec![],
             };
 
-            while let Some(_) = machine.step() {}
+            while machine.step().is_some() {}
 
             for (a, b) in machine.output.iter().rev().zip(input.program.iter().rev()) {
                 if a != b {

@@ -17,7 +17,7 @@ pub fn run_machine(input: &PuzzleInput) -> Machine {
         output: vec![],
     };
 
-    while let Some(_) = machine.step() {}
+    while machine.step().is_some() {}
 
     machine
 }
@@ -129,10 +129,10 @@ impl Machine {
         self.instr_ptr += 1;
 
         match x {
-            0..=3 => return Some(*x),
-            4 => return Some(self.a),
-            5 => return Some(self.b),
-            6 => return Some(self.c),
+            0..=3 => Some(*x),
+            4 => Some(self.a),
+            5 => Some(self.b),
+            6 => Some(self.c),
             7 => unreachable!("Reserved operand"),
             _ => panic!("Invalid operand"),
         }
