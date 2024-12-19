@@ -112,7 +112,10 @@ pub fn push_boxes(grid: &mut Grid2D<char>, box_pos: Coordinate, dir: Direction) 
 
     // Move the box itself
     grid.set(box_pos + dir, grid[box_pos]);
-    grid.set(box_pos + dir + dir_to_second_half, opposite_bracket(grid[box_pos]));
+    grid.set(
+        box_pos + dir + dir_to_second_half,
+        opposite_bracket(grid[box_pos]),
+    );
     grid.set(box_pos, '.');
     grid.set(box_pos + dir_to_second_half, '.');
 }
