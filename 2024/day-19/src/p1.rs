@@ -7,9 +7,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     let mut c = 0;
 
     for design in input.desired_designs.iter() {
-        if count_possibilities(input, design, &mut cache) >= 1 {
-            c += 1;
-        }
+        c += count_possibilities(input, design, &mut cache).min(1);
     }
 
     c.to_string()
