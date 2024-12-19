@@ -18,12 +18,12 @@ pub fn count_possibilities(
     design: &str,
     cache: &mut HashMap<String, usize>,
 ) -> usize {
-    if let Some(c) = cache.get(design) {
-        return *c;
-    }
-
     if design.is_empty() {
         return 1;
+    }
+
+    if let Some(c) = cache.get(design) {
+        return *c;
     }
 
     let mut count = 0;
