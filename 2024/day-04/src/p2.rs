@@ -6,21 +6,23 @@ pub fn part2(input: &PuzzleInput) -> String {
     for col in 1..(input.grid.width - 1) {
         for row in 1..(input.grid.height - 1) {
             let center = input.grid[(col, row).into()];
+
+            if center != 'A' {
+                continue;
+            }
+
             let tl = input.grid[(col - 1, row - 1).into()];
             let tr = input.grid[(col + 1, row - 1).into()];
             let bl = input.grid[(col - 1, row + 1).into()];
             let br = input.grid[(col + 1, row + 1).into()];
 
-            if center == 'A' {
-                let x = (tl, tr, bl, br);
+            let diag1 = (tl, center, br);
+            let diag2 = (tr, center, bl);
 
-                if x == ('M', 'S', 'M', 'S')
-                    || x == ('S', 'M', 'S', 'M')
-                    || x == ('M', 'M', 'S', 'S')
-                    || x == ('S', 'S', 'M', 'M')
-                {
-                    count += 1;
-                }
+            if (diag1 == ('M', 'A', 'S') || diag1 == ('S', 'A', 'M'))
+                && (diag2 == ('M', 'A', 'S') || diag2 == ('S', 'A', 'M'))
+            {
+                count += 1;
             }
         }
     }
