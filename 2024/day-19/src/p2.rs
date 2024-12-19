@@ -1,29 +1,24 @@
-use utility_belt::prelude::*;
+use cached::proc_macro::cached;
 
 use crate::parser::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let mut cache = HashMap::new();
     let mut c = 0;
 
     for design in input.desired_designs.iter() {
-        c += count_possibilities(input, design, &mut cache);
+        c += count_possibilities(input, design);
     }
 
     c.to_string()
 }
 
+#[cached(key="String", convert="{design.to_string()}")]
 pub fn count_possibilities(
     input: &PuzzleInput,
     design: &str,
-    cache: &mut HashMap<String, usize>,
 ) -> usize {
     if design.is_empty() {
         return 1;
-    }
-
-    if let Some(c) = cache.get(design) {
-        return *c;
     }
 
     let mut count = 0;
@@ -34,11 +29,9 @@ pub fn count_possibilities(
         }
 
         if input.patterns.contains(&design[..prefix_len]) {
-            count += count_possibilities(input, &design[prefix_len..], cache);
+            count += count_possibilities(input, &design[prefix_len..]);
         }
     }
-
-    cache.insert(design.to_string(), count);
 
     count
 }
