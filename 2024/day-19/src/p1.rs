@@ -5,10 +5,10 @@ use utility_belt::prelude::*;
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    assemble_pattern(input).to_string()
+    possible_patterns(input).len().to_string()
 }
 
-pub fn assemble_pattern(input: &PuzzleInput) -> usize {
+pub fn possible_patterns(input: &PuzzleInput) -> HashSet<String> {
     let mut q = BTreeSet::new();
     let mut c = HashSet::new();
 
@@ -16,35 +16,25 @@ pub fn assemble_pattern(input: &PuzzleInput) -> usize {
         q.insert((i, design.as_str()));
     }
 
-    while let Some(design) = q.pop_first() {
+    while let Some((idx, design)) = q.pop_first() {
         for pattern in input.patterns.iter() {
-            if design.1.starts_with(pattern) {
-                if design.1.len() == pattern.len() {
-                    c.insert(design.0);
-                    q.retain(|d| d.0 != design.0);
+            if design.starts_with(pattern) {
+                if design.len() == pattern.len() {
+                    c.insert(input.desired_designs[idx].clone());
+                    q.retain(|d| d.0 != idx);
                 } else {
-                    q.insert((design.0, &design.1[pattern.len()..]));
-                }
-            }
-
-            if design.1.ends_with(pattern) {
-                if design.1.len() == pattern.len() {
-                    c.insert(design.0);
-                    q.retain(|d| d.0 != design.0);
-                } else {
-                    q.insert((design.0, &design.1[..design.1.len() - pattern.len()]));
+                    q.insert((idx, &design[pattern.len()..]));
                 }
             }
         }
     }
 
-    c.len()
+    c
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
 r, wr, b, g, bwu, rb, gb, br
