@@ -25,7 +25,7 @@ pub fn part2(input: &PuzzleInput) -> String {
     let mut obstacles = HashSet::new();
 
     // Theoretically, we could extract the first time we land on a particular coordinate,
-    // and use the previuos step as starting point to find the loop. But this is fast enough.
+    // and use the previous step as starting point to find the loop. But this is fast enough.
 
     for (pos, dir) in visited.iter() {
         let obstacle = *pos + (*dir);
