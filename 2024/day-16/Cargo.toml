@@ -9,6 +9,7 @@ edition = "2021"
 winnow.workspace = true
 utility-belt.workspace = true
 petgraph = "0.6.5"
+pathfinding = "4.12.0"
 
 [dev-dependencies]
 divan.workspace = true
