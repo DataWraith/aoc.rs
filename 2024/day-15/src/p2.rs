@@ -106,18 +106,21 @@ pub fn push_boxes(grid: &mut Grid2D<char>, box_pos: Coordinate, dir: Direction) 
         Direction::Left
     };
 
+    let src1 = box_pos;
+    let dest1 = box_pos + dir;
+
+    let src2 = box_pos + dir_to_second_half;
+    let dest2 = box_pos + dir + dir_to_second_half;
+
     // Recursively push the adjacent boxes
-    push_boxes(grid, box_pos + dir, dir);
-    push_boxes(grid, box_pos + dir + dir_to_second_half, dir);
+    push_boxes(grid, dest1, dir);
+    push_boxes(grid, dest2, dir);
 
     // Move the box itself
-    grid.set(box_pos + dir, grid[box_pos]);
-    grid.set(
-        box_pos + dir + dir_to_second_half,
-        opposite_bracket(grid[box_pos]),
-    );
-    grid.set(box_pos, '.');
-    grid.set(box_pos + dir_to_second_half, '.');
+    grid.set(dest1, grid[src1]);
+    grid.set(dest2, grid[src2]);
+    grid.set(src1, '.');
+    grid.set(src2, '.');
 }
 
 pub fn run_robot(input: &PuzzleInput) -> Grid2D<char> {
