@@ -1,5 +1,5 @@
 use ndarray::Array1;
-use num::{BigInt, BigRational, Zero};
+use num::{Rational64, Zero};
 use utility_belt::prelude::*;
 
 use crate::parser::*;
@@ -10,35 +10,35 @@ pub fn part1(input: &PuzzleInput) -> String {
         .iter()
         .filter_map(|g| calculate_num_button_presses(g.clone(), input.offset))
         .map(|(a, b)| 3 * a + b)
-        .sum::<BigInt>()
+        .sum::<i64>()
         .to_string()
 }
 
-fn calculate_num_button_presses(claw_game: ClawGame, offset: u64) -> Option<(BigInt, BigInt)> {
+fn calculate_num_button_presses(claw_game: ClawGame, offset: i64) -> Option<(i64, i64)> {
     let mut matrix = Array2::zeros((2, 3));
-    let mut answer: Array1<BigRational> = Array1::zeros(2).view().to_owned();
+    let mut answer: Array1<Rational64> = Array1::zeros(2).view().to_owned();
 
     // f64 is not enough precision for this problem apparently, so we need to
     // use BigRational instead. That's fairly slow, unfortunately.
-    matrix[[0, 0]] = BigRational::new((claw_game.offset_a.x).into(), 1.into());
-    matrix[[0, 1]] = BigRational::new((claw_game.offset_b.x).into(), 1.into());
-    matrix[[0, 2]] = BigRational::new((claw_game.prize.x + offset).into(), 1.into());
-    matrix[[1, 0]] = BigRational::new((claw_game.offset_a.y).into(), 1.into());
-    matrix[[1, 1]] = BigRational::new((claw_game.offset_b.y).into(), 1.into());
-    matrix[[1, 2]] = BigRational::new((claw_game.prize.y + offset).into(), 1.into());
+    matrix[[0, 0]] = Rational64::from_integer(claw_game.offset_a.x);
+    matrix[[0, 1]] = Rational64::from_integer(claw_game.offset_b.x);
+    matrix[[0, 2]] = Rational64::from_integer(claw_game.prize.x + offset);
+    matrix[[1, 0]] = Rational64::from_integer(claw_game.offset_a.y);
+    matrix[[1, 1]] = Rational64::from_integer(claw_game.offset_b.y);
+    matrix[[1, 2]] = Rational64::from_integer(claw_game.prize.y + offset);
 
-    let soln = gauss_jordan(matrix, &mut answer, BigRational::zero());
+    let soln = gauss_jordan(matrix, &mut answer, Rational64::zero());
 
     if soln != Solution::Unique {
         return None;
     }
 
     // Make sure that we get integer coordinates -- fractional coordinates don't count as hit.
-    if *answer[0].denom() != BigInt::from(1) || *answer[1].denom() != BigInt::from(1) {
+    if !answer[0].is_integer() || !answer[1].is_integer() {
         return None;
     }
 
-    Some((answer[0].to_integer(), answer[1].to_integer()))
+    Some((*answer[0].numer(), *answer[1].numer()))
 }
 
 #[cfg(test)]
