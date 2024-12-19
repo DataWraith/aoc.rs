@@ -22,7 +22,7 @@ pub fn count_possibilities(
         return *c;
     }
 
-    if design.len() == 0 {
+    if design.is_empty() {
         return 1;
     }
 
