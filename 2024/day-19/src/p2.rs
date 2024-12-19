@@ -1,60 +1,62 @@
-use std::collections::BTreeMap;
+use utility_belt::prelude::*;
 
-use crate::{p1::possible_patterns, parser::*};
+use crate::parser::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let possible = possible_patterns(input);
-
+    let mut cache = HashMap::new();
     let mut c = 0;
 
-    for design in possible.iter() {
-        c += count_possibilities(input, design);
+    for design in input.desired_designs.iter() {
+        c += count_possibilities(input, design, &mut cache);
     }
 
     c.to_string()
 }
 
-pub fn count_possibilities(input: &PuzzleInput, design: &str) -> usize {
-    let mut c = 0;
+pub fn count_possibilities(
+    input: &PuzzleInput,
+    design: &str,
+    cache: &mut HashMap<String, usize>,
+) -> usize {
+    if let Some(c) = cache.get(design) {
+        return *c;
+    }
 
-    let mut q = BTreeMap::new();
-    q.insert(design, 1);
+    let mut count = 0;
 
-    while let Some((design, paths)) = q.pop_first() {
-        if design.is_empty() {
-            c += paths;
+    for pattern in input.patterns.iter() {
+        if pattern == design {
+            count += 1;
             continue;
         }
 
-        for pattern in input.patterns.iter() {
-            if design.starts_with(pattern) {
-                q.entry(&design[pattern.len()..])
-                    .and_modify(|p| *p += paths)
-                    .or_insert(paths);
-            }
+        if design.starts_with(pattern) {
+            count += count_possibilities(input, &design[pattern.len()..], cache);
         }
     }
 
-    c
+    cache.insert(design.to_string(), count);
+
+    count
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    use utility_belt::prelude::indoc;
 
     const TEST_INPUT: &str = indoc! {"
-r, wr, b, g, bwu, rb, gb, br
+        r, wr, b, g, bwu, rb, gb, br
 
-brwrr
-bggr
-gbbr
-rrbgbr
-ubwu
-bwurrg
-brgr
-bbrgwb
-"};
+        brwrr
+        bggr
+        gbbr
+        rrbgbr
+        ubwu
+        bwurrg
+        brgr
+        bbrgwb
+    "};
 
     #[test]
     fn test_part2_example() {
