@@ -116,16 +116,20 @@ pub fn search(input: &PuzzleInput) -> (usize, Grid2D<bool>) {
         }
 
         for next_state in successors(input, end, state) {
-            if let Some(prev_cost) = lowest_cost.get(&(next_state.position, next_state.direction)) {
-                if next_state.score() > *prev_cost {
-                    continue;
-                }
+            let prev_cost = lowest_cost
+                .get(&(next_state.position, next_state.direction))
+                .unwrap_or(&usize::MAX);
+
+            if next_state.score() > *prev_cost {
+                continue;
             }
 
-            lowest_cost.insert(
-                (next_state.position, next_state.direction),
-                next_state.score(),
-            );
+            if next_state.score() < *prev_cost {
+                lowest_cost.insert(
+                    (next_state.position, next_state.direction),
+                    next_state.score(),
+                );
+            }
 
             pq.push(next_state);
         }
