@@ -1,4 +1,4 @@
-use std::cmp::Ordering;
+use std::{cmp::Reverse, collections::BinaryHeap};
 
 use crate::parser::*;
 
@@ -12,7 +12,7 @@ pub struct Span {
 
 pub fn part2(input: &PuzzleInput) -> String {
     let mut files: Vec<Span> = vec![];
-    let mut blanks: Vec<Span> = vec![];
+    let mut blanks = vec![BinaryHeap::new(); 10];
 
     let mut cur = 0;
 
@@ -22,37 +22,44 @@ pub fn part2(input: &PuzzleInput) -> String {
                 start: cur,
                 size: d,
             });
-        } else if d > 0 {
-            blanks.push(Span {
-                start: cur,
-                size: d,
-            });
+        } else {
+            blanks[d as usize].push(Reverse(cur));
         }
 
         cur += d;
     }
 
     for cur_file in files.iter_mut().rev() {
-        for (i, blank) in blanks.iter_mut().enumerate() {
-            if blank.start > cur_file.start {
-                break;
-            }
+        let mut blank_pos = cur_file.start;
+        let mut blank_size = usize::MAX;
 
-            match blank.size.cmp(&cur_file.size) {
-                Ordering::Equal => {
-                    cur_file.start = blank.start;
-                    blanks.remove(i);
-                    break;
+        // Find the earliest blank that can fit the file
+        for size in (cur_file.size as usize)..10 {
+            if let Some(Reverse(blank_start)) = blanks[size].peek() {
+                if *blank_start < blank_pos {
+                    blank_pos = *blank_start;
+                    blank_size = size;
                 }
-
-                Ordering::Greater => {
-                    cur_file.start = blank.start;
-                    blank.start += cur_file.size;
-                    blank.size -= cur_file.size;
-                }
-
-                _ => {}
             }
+        }
+
+        // If no blank can fit the file, skip it
+        if blank_size == usize::MAX {
+            continue;
+        }
+
+        // Remove the blank from the heap
+        let _ = blanks[blank_size].pop();
+
+        // Move the file to the blank
+        cur_file.start = blank_pos;
+
+        // If the blank has space left, add it back to the heap
+        let new_size = blank_size - cur_file.size as usize;
+        let new_start = blank_pos + cur_file.size;
+
+        if new_size > 0 {
+            blanks[new_size].push(Reverse(new_start));
         }
     }
 
