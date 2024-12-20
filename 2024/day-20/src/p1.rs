@@ -4,20 +4,13 @@ use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
     let path_grid = shortest_path_grid(&input.maze);
-    let cheats = find_cheats(&path_grid);
-
-    let mut result = 0;
-    for cheat in cheats.iter() {
-        if cheat.2 >= 100 {
-            result += 1;
-        }
-    }
+    let result = find_cheats(&path_grid);
 
     result.to_string()
 }
 
-pub fn find_cheats(grid: &Grid2D<u32>) -> Vec<(Coordinate, Direction, u32)> {
-    let mut result = Vec::new();
+pub fn find_cheats(grid: &Grid2D<u32>) -> usize {
+    let mut result = 0;
 
     for x in 1..(grid.width() - 1) {
         for y in 1..(grid.height() - 1) {
@@ -46,8 +39,8 @@ pub fn find_cheats(grid: &Grid2D<u32>) -> Vec<(Coordinate, Direction, u32)> {
                 let cur_val = grid[pos];
                 let next_val = grid[neighbor_neighbor];
 
-                if cur_val.saturating_sub(next_val).saturating_sub(2) > 0 {
-                    result.push((pos, dir, cur_val - next_val - 2));
+                if cur_val.saturating_sub(next_val).saturating_sub(2) >= 100 {
+                    result += 1
                 }
             }
         }
