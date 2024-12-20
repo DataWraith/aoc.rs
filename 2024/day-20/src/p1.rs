@@ -14,30 +14,27 @@ pub fn find_cheats(grid: &Grid2D<u32>) -> usize {
 
     for x in 1..(grid.width() - 1) {
         for y in 1..(grid.height() - 1) {
+            let pos = Coordinate::new(x as i32, y as i32);
+
+            if grid[pos] == u32::MAX {
+                continue;
+            }
+
+            // We don't need to check diagonals because there are no diagonally
+            // connected cells in the grid.
             for dir in Direction::cardinal() {
-                let pos = Coordinate::new(x as i32, y as i32);
+                let neighbor = pos + dir + dir;
 
-                if grid[pos] == u32::MAX {
+                if grid.get(neighbor).is_none() {
                     continue;
                 }
 
-                let neighbor = pos.neighbor(dir);
-                let neighbor_neighbor = neighbor.neighbor(dir);
-
-                if grid[neighbor] != u32::MAX {
-                    continue;
-                }
-
-                if grid.get(neighbor_neighbor).is_none() {
-                    continue;
-                }
-
-                if grid[neighbor_neighbor] == u32::MAX {
+                if grid[neighbor] == u32::MAX {
                     continue;
                 }
 
                 let cur_val = grid[pos];
-                let next_val = grid[neighbor_neighbor];
+                let next_val = grid[neighbor];
 
                 if cur_val.saturating_sub(next_val).saturating_sub(2) >= 100 {
                     result += 1
