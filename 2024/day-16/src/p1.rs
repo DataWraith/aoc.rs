@@ -13,21 +13,25 @@ pub struct State {
     pub direction: Direction,
 }
 
-// Heuristic function for the A* algorithm.
-//
-// We need to take at least manhattan_distance(end) straight steps, but since the end
-// is in the top-right corner, we need to turn at least once if we are currently looking
-// leftwards or downwards.
-fn heuristic(cur: Coordinate, dir: Direction, end: Coordinate) -> usize {
-    let mut h = cur.manhattan_distance(end) as usize;
+impl State {
+    // Heuristic function for the A* algorithm.
+    //
+    // We need to take at least manhattan_distance(end) straight steps, but since the end
+    // is in the top-right corner, we need to turn at least once if we are currently looking
+    // leftwards or downwards.
+    pub fn heuristic(&self, end: Coordinate) -> usize {
+        let mut h = self.position.manhattan_distance(end) as usize;
 
-    if dir == Direction::Left || dir == Direction::Down {
-        h += 1000;
+        if self.direction == Direction::Left || self.direction == Direction::Down {
+            h += 1000;
+        }
+
+        h
     }
-
-    h
 }
 
+// Connect the waypoints on the path with straight lines in order to figure out
+// which squares were on the shortest path.
 fn update_coverage(coverage: &mut Grid2D<bool>, path: Vec<State>) {
     path.windows(2).for_each(|w| {
         let a = w[0].position;
@@ -37,6 +41,7 @@ fn update_coverage(coverage: &mut Grid2D<bool>, path: Vec<State>) {
         coverage[a] = true;
 
         let mut pos = a;
+
         while pos != b {
             pos = pos.neighbor(dir);
             coverage[pos] = true;
@@ -44,6 +49,7 @@ fn update_coverage(coverage: &mut Grid2D<bool>, path: Vec<State>) {
     });
 }
 
+// Find the shortest paths from S to E and compute the coverage of the maze.
 pub fn search(input: &PuzzleInput) -> (usize, Grid2D<bool>) {
     let start = input.maze.iter().find(|(_, &c)| c == 'S').unwrap().0;
     let end = input.maze.iter().find(|(_, &c)| c == 'E').unwrap().0;
@@ -59,7 +65,7 @@ pub fn search(input: &PuzzleInput) -> (usize, Grid2D<bool>) {
     if let Some((solution, score)) = astar_bag(
         &start_state,
         |state| successors(input, start, end, state),
-        |state| heuristic(state.position, state.direction, end),
+        |state| state.heuristic(end),
         |state| state.position == end,
     ) {
         best_score = score;
@@ -112,6 +118,7 @@ fn successors(
             next_states.push((next_state, steps));
         }
 
+        // But we will try to turn left or right at every step.
         for dir in [Direction::Left, Direction::Right] {
             let next_dir = if dir == Direction::Left {
                 state.direction.turn_left_90()
@@ -122,6 +129,9 @@ fn successors(
             let next_pos = pos.neighbor(next_dir);
 
             if input.maze.get(next_pos) == Some(&'.') {
+                // Note that we can't move to next_pos directly, because then
+                // our waypoints wouldn't be connected by straight lines anymore,
+                // which would make the coverage calculation fail.
                 let next_state = State {
                     position: pos,
                     direction: next_dir,
