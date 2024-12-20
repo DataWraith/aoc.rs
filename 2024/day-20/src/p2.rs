@@ -7,12 +7,12 @@ use crate::{p1::shortest_path_grid, parser::*};
 pub fn part2(input: &PuzzleInput) -> String {
     let path_grid = shortest_path_grid(&input.maze);
 
-    let result: usize = (1..(path_grid.width - 1))
+    let result: usize = (1..(path_grid.width() as i32 - 1))
         .into_par_iter()
         .map(|x| {
             let mut result = 0;
 
-            for y in 1..(path_grid.height - 1) {
+            for y in 1..(path_grid.height() as i32 - 1) {
                 let pos = Coordinate::new(x, y);
 
                 if path_grid[pos] == u32::MAX {

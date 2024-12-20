@@ -32,7 +32,7 @@ impl State {
 
 // Connect the waypoints on the path with straight lines in order to figure out
 // which squares were on the shortest path.
-fn update_coverage(coverage: &mut Grid2D<bool>, path: Vec<State>) {
+fn update_coverage(coverage: &mut BoolGrid2D, path: Vec<State>) {
     path.windows(2).for_each(|w| {
         let a = w[0].position;
         let b = w[1].position;
@@ -50,12 +50,12 @@ fn update_coverage(coverage: &mut Grid2D<bool>, path: Vec<State>) {
 }
 
 // Find the shortest paths from S to E and compute the coverage of the maze.
-pub fn search(input: &PuzzleInput) -> (usize, Grid2D<bool>) {
+pub fn search(input: &PuzzleInput) -> (usize, BoolGrid2D) {
     let start = input.maze.iter().find(|(_, &c)| c == 'S').unwrap().0;
     let end = input.maze.iter().find(|(_, &c)| c == 'E').unwrap().0;
 
     let mut best_score = usize::MAX;
-    let mut coverage = input.maze.map(|_| false);
+    let mut coverage = input.maze.map(|_| false).into();
 
     let start_state = State {
         position: start,

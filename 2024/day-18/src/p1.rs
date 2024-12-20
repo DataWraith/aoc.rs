@@ -9,7 +9,7 @@ pub fn breadth_first_search(memory: &Grid2D<char>) -> Option<usize> {
     q.push_back((Coordinate::new(0, 0), 0));
 
     while let Some((c, cost)) = q.pop_front() {
-        if c == Coordinate::new(memory.width - 1, memory.height - 1) {
+        if c == Coordinate::new(memory.width() as i32 - 1, memory.height() as i32 - 1) {
             return Some(cost);
         }
 

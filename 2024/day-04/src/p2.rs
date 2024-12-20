@@ -3,8 +3,8 @@ use crate::structs::*;
 pub fn part2(input: &PuzzleInput) -> String {
     let mut count = 0;
 
-    for col in 1..(input.grid.width - 1) {
-        for row in 1..(input.grid.height - 1) {
+    for col in 1..(input.grid.width() as i32 - 1) {
+        for row in 1..(input.grid.height() as i32 - 1) {
             let center = input.grid[(col, row).into()];
 
             if center != 'A' {
