@@ -53,24 +53,24 @@ pub fn shortest_path_grid(grid: &Grid2D<char>) -> Grid2D<u32> {
     let mut result = grid.map(|_| u32::MAX);
     let end = grid.iter().find(|(_, &c)| c == 'E').unwrap().0;
 
-    let mut queue = VecDeque::new();
-    queue.push_back((end, 0));
+    let mut cur = end;
+    let mut distance = 0;
 
-    while let Some((current, distance)) = queue.pop_front() {
-        result[current] = distance;
+    loop {
+        result[cur] = distance;
 
-        if grid[current] == 'S' {
+        if grid[cur] == 'S' {
             return result;
         }
 
-        for neighbor in current.neighbors() {
+        for neighbor in cur.neighbors() {
             if grid[neighbor] != '#' && result[neighbor] > distance + 1 {
-                queue.push_back((neighbor, distance + 1));
+                cur = neighbor;
+                distance += 1;
+                break;
             }
         }
     }
-
-    unreachable!()
 }
 
 #[cfg(test)]
