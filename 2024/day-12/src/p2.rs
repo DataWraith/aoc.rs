@@ -59,41 +59,41 @@ mod tests {
     use utility_belt::prelude::indoc;
 
     const TEST_INPUT4: &str = indoc! {"
-AAAAAA
-AAABBA
-AAABBA
-ABBAAA
-ABBAAA
-AAAAAA
-"};
+        AAAAAA
+        AAABBA
+        AAABBA
+        ABBAAA
+        ABBAAA
+        AAAAAA
+    "};
 
     const TEST_INPUT3: &str = indoc! {"
-OOOOO
-OXOXO
-OOOOO
-OXOXO
-OOOOO
-"};
+        OOOOO
+        OXOXO
+        OOOOO
+        OXOXO
+        OOOOO
+    "};
 
     const TEST_INPUT2: &str = indoc! {"
-AAAA
-BBCD
-BBCC
-EEEC
-"};
+        AAAA
+        BBCD
+        BBCC
+        EEEC
+    "};
 
     const TEST_INPUT1: &str = indoc! {"
-RRRRIICCFF
-RRRRIICCCF
-VVRRRCCFFF
-VVRCCCJFFF
-VVVVCJJCFE
-VVIVCCJJEE
-VVIIICJJEE
-MIIIIIJJEE
-MIIISIJEEE
-MMMISSJEEE
-"};
+        RRRRIICCFF
+        RRRRIICCCF
+        VVRRRCCFFF
+        VVRCCCJFFF
+        VVVVCJJCFE
+        VVIVCCJJEE
+        VVIIICJJEE
+        MIIIIIJJEE
+        MIIISIJEEE
+        MMMISSJEEE
+    "};
 
     #[test]
     fn test_part2_example() {

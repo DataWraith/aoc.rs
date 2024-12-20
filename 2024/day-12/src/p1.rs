@@ -68,12 +68,12 @@ mod tests {
     use utility_belt::prelude::indoc;
 
     const TEST_INPUT: &str = indoc! {"
-OOOOO
-OXOXO
-OOOOO
-OXOXO
-OOOOO
-"};
+        OOOOO
+        OXOXO
+        OOOOO
+        OXOXO
+        OOOOO
+    "};
 
     #[test]
     fn test_part1_example() {
