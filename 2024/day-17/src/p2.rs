@@ -29,7 +29,7 @@ pub fn part2(input: &PuzzleInput) -> String {
                 }
             }
 
-            if machine.output.len() == 16 {
+            if machine.output.len() == machine.program.len() {
                 return register.to_string();
             }
 
