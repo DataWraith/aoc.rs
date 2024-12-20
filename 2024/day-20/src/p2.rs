@@ -21,29 +21,41 @@ pub fn part2(input: &PuzzleInput) -> String {
     result.to_string()
 }
 
-fn find_cheats(grid: &Grid2D<u32>, start_pos: Coordinate) -> usize {
+fn find_cheats(grid: &Grid2D<u32>, orig: Coordinate) -> usize {
     let mut result = 0;
 
-    for x in 1.max(start_pos.x - 21)..(start_pos.x + 21).min(grid.width - 1) {
-        for y in 1.max(start_pos.y - 21)..(start_pos.y + 21).min(grid.height - 1) {
-            let pos = Coordinate::new(x as i32, y as i32);
+    for step_size in 2..=20 {
+        for step_x in 0..=step_size {
+            let step_y = step_size - step_x;
 
-            if grid[pos] == u32::MAX {
-                continue;
-            }
+            for dx in [-1, 1] {
+                for dy in [-1, 1] {
+                    if step_x == 0 && dx == -1 {
+                        continue;
+                    }
 
-            let dist = pos.manhattan_distance(start_pos);
+                    if step_y == 0 && dy == -1 {
+                        continue;
+                    }
 
-            if dist > 20 {
-                continue;
-            }
+                    let pos = Coordinate::new(orig.x + step_x * dx, orig.y + step_y * dy);
 
-            let saved = grid[start_pos]
-                .saturating_sub(grid[pos])
-                .saturating_sub(dist as u32);
+                    if grid.get(pos).is_none() {
+                        continue;
+                    }
 
-            if saved >= 100 {
-                result += 1;
+                    if grid[pos] == u32::MAX {
+                        continue;
+                    }
+
+                    let saved = grid[orig]
+                        .saturating_sub(grid[pos])
+                        .saturating_sub(step_size as u32);
+
+                    if saved >= 100 {
+                        result += 1;
+                    }
+                }
             }
         }
     }
