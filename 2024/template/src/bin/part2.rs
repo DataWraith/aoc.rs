@@ -5,8 +5,6 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_part2() {
         let puzzle_input = {{crate_name}}::parser::part2(include_str!("../../input.txt"));
