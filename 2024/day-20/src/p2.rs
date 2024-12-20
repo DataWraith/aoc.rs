@@ -17,20 +17,6 @@ pub fn part2(input: &PuzzleInput) -> String {
         }
     }
 
-    dbg!(&cheat_collection[&50].len());
-    dbg!(&cheat_collection[&52].len());
-    dbg!(&cheat_collection[&54].len());
-    dbg!(&cheat_collection[&56].len());
-    dbg!(&cheat_collection[&58].len());
-    dbg!(&cheat_collection[&60].len());
-    dbg!(&cheat_collection[&62].len());
-    dbg!(&cheat_collection[&64].len());
-    dbg!(&cheat_collection[&66].len());
-    dbg!(&cheat_collection[&68].len());
-    dbg!(&cheat_collection[&70].len());
-    dbg!(&cheat_collection[&72].len());
-    dbg!(&cheat_collection[&74].len());
-    dbg!(&cheat_collection[&76].len());
     let mut result = 0;
 
     for (dist, pairs) in cheat_collection.iter() {
@@ -44,24 +30,24 @@ pub fn part2(input: &PuzzleInput) -> String {
 
 fn find_cheats(
     grid: &Grid2D<u32>,
-    start: Coordinate,
+    start_pos: Coordinate,
 ) -> HashMap<u32, HashSet<(Coordinate, Coordinate)>> {
-    if grid[start] == u32::MAX {
+    if grid[start_pos] == u32::MAX {
         return HashMap::new();
     }
 
     let mut q = VecDeque::new();
-    q.push_back((start, start, true, 0u32));
+    q.push_back((start_pos, 0u32));
 
     let mut result: HashMap<u32, HashSet<(Coordinate, Coordinate)>> = HashMap::new();
     let mut visited = HashSet::new();
 
-    while let Some((pos, start_pos, mut valid, dist)) = q.pop_front() {
+    while let Some((pos, dist)) = q.pop_front() {
         if dist >= 20 {
             break;
         }
 
-        if !visited.insert((pos, dist)) {
+        if !visited.insert(pos) {
             continue;
         }
 
@@ -72,7 +58,7 @@ fn find_cheats(
                 continue;
             }
 
-            if grid[neighbor] != u32::MAX && valid {
+            if grid[neighbor] != u32::MAX {
                 let saved = grid[start_pos]
                     .saturating_sub(grid[neighbor])
                     .saturating_sub(start_pos.manhattan_distance(neighbor) as u32);
@@ -83,11 +69,9 @@ fn find_cheats(
                         .or_default()
                         .insert((start_pos, neighbor));
                 }
-            } else if grid[neighbor] != u32::MAX {
-                valid = true;
             }
 
-            q.push_back((neighbor, start_pos, valid, dist + 1));
+            q.push_back((neighbor, dist + 1));
         }
     }
 
@@ -97,7 +81,7 @@ fn find_cheats(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    use utility_belt::prelude::indoc;
 
     const TEST_INPUT: &str = indoc! {"
 ###############
@@ -121,6 +105,6 @@ mod tests {
     fn test_part2_example() {
         let input = crate::parser::part2(TEST_INPUT);
         assert_ne!(TEST_INPUT, "TODO\n");
-        assert_eq!(part2(&input), "TODO");
+        assert_eq!(part2(&input), "0");
     }
 }

@@ -4,8 +4,7 @@ use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
     let path_grid = shortest_path_grid(&input.maze);
-    let mut cheats = find_cheats(&path_grid);
-    cheats.sort_by_key(|(_, _, val)| std::cmp::Reverse(*val));
+    let cheats = find_cheats(&path_grid);
 
     let mut result = 0;
     for cheat in cheats.iter() {
@@ -47,8 +46,8 @@ pub fn find_cheats(grid: &Grid2D<u32>) -> Vec<(Coordinate, Direction, u32)> {
                 let cur_val = grid[pos];
                 let next_val = grid[neighbor_neighbor];
 
-                if (cur_val.saturating_sub(next_val).saturating_sub(2) > 0) {
-                    result.push((pos, dir, (cur_val - next_val).saturating_sub(2)));
+                if cur_val.saturating_sub(next_val).saturating_sub(2) > 0 {
+                    result.push((pos, dir, cur_val - next_val - 2));
                 }
             }
         }
@@ -84,7 +83,6 @@ pub fn shortest_path_grid(grid: &Grid2D<char>) -> Grid2D<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
 ###############
@@ -108,6 +106,6 @@ mod tests {
     fn test_part1_example() {
         let input = crate::parser::part1(TEST_INPUT);
         assert_ne!(TEST_INPUT, "TODO\n");
-        assert_eq!(part1(&input), "TODO");
+        assert_eq!(part1(&input), "0");
     }
 }
