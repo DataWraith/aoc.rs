@@ -400,6 +400,7 @@ name = "day-20"
 version = "0.1.0"
 dependencies = [
  "divan",
+ "rayon",
  "utility-belt",
  "winnow",
 ]

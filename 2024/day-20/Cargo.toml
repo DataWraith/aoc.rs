@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 winnow.workspace = true
 utility-belt.workspace = true
+rayon = "1.10.0"
 
 [dev-dependencies]
 divan.workspace = true

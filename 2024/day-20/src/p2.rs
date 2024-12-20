@@ -1,22 +1,30 @@
+use rayon::prelude::*;
+
 use utility_belt::prelude::*;
 
 use crate::{p1::shortest_path_grid, parser::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
     let path_grid = shortest_path_grid(&input.maze);
-    let mut result = 0;
 
-    for x in 1..(path_grid.width() - 1) {
-        for y in 1..(path_grid.height() - 1) {
-            let pos = Coordinate::new(x as i32, y as i32);
+    let result: usize = (1..(path_grid.width() - 1))
+        .into_par_iter()
+        .map(|x| {
+            let mut result = 0;
 
-            if path_grid[pos] == u32::MAX {
-                continue;
+            for y in 1..(path_grid.height() - 1) {
+                let pos = Coordinate::new(x as i32, y as i32);
+
+                if path_grid[pos] == u32::MAX {
+                    continue;
+                }
+
+                result += find_cheats(&path_grid, pos);
             }
 
-            result += find_cheats(&path_grid, pos);
-        }
-    }
+            result
+        })
+        .sum();
 
     result.to_string()
 }
