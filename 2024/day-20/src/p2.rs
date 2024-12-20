@@ -7,13 +7,13 @@ use crate::{p1::shortest_path_grid, parser::*};
 pub fn part2(input: &PuzzleInput) -> String {
     let path_grid = shortest_path_grid(&input.maze);
 
-    let result: usize = (1..(path_grid.width() - 1))
+    let result: usize = (1..(path_grid.width - 1))
         .into_par_iter()
         .map(|x| {
             let mut result = 0;
 
-            for y in 1..(path_grid.height() - 1) {
-                let pos = Coordinate::new(x as i32, y as i32);
+            for y in 1..(path_grid.height - 1) {
+                let pos = Coordinate::new(x, y);
 
                 if path_grid[pos] == u32::MAX {
                     continue;
@@ -48,11 +48,7 @@ fn find_cheats(grid: &Grid2D<u32>, orig: Coordinate) -> usize {
 
                     let pos = Coordinate::new(orig.x + step_x * dx, orig.y + step_y * dy);
 
-                    if grid.get(pos).is_none() {
-                        continue;
-                    }
-
-                    if grid[pos] == u32::MAX {
+                    if grid.get(pos).unwrap_or(&u32::MAX) == &u32::MAX {
                         continue;
                     }
 

@@ -25,11 +25,7 @@ pub fn find_cheats(grid: &Grid2D<u32>) -> usize {
             for dir in Direction::cardinal() {
                 let neighbor = pos + dir + dir;
 
-                if grid.get(neighbor).is_none() {
-                    continue;
-                }
-
-                if grid[neighbor] == u32::MAX {
+                if grid.get(neighbor).unwrap_or(&u32::MAX) == &u32::MAX {
                     continue;
                 }
 
@@ -48,7 +44,7 @@ pub fn find_cheats(grid: &Grid2D<u32>) -> usize {
 
 pub fn shortest_path_grid(grid: &Grid2D<char>) -> Grid2D<u32> {
     let mut result = grid.map(|_| u32::MAX);
-    let end = grid.iter().find(|(_, &c)| c == 'E').unwrap().0;
+    let end = grid.iter().find(|(_, &c)| c == 'S').unwrap().0;
 
     let mut cur = end;
     let mut distance = 0;
@@ -56,7 +52,7 @@ pub fn shortest_path_grid(grid: &Grid2D<char>) -> Grid2D<u32> {
     loop {
         result[cur] = distance;
 
-        if grid[cur] == 'S' {
+        if grid[cur] == 'E' {
             return result;
         }
 
