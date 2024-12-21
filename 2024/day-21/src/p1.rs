@@ -26,18 +26,24 @@ fn input_code(code: String) -> String {
     let mut chars = code.chars().collect::<Vec<char>>();
     let mut code: Vec<char> = vec![];
 
-    for pad in pads.iter_mut().rev() {
+    'outer: for (depth, pad) in pads.iter_mut().enumerate().rev() {
         for c in chars.iter() {
-            let (buttons_pressed, position) = pad.find_path(*c);
+            let (buttons_pressed, position) = pad.find_path(*c, depth);
             code.extend(buttons_pressed);
             code.push('A');
             pad.position = position;
+
+            if code.iter().join("") == "v<<A^>>AvA^A" {
+                //break 'outer;
+            }
         }
 
         dbg!(&code.iter().join(""));
         chars = code.clone();
         code.clear();
     }
+
+    //dbg!(&pads);
 
     chars.iter().join("")
 }
@@ -89,30 +95,52 @@ impl CodePad {
         self.pad.get(position).is_some()
     }
 
-    pub fn find_path(&self, c: char) -> (Vec<char>, Coordinate) {
+    pub fn find_path(&self, c: char, depth: usize) -> (Vec<char>, Coordinate) {
         let pos = self.position;
 
-        let mut successors = |pos: &Coordinate| {
+        let mut successors = |(pos, (last_dir, last_dir2)): &(
+            Coordinate,
+            (Option<Direction>, Option<Direction>),
+        )| {
             let mut successors = vec![];
 
-            for direction in Direction::cardinal() {
+            for direction in [
+                Direction::Up,
+                Direction::Down,
+                Direction::Left,
+                Direction::Right,
+            ] {
                 let new_pos = *pos + direction;
 
                 if self.is_valid_position(new_pos) {
-                    successors.push(new_pos);
+                    let mut cost = 3;
+
+                    if last_dir.is_some() && last_dir.unwrap() == direction {
+                        cost -= 1;
+                    }
+
+                    if last_dir2.is_some() && last_dir2.unwrap() == direction {
+                        cost -= 1;
+                    }
+
+                    successors.push(((new_pos, (Some(direction), *last_dir)), cost));
                 }
             }
 
             successors
         };
 
-        let path =
-            pathfinding::directed::bfs::bfs(&pos, successors, |&p| self.pad.get(p) == Some(&c));
+        let path = pathfinding::directed::dijkstra::dijkstra(
+            &(pos, (None, None)),
+            successors,
+            |&(p, _)| self.pad.get(p) == Some(&c),
+        );
         let mut buttons_pressed: Vec<char> = Vec::new();
-        let mut new_position = path.clone().unwrap().clone().last().unwrap().clone();
+        let new_position = path.clone().unwrap().clone().0.last().unwrap().clone().0;
+        let mut last_direction: Option<Direction> = None;
 
-        for w in path.unwrap().windows(2) {
-            let direction = w[0].towards(w[1]);
+        for w in path.unwrap().0.windows(2) {
+            let direction = w[0].0.towards(w[1].0);
 
             match direction {
                 Direction::Up => buttons_pressed.push('^'),
@@ -121,6 +149,8 @@ impl CodePad {
                 Direction::Right => buttons_pressed.push('>'),
                 _ => panic!("Invalid direction: {:?}", direction),
             }
+
+            last_direction = Some(direction);
         }
 
         (buttons_pressed, new_position)
@@ -131,13 +161,13 @@ mod tests {
     use super::*;
     use utility_belt::prelude::*;
 
-    //029A
-    //980A
-    //179A
-    //456A
     const TEST_INPUT: &str = indoc! {"
-379A
-"};
+        029A
+        980A
+        179A
+        456A
+        379A
+    "};
 
     #[test]
     fn test_part1_example() {
