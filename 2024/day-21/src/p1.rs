@@ -50,7 +50,7 @@ fn input_code(code: String) -> String {
 
 #[derive(Clone, Debug)]
 pub struct CodePad {
-    pad: Grid2D<char>,
+    pub pad: Grid2D<char>,
     pub position: Coordinate,
 }
 
@@ -92,16 +92,23 @@ impl CodePad {
     }
 
     fn is_valid_position(&self, position: Coordinate) -> bool {
-        self.pad.get(position).is_some()
+        self.pad.get(position).is_some() && self.pad.get(position).unwrap() != &'.'
     }
 
     pub fn find_path(&self, c: char, depth: usize) -> (Vec<char>, Coordinate) {
-        let pos = self.position;
+        #[derive(Clone, Debug, Eq, PartialEq, Hash)]
+        struct State {
+            position: Coordinate,
+            direction: Option<Direction>,
+        }
 
-        let mut successors = |(pos, (last_dir, last_dir2)): &(
-            Coordinate,
-            (Option<Direction>, Option<Direction>),
-        )| {
+        let pos = self.position;
+        let start = State {
+            position: pos,
+            direction: None,
+        };
+
+        let mut successors = |state: &State| {
             let mut successors = vec![];
 
             for direction in [
@@ -110,37 +117,43 @@ impl CodePad {
                 Direction::Left,
                 Direction::Right,
             ] {
-                let new_pos = *pos + direction;
+                let new_pos = state.position + direction;
+                let cost = if state.direction.is_some() && state.direction.unwrap() == direction {
+                    1
+                } else {
+                    2
+                };
 
                 if self.is_valid_position(new_pos) {
-                    let mut cost = 3;
+                    let new_state = State {
+                        position: new_pos,
+                        direction: Some(direction),
+                    };
 
-                    if last_dir.is_some() && last_dir.unwrap() == direction {
-                        cost -= 1;
-                    }
-
-                    if last_dir2.is_some() && last_dir2.unwrap() == direction {
-                        cost -= 1;
-                    }
-
-                    successors.push(((new_pos, (Some(direction), *last_dir)), cost));
+                    successors.push((new_state, cost));
                 }
             }
 
             successors
         };
 
-        let path = pathfinding::directed::dijkstra::dijkstra(
-            &(pos, (None, None)),
-            successors,
-            |&(p, _)| self.pad.get(p) == Some(&c),
-        );
+        let path = pathfinding::directed::dijkstra::dijkstra(&start, successors, |p| {
+            self.pad.get(p.position) == Some(&c)
+        });
         let mut buttons_pressed: Vec<char> = Vec::new();
-        let new_position = path.clone().unwrap().clone().0.last().unwrap().clone().0;
+        let new_position = path
+            .clone()
+            .unwrap()
+            .clone()
+            .0
+            .last()
+            .unwrap()
+            .clone()
+            .position;
         let mut last_direction: Option<Direction> = None;
 
         for w in path.unwrap().0.windows(2) {
-            let direction = w[0].0.towards(w[1].0);
+            let direction = w[0].position.towards(w[1].position);
 
             match direction {
                 Direction::Up => buttons_pressed.push('^'),
@@ -156,6 +169,7 @@ impl CodePad {
         (buttons_pressed, new_position)
     }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
