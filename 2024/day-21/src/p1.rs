@@ -48,7 +48,7 @@ fn solve_p1(code: &str, codepad: &CodePad, dirpad: &CodePad) -> String {
 pub struct CodePad {
     pub pad: Grid2D<char>,
     pub positions: BTreeMap<char, Coordinate>,
-    pub sequences: BTreeMap<(char, char), Vec<String>>,
+    pub sequences: HashMap<(char, char), Vec<String>>,
 }
 
 impl CodePad {
@@ -150,12 +150,12 @@ impl CodePad {
     }
 
     fn new_codepad() -> Self {
-        let mut grid = Grid2D::new(3, 4, '.');
+        let grid = Grid2D::new(3, 4, '.');
 
         let mut codepad = Self {
             pad: grid,
             positions: BTreeMap::new(),
-            sequences: BTreeMap::new(),
+            sequences: HashMap::new(),
         };
 
         codepad.set((0, 0).into(), '7');
@@ -181,7 +181,7 @@ impl CodePad {
         let mut dir_pad = Self {
             pad: grid,
             positions: BTreeMap::new(),
-            sequences: BTreeMap::new(),
+            sequences: HashMap::new(),
         };
 
         dir_pad.set((1, 0).into(), '^');
