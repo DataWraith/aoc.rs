@@ -1,3 +1,5 @@
+use cached::proc_macro::cached;
+
 use std::collections::BTreeMap;
 
 use utility_belt::prelude::*;
@@ -11,37 +13,53 @@ pub fn part1(input: &PuzzleInput) -> String {
     let mut sum = 0;
 
     for code in input.codes.iter() {
-        let solution = solve_p1(code, &codepad, &dirpad);
+        let solution = solve(code, &codepad, &dirpad, 2);
 
-        let num = parse_uints(&code)[0];
-        sum += num as usize * solution.len();
+        let num = parse_uints(code)[0];
+        sum += num as usize * solution;
     }
 
     sum.to_string()
 }
 
-fn solve_p1(code: &str, codepad: &CodePad, dirpad: &CodePad) -> String {
-    let robot1 = codepad.solve(code);
+// https://www.youtube.com/watch?v=dqzAaj589cM
+pub fn solve(code: &str, codepad: &CodePad, dirpad: &CodePad, depth: usize) -> usize {
+    let inputs = codepad.solve(code);
 
-    let mut next = robot1.clone();
+    let mut best_length = usize::MAX;
 
-    for _ in 0..2 {
-        let mut possible_next = Vec::new();
+    for seq in inputs.iter() {
+        let mut length = 0;
 
-        for seq in next.iter() {
-            possible_next.extend(dirpad.solve(seq));
+        for (a, b) in std::iter::once('A').chain(seq.chars()).tuple_windows() {
+            length += compute_length(dirpad, (a, b), depth);
         }
 
-        let min_length = possible_next.iter().map(|s| s.len()).min().unwrap();
-
-        next = possible_next
-            .iter()
-            .filter(|s| s.len() == min_length)
-            .cloned()
-            .collect();
+        best_length = best_length.min(length);
     }
 
-    next[0].clone()
+    best_length
+}
+
+#[cached(key = "(char, char, usize)", convert = "{ (pair.0, pair.1, depth) }")]
+fn compute_length(dirpad: &CodePad, pair: (char, char), depth: usize) -> usize {
+    if depth == 1 {
+        return dirpad.sequences.get(&pair).unwrap()[0].len();
+    }
+
+    let mut optimal = usize::MAX;
+
+    for seq in dirpad.sequences.get(&pair).unwrap().iter() {
+        let mut length = 0;
+
+        for (a, b) in std::iter::once('A').chain(seq.chars()).tuple_windows() {
+            length += compute_length(dirpad, (a, b), depth - 1);
+        }
+
+        optimal = optimal.min(length);
+    }
+
+    optimal
 }
 
 #[derive(Clone, Debug)]
@@ -52,7 +70,52 @@ pub struct CodePad {
 }
 
 impl CodePad {
-    // https://www.youtube.com/watch?v=dqzAaj589cM
+    pub fn new_codepad() -> Self {
+        let grid = Grid2D::new(3, 4, '.');
+
+        let mut codepad = Self {
+            pad: grid,
+            positions: BTreeMap::new(),
+            sequences: HashMap::new(),
+        };
+
+        codepad.set((0, 0).into(), '7');
+        codepad.set((1, 0).into(), '8');
+        codepad.set((2, 0).into(), '9');
+        codepad.set((0, 1).into(), '4');
+        codepad.set((1, 1).into(), '5');
+        codepad.set((2, 1).into(), '6');
+        codepad.set((0, 2).into(), '1');
+        codepad.set((1, 2).into(), '2');
+        codepad.set((2, 2).into(), '3');
+        codepad.set((1, 3).into(), '0');
+        codepad.set((2, 3).into(), 'A');
+
+        codepad.precalculate_movement_sequence();
+
+        codepad
+    }
+
+    pub fn new_dirpad() -> Self {
+        let grid = Grid2D::new(3, 2, '.');
+
+        let mut dir_pad = Self {
+            pad: grid,
+            positions: BTreeMap::new(),
+            sequences: HashMap::new(),
+        };
+
+        dir_pad.set((1, 0).into(), '^');
+        dir_pad.set((2, 0).into(), 'A');
+        dir_pad.set((0, 1).into(), '<');
+        dir_pad.set((1, 1).into(), 'v');
+        dir_pad.set((2, 1).into(), '>');
+
+        dir_pad.precalculate_movement_sequence();
+
+        dir_pad
+    }
+
     pub fn solve(&self, input: &str) -> Vec<String> {
         let mut options = Vec::new();
 
@@ -76,11 +139,6 @@ impl CodePad {
         }
 
         result
-    }
-
-    pub fn set(&mut self, position: Coordinate, value: char) {
-        self.pad.set(position, value);
-        self.positions.insert(value, position);
     }
 
     pub fn precalculate_movement_sequence(&mut self) {
@@ -117,7 +175,7 @@ impl CodePad {
 
                                 self.sequences
                                     .entry((*c1, *c2))
-                                    .or_insert(vec![])
+                                    .or_default()
                                     .push(path);
                                 continue;
                             }
@@ -149,61 +207,20 @@ impl CodePad {
         }
     }
 
-    fn new_codepad() -> Self {
-        let grid = Grid2D::new(3, 4, '.');
-
-        let mut codepad = Self {
-            pad: grid,
-            positions: BTreeMap::new(),
-            sequences: HashMap::new(),
-        };
-
-        codepad.set((0, 0).into(), '7');
-        codepad.set((1, 0).into(), '8');
-        codepad.set((2, 0).into(), '9');
-        codepad.set((0, 1).into(), '4');
-        codepad.set((1, 1).into(), '5');
-        codepad.set((2, 1).into(), '6');
-        codepad.set((0, 2).into(), '1');
-        codepad.set((1, 2).into(), '2');
-        codepad.set((2, 2).into(), '3');
-        codepad.set((1, 3).into(), '0');
-        codepad.set((2, 3).into(), 'A');
-
-        codepad.precalculate_movement_sequence();
-
-        codepad
-    }
-
-    fn new_dirpad() -> Self {
-        let grid = Grid2D::new(3, 2, '.');
-
-        let mut dir_pad = Self {
-            pad: grid,
-            positions: BTreeMap::new(),
-            sequences: HashMap::new(),
-        };
-
-        dir_pad.set((1, 0).into(), '^');
-        dir_pad.set((2, 0).into(), 'A');
-        dir_pad.set((0, 1).into(), '<');
-        dir_pad.set((1, 1).into(), 'v');
-        dir_pad.set((2, 1).into(), '>');
-
-        dir_pad.precalculate_movement_sequence();
-
-        dir_pad
-    }
-
     fn is_valid_position(&self, position: Coordinate) -> bool {
         self.pad.get(position).is_some() && self.pad.get(position).unwrap() != &'.'
+    }
+
+    pub fn set(&mut self, position: Coordinate, value: char) {
+        self.pad.set(position, value);
+        self.positions.insert(value, position);
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    
 
     const TEST_INPUT: &str = indoc! {"
         029A

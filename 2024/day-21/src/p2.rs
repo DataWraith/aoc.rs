@@ -1,24 +1,22 @@
 use utility_belt::prelude::*;
 
-use crate::parser::*;
+use crate::{
+    p1::{solve, CodePad},
+    parser::*,
+};
 
 pub fn part2(input: &PuzzleInput) -> String {
-    todo!("day_21::p2::part2");
-}
+    let codepad = CodePad::new_codepad();
+    let dirpad = CodePad::new_dirpad();
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use utility_belt::prelude::*;
+    let mut sum = 0;
 
-    const TEST_INPUT: &str = indoc! {"
-        TODO
-    "};
+    for code in input.codes.iter() {
+        let solution = solve(code, &codepad, &dirpad, 25);
 
-    #[test]
-    fn test_part2_example() {
-        let input = crate::parser::part2(TEST_INPUT);
-        assert_ne!(TEST_INPUT, "TODO\n");
-        assert_eq!(part2(&input), "TODO");
+        let num = parse_uints(code)[0];
+        sum += num as usize * solution;
     }
+
+    sum.to_string()
 }
