@@ -1,5 +1,7 @@
 from z3 import *
 
+from collections import Counter
+
 def mix(secret, x):
     return secret ^ x
 
@@ -18,12 +20,41 @@ def hash(secret):
 
 lines = open(0).read().splitlines()
 secrets = list(map(int, lines))
-print(secrets)
+#secrets = [123]
 
-sum = 0
-for x in secrets:
-    k = x
-    for i in range(2000):
-        k = hash(k)
-    sum += k
-print(sum)
+def sequences(secrets):
+    seqs = []
+    changes = []
+    for number in secrets:
+        x = number
+        cur = 0
+        seq = []
+        chg = [0]
+        for i in range(2000):
+            seq.append(x % 10)
+            if i > 0:
+                chg.append(x % 10 - cur)
+            cur = x % 10
+            x = hash(x)
+        seqs.append(seq)
+        changes.append(chg)
+
+    return list(zip(seqs,changes))
+
+def candidate_sequences(s, profit):
+    candidates = Counter()
+    for (seq, changes) in s:
+        for i in range(4, len(seq)):
+            if seq[i] == profit:
+               window = []
+               for j in range(0, 4):
+                   window.append(changes[i-j])
+               candidates[tuple(reversed(window))] += 1
+
+    return candidates
+
+
+        
+    
+print(candidate_sequences(sequences(secrets), 7))
+
