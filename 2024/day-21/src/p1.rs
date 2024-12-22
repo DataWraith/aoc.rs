@@ -11,7 +11,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     let mut sum = 0;
 
     for code in input.codes.iter() {
-        let solution = solve_codepad(code, &codepad, &dirpad);
+        let solution = solve_p1(code, &codepad, &dirpad);
 
         let num = parse_uints(&code)[0];
         sum += num as usize * solution.len();
@@ -20,42 +20,28 @@ pub fn part1(input: &PuzzleInput) -> String {
     sum.to_string()
 }
 
-fn solve_codepad(code: &str, codepad: &CodePad, dirpad: &CodePad) -> String {
-    let codepad_solutions = codepad.solve(code);
+fn solve_p1(code: &str, codepad: &CodePad, dirpad: &CodePad) -> String {
+    let robot1 = codepad.solve(code);
 
-    let mut min_length = usize::MAX;
-    let mut best_solution = String::new();
+    let mut next = robot1.clone();
 
-    for codepad_solution in codepad_solutions {
-        for dirpad_solution in solve_dirpad(codepad_solution, dirpad, 1) {
-            if dirpad_solution.len() < min_length {
-                min_length = dirpad_solution.len();
-                best_solution = dirpad_solution;
-            }
+    for _ in 0..2 {
+        let mut possible_next = Vec::new();
+
+        for seq in next.iter() {
+            possible_next.extend(dirpad.solve(seq));
         }
+
+        let min_length = possible_next.iter().map(|s| s.len()).min().unwrap();
+
+        next = possible_next
+            .iter()
+            .filter(|s| s.len() == min_length)
+            .cloned()
+            .collect();
     }
 
-    best_solution
-}
-
-fn solve_dirpad(code: String, dirpad: &CodePad, depth: usize) -> Vec<String> {
-    if depth == 0 {
-        return dirpad.solve(&code);
-    }
-
-    let mut best_length = usize::MAX;
-    let mut best_solution = String::new();
-
-    for dirpad_solution in dirpad.solve(&code) {
-        for rec_soln in solve_dirpad(dirpad_solution, dirpad, depth - 1) {
-            if rec_soln.len() < best_length {
-                best_length = rec_soln.len();
-                best_solution = rec_soln;
-            }
-        }
-    }
-
-    vec![best_solution]
+    next[0].clone()
 }
 
 #[derive(Clone, Debug)]
