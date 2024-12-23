@@ -3,55 +3,36 @@ use utility_belt::prelude::*;
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let three_connected = three_connected(&input.connections);
-
-    let mut count = 0;
-
-    for nodes in three_connected.into_iter() {
-        let node1 = &nodes[0];
-        let node2 = &nodes[1];
-        let node3 = &nodes[2];
-
-        if !node1.starts_with("t") && !node2.starts_with("t") && !node3.starts_with("t") {
-            continue;
-        }
-
-        count += 1;
-    }
-
-    count.to_string()
-}
-
-pub fn three_connected(conns: &HashMap<String, HashSet<String>>) -> HashSet<Vec<String>> {
-    let mut three_connected = HashSet::new();
-
-    for (node1, connections) in conns.iter() {
-        for (node2, connections2) in conns.iter() {
-            if node2 == node1 {
-                continue;
-            }
-
-            if !connections.contains(node2) {
-                continue;
-            }
-
-            if !connections2.contains(node1) {
-                continue;
-            }
-
-            let intersection = connections
-                .intersection(connections2)
-                .collect::<HashSet<_>>();
-
-            for node3 in intersection {
-                let mut vec = vec![node1.clone(), node2.clone(), node3.clone()];
-                vec.sort();
-                three_connected.insert(vec);
-            }
-        }
-    }
-
-    three_connected
+    // This is a bit of a mouthful, but petgraph makes this surprisingly easy.
+    //
+    // 1. Iterate over all nodes that start with "t"
+    // 2. Get all neighbors of the node
+    // 3. Check all combinations of two neighbors if they are connected -- if so, we have a three-connected set
+    // 4. Sort the three-connected set and return it as a vector
+    // 5. At this point, we have a vector of vectors for each node that starts with "t",
+    //    so we need to flatten it to remove one level of nesting
+    // 6. Then we remove duplicates using .unique() and return the length of the result
+    input
+        .graph
+        .nodes()
+        .filter(|n| n.starts_with("t"))
+        .map(|n| {
+            input
+                .graph
+                .neighbors(n)
+                .tuple_combinations()
+                .filter(|(a, b)| input.graph.contains_edge(a, b))
+                .map(|(a, b)| {
+                    let mut triplet = vec![n, a, b];
+                    triplet.sort();
+                    triplet
+                })
+                .collect_vec()
+        })
+        .flatten()
+        .unique()
+        .count()
+        .to_string()
 }
 
 #[cfg(test)]

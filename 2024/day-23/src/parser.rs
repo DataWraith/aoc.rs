@@ -1,28 +1,21 @@
-use utility_belt::prelude::*;
+use petgraph::graphmap::UnGraphMap;
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
-    pub connections: HashMap<String, HashSet<String>>,
+    pub graph: UnGraphMap<&'static str, ()>,
 }
 
-pub fn part1(input: &str) -> PuzzleInput {
-    let mut connections: HashMap<String, HashSet<String>> = HashMap::new();
+pub fn part1(input: &'static str) -> PuzzleInput {
+    let mut graph = UnGraphMap::new();
 
     for line in input.lines() {
         let (a, b) = line.split_once("-").unwrap();
-        connections
-            .entry(a.to_string())
-            .or_default()
-            .insert(b.to_string());
-        connections
-            .entry(b.to_string())
-            .or_default()
-            .insert(a.to_string());
+        graph.add_edge(a, b, ());
     }
 
-    PuzzleInput { connections }
+    PuzzleInput { graph }
 }
 
-pub fn part2(input: &str) -> PuzzleInput {
+pub fn part2(input: &'static str) -> PuzzleInput {
     part1(input)
 }

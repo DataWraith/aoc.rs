@@ -3,27 +3,43 @@ use utility_belt::prelude::*;
 use crate::parser::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
+    let mut visited = HashSet::new();
     let mut best_clique = Vec::new();
 
-    let mut visited = HashSet::new();
-
-    // This could be done better with the Bron-Kerbosch algorithm
-    for start in input.connections.keys() {
+    // This is pretty much a brute-force approach that follows directly from the
+    // definition of a clique.
+    //
+    // We start with a single-node clique and try to grow it. To do that, we
+    // iterate over all nodes that have not been processed yet and check if they
+    // are connected to all nodes in the current clique.
+    //
+    // If they are connected to everyone in the clique, they are part of the
+    // clique by definition, so we add them to the set and continue.
+    //
+    // Once a node is part of a clique, we add it to the visited set to avoid
+    // processing it again -- Once a node is part of a clique, it can't be part
+    // of another, larger clique: either the current clique grows to be the
+    // largest possible, or another, larger clique is found which will not
+    // contain the node.
+    //
+    // Not sure if this is just fast because the input is benign, or if it's
+    // actually a sound algorithm...
+    for start in input.graph.nodes() {
         if visited.contains(start) {
             continue;
         }
 
-        let mut clique = Vec::from([start.clone()]);
+        let mut clique = Vec::from([start]);
 
-        'outer: for (node, connections) in input.connections.iter() {
+        'outer: for node in input.graph.neighbors(start) {
             for c in clique.iter() {
-                if !connections.contains(c) {
+                if !input.graph.contains_edge(c, node) {
                     continue 'outer;
                 }
             }
 
-            clique.push(node.clone());
-            visited.insert(node.clone());
+            clique.push(node);
+            visited.insert(node);
         }
 
         if clique.len() > best_clique.len() {
