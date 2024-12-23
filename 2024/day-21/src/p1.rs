@@ -23,7 +23,7 @@ pub fn part1(input: &PuzzleInput) -> String {
 // https://www.youtube.com/watch?v=dqzAaj589cM
 pub fn solve(code: &str, numpad: &Keypad, dirpad: &Keypad, depth: usize) -> usize {
     // First, we find all possible paths between the buttons of the number pad.
-    let candidates = numpad.shortest_path(code);
+    let candidates = numpad.shortest_paths(code);
 
     let mut best_length = usize::MAX;
 
@@ -122,7 +122,7 @@ impl Keypad {
         dir_pad
     }
 
-    pub fn shortest_path(&self, input: &str) -> Vec<String> {
+    pub fn shortest_paths(&self, input: &str) -> Vec<String> {
         let mut options = Vec::new();
 
         // We start with all robots pointing at the A button, so we need to
@@ -147,7 +147,8 @@ impl Keypad {
         // all combinations, otherwise we might miss the shortest path.
         //
         // I tried only looking at more-likely candidates (those with many
-        // consecutive moves in the same direction), but that didn't work out.
+        // consecutive moves in the same direction), but that wasn't any
+        // faster when benchmarking.
         for prod in options.iter().map(|v| v.iter()).multi_cartesian_product() {
             let path = prod.into_iter().join("");
             result.push(path);
