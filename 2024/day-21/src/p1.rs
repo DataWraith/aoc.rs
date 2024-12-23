@@ -119,8 +119,8 @@ impl CodePad {
     pub fn solve(&self, input: &str) -> Vec<String> {
         let mut options = Vec::new();
 
-        // We start with all robots pointing at the A button, so we need to add that to the input --
-        // otherwise we'll have no way to press A at the start.
+        // We start with all robots pointing at the A button, so we need to
+        // start out path with A.
         let input = std::iter::once('A').chain(input.chars());
 
         for (a, b) in input.tuple_windows() {
@@ -142,69 +142,73 @@ impl CodePad {
     }
 
     pub fn precalculate_movement_sequence(&mut self) {
-        for x in 0..self.pad.width() {
-            for y in 0..self.pad.height() {
-                for x2 in 0..self.pad.width() {
-                    for y2 in 0..self.pad.height() {
-                        let position = Coordinate::new(x as i32, y as i32);
-                        let position2 = Coordinate::new(x2 as i32, y2 as i32);
+        for position in self.positions.values() {
+            for position2 in self.positions.values() {
+                if !self.is_valid_position(*position) || !self.is_valid_position(*position2) {
+                    continue;
+                }
 
-                        if !self.is_valid_position(position) || !self.is_valid_position(position2) {
-                            continue;
-                        }
+                let c1 = self.pad.get(*position).unwrap();
+                let c2 = self.pad.get(*position2).unwrap();
 
-                        let c1 = self.pad.get(position).unwrap();
-                        let c2 = self.pad.get(position2).unwrap();
+                if c1 == c2 {
+                    // The only way to enter a button when we're already on it is to press A.
+                    self.sequences.insert((*c1, *c2), vec!["A".to_string()]);
+                    continue;
+                }
 
-                        if c1 == c2 {
-                            self.sequences.insert((*c1, *c2), vec!["A".to_string()]);
-                            continue;
-                        }
+                let paths = self.find_pad_paths(position, position2);
+                self.sequences.insert((*c1, *c2), paths);
+            }
+        }
+    }
 
-                        // BFS to find the shortest path
-                        let mut q = VecDeque::new();
-                        q.push_back((position, String::new()));
-                        let mut best_len = usize::MAX;
+    // BFS to find all shortest paths between two positions on the pad.
+    fn find_pad_paths(&self, position: &Coordinate, position2: &Coordinate) -> Vec<String> {
+        let mut q = VecDeque::new();
+        q.push_back((*position, String::new()));
 
-                        while let Some((current, path)) = q.pop_front() {
-                            if current == position2 {
-                                best_len = path.len();
+        let mut best_len = usize::MAX;
+        let mut result = Vec::new();
 
-                                let mut path = path.clone();
-                                path.push('A');
+        while let Some((current, path)) = q.pop_front() {
+            // We've found a path to the second position.
+            if current == *position2 {
+                best_len = path.len();
 
-                                self.sequences
-                                    .entry((*c1, *c2))
-                                    .or_default()
-                                    .push(path);
-                                continue;
-                            }
+                // Press A at the end, to enter the button
+                let mut path = path.clone();
+                path.push('A');
 
-                            if path.len() > best_len {
-                                break;
-                            }
+                result.push(path);
+                continue;
+            }
 
-                            for d in Direction::cardinal() {
-                                let next = current.neighbor(d);
-                                let mut next_path = path.clone();
+            // All shortest paths have been found.
+            if path.len() > best_len {
+                break;
+            }
 
-                                match d {
-                                    Direction::Up => next_path.push('^'),
-                                    Direction::Down => next_path.push('v'),
-                                    Direction::Left => next_path.push('<'),
-                                    Direction::Right => next_path.push('>'),
-                                    _ => unreachable!(),
-                                }
+            // Otherwise, try all cardinal directions
+            for d in Direction::cardinal() {
+                let next = current.neighbor(d);
+                let mut next_path = path.clone();
 
-                                if self.is_valid_position(next) {
-                                    q.push_back((next, next_path));
-                                }
-                            }
-                        }
-                    }
+                match d {
+                    Direction::Up => next_path.push('^'),
+                    Direction::Down => next_path.push('v'),
+                    Direction::Left => next_path.push('<'),
+                    Direction::Right => next_path.push('>'),
+                    _ => unreachable!(),
+                }
+
+                if self.is_valid_position(next) {
+                    q.push_back((next, next_path));
                 }
             }
         }
+
+        result
     }
 
     fn is_valid_position(&self, position: Coordinate) -> bool {
@@ -220,7 +224,6 @@ impl CodePad {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     const TEST_INPUT: &str = indoc! {"
         029A
