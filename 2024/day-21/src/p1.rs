@@ -1,7 +1,5 @@
 use cached::proc_macro::cached;
 
-use std::collections::BTreeMap;
-
 use utility_belt::prelude::*;
 
 use crate::parser::*;
@@ -65,7 +63,6 @@ fn compute_length(dirpad: &CodePad, pair: (char, char), depth: usize) -> usize {
 #[derive(Clone, Debug)]
 pub struct CodePad {
     pub pad: Grid2D<char>,
-    pub positions: BTreeMap<char, Coordinate>,
     pub sequences: HashMap<(char, char), Vec<String>>,
 }
 
@@ -75,21 +72,20 @@ impl CodePad {
 
         let mut codepad = Self {
             pad: grid,
-            positions: BTreeMap::new(),
             sequences: HashMap::new(),
         };
 
-        codepad.set((0, 0).into(), '7');
-        codepad.set((1, 0).into(), '8');
-        codepad.set((2, 0).into(), '9');
-        codepad.set((0, 1).into(), '4');
-        codepad.set((1, 1).into(), '5');
-        codepad.set((2, 1).into(), '6');
-        codepad.set((0, 2).into(), '1');
-        codepad.set((1, 2).into(), '2');
-        codepad.set((2, 2).into(), '3');
-        codepad.set((1, 3).into(), '0');
-        codepad.set((2, 3).into(), 'A');
+        codepad.pad.set((0, 0).into(), '7');
+        codepad.pad.set((1, 0).into(), '8');
+        codepad.pad.set((2, 0).into(), '9');
+        codepad.pad.set((0, 1).into(), '4');
+        codepad.pad.set((1, 1).into(), '5');
+        codepad.pad.set((2, 1).into(), '6');
+        codepad.pad.set((0, 2).into(), '1');
+        codepad.pad.set((1, 2).into(), '2');
+        codepad.pad.set((2, 2).into(), '3');
+        codepad.pad.set((1, 3).into(), '0');
+        codepad.pad.set((2, 3).into(), 'A');
 
         codepad.precalculate_movement_sequence();
 
@@ -101,15 +97,14 @@ impl CodePad {
 
         let mut dir_pad = Self {
             pad: grid,
-            positions: BTreeMap::new(),
             sequences: HashMap::new(),
         };
 
-        dir_pad.set((1, 0).into(), '^');
-        dir_pad.set((2, 0).into(), 'A');
-        dir_pad.set((0, 1).into(), '<');
-        dir_pad.set((1, 1).into(), 'v');
-        dir_pad.set((2, 1).into(), '>');
+        dir_pad.pad.set((1, 0).into(), '^');
+        dir_pad.pad.set((2, 0).into(), 'A');
+        dir_pad.pad.set((0, 1).into(), '<');
+        dir_pad.pad.set((1, 1).into(), 'v');
+        dir_pad.pad.set((2, 1).into(), '>');
 
         dir_pad.precalculate_movement_sequence();
 
@@ -142,23 +137,31 @@ impl CodePad {
     }
 
     pub fn precalculate_movement_sequence(&mut self) {
-        for position in self.positions.values() {
-            for position2 in self.positions.values() {
-                if !self.is_valid_position(*position) || !self.is_valid_position(*position2) {
-                    continue;
+        for x in 0..self.pad.width() {
+            for y in 0..self.pad.height() {
+                let position: Coordinate = (x as i32, y as i32).into();
+
+                for x2 in 0..self.pad.width() {
+                    for y2 in 0..self.pad.height() {
+                        let position2: Coordinate = (x2 as i32, y2 as i32).into();
+
+                        if !self.is_valid_position(position) || !self.is_valid_position(position2) {
+                            continue;
+                        }
+
+                        let c1 = self.pad.get(position).unwrap();
+                        let c2 = self.pad.get(position2).unwrap();
+
+                        if c1 == c2 {
+                            // The only way to enter a button when we're already on it is to press A.
+                            self.sequences.insert((*c1, *c2), vec!["A".to_string()]);
+                            continue;
+                        }
+
+                        let paths = self.find_pad_paths(&position, &position2);
+                        self.sequences.insert((*c1, *c2), paths);
+                    }
                 }
-
-                let c1 = self.pad.get(*position).unwrap();
-                let c2 = self.pad.get(*position2).unwrap();
-
-                if c1 == c2 {
-                    // The only way to enter a button when we're already on it is to press A.
-                    self.sequences.insert((*c1, *c2), vec!["A".to_string()]);
-                    continue;
-                }
-
-                let paths = self.find_pad_paths(position, position2);
-                self.sequences.insert((*c1, *c2), paths);
             }
         }
     }
@@ -213,11 +216,6 @@ impl CodePad {
 
     fn is_valid_position(&self, position: Coordinate) -> bool {
         self.pad.get(position).is_some() && self.pad.get(position).unwrap() != &'.'
-    }
-
-    pub fn set(&mut self, position: Coordinate, value: char) {
-        self.pad.set(position, value);
-        self.positions.insert(value, position);
     }
 }
 
