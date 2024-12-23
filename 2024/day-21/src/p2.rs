@@ -1,13 +1,13 @@
 use utility_belt::prelude::*;
 
 use crate::{
-    p1::{solve, CodePad},
+    p1::{solve, Keypad},
     parser::*,
 };
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let codepad = CodePad::new_codepad();
-    let dirpad = CodePad::new_dirpad();
+    let codepad = Keypad::new_numpad();
+    let dirpad = Keypad::new_dirpad();
 
     let mut sum = 0;
 

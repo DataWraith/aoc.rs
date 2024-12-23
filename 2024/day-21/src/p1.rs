@@ -5,13 +5,13 @@ use utility_belt::prelude::*;
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let codepad = CodePad::new_codepad();
-    let dirpad = CodePad::new_dirpad();
+    let numpad = Keypad::new_numpad();
+    let dirpad = Keypad::new_dirpad();
 
     let mut sum = 0;
 
     for code in input.codes.iter() {
-        let solution = solve(code, &codepad, &dirpad, 2);
+        let solution = solve(code, &numpad, &dirpad, 2);
 
         let num = parse_uints(code)[0];
         sum += num as usize * solution;
@@ -21,12 +21,17 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 // https://www.youtube.com/watch?v=dqzAaj589cM
-pub fn solve(code: &str, codepad: &CodePad, dirpad: &CodePad, depth: usize) -> usize {
-    let inputs = codepad.solve(code);
+pub fn solve(code: &str, numpad: &Keypad, dirpad: &Keypad, depth: usize) -> usize {
+    // First, we find all possible paths between the buttons of the number pad.
+    let candidates = numpad.shortest_path(code);
 
     let mut best_length = usize::MAX;
 
-    for seq in inputs.iter() {
+    // Then we need to compute the length of the shortest sequence of movements
+    // for each candidate. The shortest sequence is the one that minimizes the
+    // sum of movement costs between each pair of buttons adjacent in the
+    // sequence (starting with our initial position at the A button).
+    for seq in candidates.iter() {
         let mut length = 0;
 
         for (a, b) in std::iter::once('A').chain(seq.chars()).tuple_windows() {
@@ -40,13 +45,19 @@ pub fn solve(code: &str, codepad: &CodePad, dirpad: &CodePad, depth: usize) -> u
 }
 
 #[cached(key = "(char, char, usize)", convert = "{ (pair.0, pair.1, depth) }")]
-fn compute_length(dirpad: &CodePad, pair: (char, char), depth: usize) -> usize {
-    if depth == 1 {
-        return dirpad.sequences.get(&pair).unwrap()[0].len();
+fn compute_length(dirpad: &Keypad, pair: (char, char), depth: usize) -> usize {
+    // We're at the last pad (the one we're controlling manually), so each button
+    // press only costs 1 -- the cost of pressing the button itself.
+    if depth == 0 {
+        return 1;
     }
 
     let mut optimal = usize::MAX;
 
+    // Otherwise we, again, need to check all possible paths by splitting them
+    // up into pairs of buttons and solving for the length of the path from the
+    // first button to the second one recursively, then sum up the costs and
+    // find the cheapest one.
     for seq in dirpad.sequences.get(&pair).unwrap().iter() {
         let mut length = 0;
 
@@ -61,35 +72,35 @@ fn compute_length(dirpad: &CodePad, pair: (char, char), depth: usize) -> usize {
 }
 
 #[derive(Clone, Debug)]
-pub struct CodePad {
+pub struct Keypad {
     pub pad: Grid2D<char>,
     pub sequences: HashMap<(char, char), Vec<String>>,
 }
 
-impl CodePad {
-    pub fn new_codepad() -> Self {
+impl Keypad {
+    pub fn new_numpad() -> Self {
         let grid = Grid2D::new(3, 4, '.');
 
-        let mut codepad = Self {
+        let mut numpad = Self {
             pad: grid,
             sequences: HashMap::new(),
         };
 
-        codepad.pad.set((0, 0).into(), '7');
-        codepad.pad.set((1, 0).into(), '8');
-        codepad.pad.set((2, 0).into(), '9');
-        codepad.pad.set((0, 1).into(), '4');
-        codepad.pad.set((1, 1).into(), '5');
-        codepad.pad.set((2, 1).into(), '6');
-        codepad.pad.set((0, 2).into(), '1');
-        codepad.pad.set((1, 2).into(), '2');
-        codepad.pad.set((2, 2).into(), '3');
-        codepad.pad.set((1, 3).into(), '0');
-        codepad.pad.set((2, 3).into(), 'A');
+        numpad.pad.set((0, 0).into(), '7');
+        numpad.pad.set((1, 0).into(), '8');
+        numpad.pad.set((2, 0).into(), '9');
+        numpad.pad.set((0, 1).into(), '4');
+        numpad.pad.set((1, 1).into(), '5');
+        numpad.pad.set((2, 1).into(), '6');
+        numpad.pad.set((0, 2).into(), '1');
+        numpad.pad.set((1, 2).into(), '2');
+        numpad.pad.set((2, 2).into(), '3');
+        numpad.pad.set((1, 3).into(), '0');
+        numpad.pad.set((2, 3).into(), 'A');
 
-        codepad.precalculate_movement_sequence();
+        numpad.precalculate_movement_sequence();
 
-        codepad
+        numpad
     }
 
     pub fn new_dirpad() -> Self {
@@ -111,13 +122,16 @@ impl CodePad {
         dir_pad
     }
 
-    pub fn solve(&self, input: &str) -> Vec<String> {
+    pub fn shortest_path(&self, input: &str) -> Vec<String> {
         let mut options = Vec::new();
 
         // We start with all robots pointing at the A button, so we need to
-        // start our path with A.
+        // start by moving from A to the first button in the input, which is
+        // easily accomplished by prepending A to the movement sequence.
         let input = std::iter::once('A').chain(input.chars());
 
+        // Then we look at each pair of characters and record all possible paths
+        // between them.
         for (a, b) in input.tuple_windows() {
             let seq = self.sequences.get(&(a, b)).unwrap_or_else(|| {
                 panic!("No sequence found for {:?}", (a, b));
@@ -128,6 +142,12 @@ impl CodePad {
 
         let mut result = Vec::new();
 
+        // Then we look at all possible combinations of paths between the
+        // buttons. Thankfully this doesn't blow up, but we *do* need to check
+        // all combinations, otherwise we might miss the shortest path.
+        //
+        // I tried only looking at more-likely candidates (those with many
+        // consecutive moves in the same direction), but that didn't work out.
         for prod in options.iter().map(|v| v.iter()).multi_cartesian_product() {
             let path = prod.into_iter().join("");
             result.push(path);
