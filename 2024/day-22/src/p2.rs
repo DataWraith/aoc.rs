@@ -76,14 +76,13 @@ pub fn price_differences(prices: &[u8]) -> Vec<i8> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
-    const TEST_INPUT: &str = indoc! {"
-1
-2
-3
-2024
-"};
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
+        1
+        2
+        3
+        2024
+    "};
 
     #[test]
     fn test_part2_example() {

@@ -24,14 +24,13 @@ pub fn hash(x: u64) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
-    const TEST_INPUT: &str = indoc! {"
-1
-10
-100
-2024
-"};
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
+        1
+        10
+        100
+        2024
+    "};
 
     #[test]
     fn test_part1_example() {
