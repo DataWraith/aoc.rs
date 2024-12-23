@@ -7,6 +7,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
     let mut visited = HashSet::new();
 
+    // This could be done better with the Bron-Kerbosch algorithm
     for start in input.connections.keys() {
         if visited.contains(start) {
             continue;
