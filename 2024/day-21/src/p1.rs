@@ -120,7 +120,7 @@ impl CodePad {
         let mut options = Vec::new();
 
         // We start with all robots pointing at the A button, so we need to
-        // start out path with A.
+        // start our path with A.
         let input = std::iter::once('A').chain(input.chars());
 
         for (a, b) in input.tuple_windows() {
