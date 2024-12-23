@@ -8,7 +8,6 @@ mod tests {
     #[test]
     fn test_part2() {
         let puzzle_input = day_22::parser::part2(include_str!("../../input.txt"));
-        // 16758 is too high
-        assert_eq!(day_22::p2::part2(&puzzle_input), "TODO");
+        assert_eq!(day_22::p2::part2(&puzzle_input), "1791");
     }
 }

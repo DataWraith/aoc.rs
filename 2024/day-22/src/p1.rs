@@ -1,5 +1,3 @@
-use utility_belt::prelude::*;
-
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {

@@ -1,42 +1,25 @@
-use rayon::prelude::*;
-
 use utility_belt::prelude::*;
 
 use crate::{p1::hash, parser::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let mut sequences = HashSet::new();
-
-    let mut prices_vec = Vec::new();
-    let mut differences_vec = Vec::new();
+    let mut scores = HashMap::new();
 
     for seed in input.numbers.iter() {
         let prices = prices(*seed);
         let differences = price_differences(&prices);
 
-        sequences.extend(find_sequences(&differences));
+        let seq_map = find_sequences(&differences, &prices);
 
-        prices_vec.push(prices);
-        differences_vec.push(differences);
-    }
-
-    let mut best_earnings = 0;
-
-    for (i, sequence) in sequences.iter().enumerate() {
-        dbg!(i, sequences.len());
-
-        let mut bananas = 0;
-
-        for (j, seed) in input.numbers.iter().enumerate() {
-            bananas += earnings(*sequence, &prices_vec[j], &differences_vec[j]);
-        }
-
-        if bananas > best_earnings {
-            best_earnings = bananas;
+        for (seq, bananas) in seq_map.iter() {
+            scores
+                .entry(*seq)
+                .and_modify(|b| *b += *bananas as u64)
+                .or_insert(*bananas as u64);
         }
     }
 
-    best_earnings.to_string()
+    scores.values().max().unwrap().to_string()
 }
 
 pub fn earnings(sequence: [i8; 4], prices: &[u8], differences: &[i8]) -> u64 {
@@ -51,15 +34,21 @@ pub fn earnings(sequence: [i8; 4], prices: &[u8], differences: &[i8]) -> u64 {
     0
 }
 
-pub fn find_sequences(differences: &[i8]) -> HashSet<[i8; 4]> {
+pub fn find_sequences(differences: &[i8], prices: &[u8]) -> HashMap<[i8; 4], u8> {
     differences
         .windows(4)
-        .map(|w| {
+        .skip(1)
+        .enumerate()
+        .fold(HashMap::new(), |mut map, (i, w)| {
             let mut seq = [0; 4];
             seq.copy_from_slice(w);
-            seq
+
+            if !map.contains_key(&seq) {
+                map.insert(seq, prices[i + 4]);
+            }
+
+            map
         })
-        .collect()
 }
 
 pub fn prices(seed: u64) -> Vec<u8> {
