@@ -62,21 +62,21 @@ pub fn part2(input: &PuzzleInput) -> String {
             }
 
             GateType::Xor(wire) => {
-                if wire.contains("x") || wire.contains("y") {
-                    continue;
-                }
-
                 'outer: for neighbor in input
                     .circuit
                     .edges_directed(node, petgraph::Direction::Outgoing)
                 {
                     let (_, neighbor, _) = neighbor;
 
-                    match neighbor {
-                        GateType::Wire(name) if name.contains("z") => {
-                            continue;
-                        }
+                    if wire.contains("x") && !wire.contains("z") {
+                        continue;
+                    }
 
+                    if wire.contains("z") && !wire.contains("x") {
+                        continue;
+                    }
+
+                    match neighbor {
                         GateType::Wire(name) => {
                             for neighbor2 in input
                                 .circuit
@@ -155,10 +155,12 @@ pub fn part2(input: &PuzzleInput) -> String {
         }
     }
 
+    dbg!(&candidates);
+
     let mut visited = HashSet::new();
     //let mut investigate = Vec::new();
     let mut ctr = 0;
-    let mut candidates2 = candidates.clone();
+    let mut candidates2 = Vec::new();
 
     for node in input.circuit.nodes() {
         if !matches!(node, GateType::Xor(_) | GateType::And(_) | GateType::Or(_)) {
@@ -169,72 +171,80 @@ pub fn part2(input: &PuzzleInput) -> String {
             continue;
         }
 
+        if !candidates2.is_empty() {
+            break;
+        }
+
         candidates2 = candidates.clone();
 
-        candidates2.push(node);
+        //candidates2.push(node);
 
-        'outer: for perm in candidates2.iter().permutations(8) {
-            ctr += 1;
+        for comb in candidates2.iter().combinations(8) {
+            dbg!(&comb);
 
-            let a = perm[0].clone();
-            let b = perm[1].clone();
-            let c = perm[2].clone();
-            let d = perm[3].clone();
-            let e = perm[4].clone();
-            let f = perm[5].clone();
-            let g = perm[6].clone();
-            let h = perm[7].clone();
+            'outer: for perm in comb.into_iter().permutations(8) {
+                ctr += 1;
 
-            let mut x = [a, b];
-            let mut y = [c, d];
-            let mut z = [e, f];
-            let mut w = [g, h];
+                let a = perm[0].clone();
+                let b = perm[1].clone();
+                let c = perm[2].clone();
+                let d = perm[3].clone();
+                let e = perm[4].clone();
+                let f = perm[5].clone();
+                let g = perm[6].clone();
+                let h = perm[7].clone();
 
-            x.sort();
-            y.sort();
-            z.sort();
-            w.sort();
+                let mut x = [a, b];
+                let mut y = [c, d];
+                let mut z = [e, f];
+                let mut w = [g, h];
 
-            let mut swaps = [x, y, z, w];
-            swaps.sort();
+                x.sort();
+                y.sort();
+                z.sort();
+                w.sort();
 
-            if visited.contains(&swaps) {
-                continue;
-            }
+                let mut swaps = [x, y, z, w];
+                swaps.sort();
 
-            visited.insert(swaps);
-
-            let mut input2 = input.clone();
-
-            input2 = swap_gates(&input2, a, b);
-            input2 = swap_gates(&input2, c, d);
-            input2 = swap_gates(&input2, e, f);
-            input2 = swap_gates(&input2, g, h);
-
-            let mut rng = StdRng::from_seed([11; 32]);
-
-            for i in 0..10 {
-                let x: usize = rng.gen_range(0..=0xffffffffffff);
-                let y: usize = rng.gen_range(0..=0xffffffffffff);
-                let x = x & 0b111111111111111111111111111111111111111111111;
-                let y = y & 0b111111111111111111111111111111111111111111111;
-                let z = x + y;
-
-                let (_, _, output_values) = simulate_forward(&input2, x, y);
-                let result = derive_output_value(&output_values);
-
-                if result != z {
-                    if result.abs_diff(z) < 100 {
-                        //investigate.push((perm.clone(), z.abs_diff(result)));
-                    }
-
-                    dbg!((ctr, result.abs_diff(z)));
-                    continue 'outer;
+                if visited.contains(&swaps) {
+                    continue;
                 }
-            }
 
-            dbg!(&perm);
-            break;
+                visited.insert(swaps);
+
+                let mut input2 = input.clone();
+
+                input2 = swap_gates(&input2, a, b);
+                input2 = swap_gates(&input2, c, d);
+                input2 = swap_gates(&input2, e, f);
+                input2 = swap_gates(&input2, g, h);
+
+                let mut rng = StdRng::from_seed([11; 32]);
+
+                for i in 0..10 {
+                    let x: usize = rng.gen_range(0..=0xffffffffffff);
+                    let y: usize = rng.gen_range(0..=0xffffffffffff);
+                    let x = x & 0b111111111111111111111111111111111111111111111;
+                    let y = y & 0b111111111111111111111111111111111111111111111;
+                    let z = x + y;
+
+                    let (_, _, output_values) = simulate_forward(&input2, x, y);
+                    let result = derive_output_value(&output_values);
+
+                    if result != z {
+                        if result.abs_diff(z) < 100 {
+                            //investigate.push((perm.clone(), z.abs_diff(result)));
+                        }
+
+                        dbg!((ctr, result.abs_diff(z)));
+                        continue 'outer;
+                    }
+                }
+
+                dbg!(&perm);
+                break;
+            }
         }
     }
 
