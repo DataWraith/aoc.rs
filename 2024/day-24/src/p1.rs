@@ -5,10 +5,12 @@ use crate::parser::*;
 pub fn part1(input: &PuzzleInput) -> String {
     let result = simulate(input);
 
-    derive_output_value(&result).to_string()
+    readout(&result).to_string()
 }
 
-fn derive_output_value(output_values: &HashMap<&str, bool>) -> usize {
+// Derives the resulting integer value from the output wires by bitwise
+// concatenation.
+fn readout(output_values: &HashMap<&str, bool>) -> usize {
     output_values
         .iter()
         .sorted()
@@ -33,6 +35,8 @@ pub fn simulate(input: &PuzzleInput) -> HashMap<&str, bool> {
 
         let mut gate_inputs = Vec::new();
 
+        // Pull inputs from upstream gates/wires. If no input is available yet,
+        // push the gate back into the queue to wait for it to be computed.
         for upstream in input
             .circuit
             .edges_directed(gate, petgraph::Direction::Incoming)
@@ -52,9 +56,11 @@ pub fn simulate(input: &PuzzleInput) -> HashMap<&str, bool> {
                 panic!("Origin gate should not be in the queue");
             }
 
+            // A Wire just passes through its input.
             GateType::Wire(wire) => {
                 assert!(gate_inputs.len() == 1);
 
+                // If the wire is a z-wire, we need to store the result.
                 if wire.starts_with("z") {
                     output_values.insert(wire, *gate_inputs[0]);
                 }
@@ -62,17 +68,20 @@ pub fn simulate(input: &PuzzleInput) -> HashMap<&str, bool> {
                 *gate_inputs[0]
             }
 
-            GateType::And(idx) => {
+            // An AND gate computes the bitwise AND of its two inputs.
+            GateType::And(_) => {
                 assert!(gate_inputs.len() == 2);
                 *gate_inputs[0] && *gate_inputs[1]
             }
 
-            GateType::Or(idx) => {
+            // An OR gate computes the bitwise OR of its two inputs.
+            GateType::Or(_) => {
                 assert!(gate_inputs.len() == 2);
                 *gate_inputs[0] || *gate_inputs[1]
             }
 
-            GateType::Xor(idx) => {
+            // An XOR gate computes the bitwise XOR of its two inputs.
+            GateType::Xor(_) => {
                 assert!(gate_inputs.len() == 2);
                 *gate_inputs[0] ^ *gate_inputs[1]
             }
@@ -87,8 +96,10 @@ pub fn simulate(input: &PuzzleInput) -> HashMap<&str, bool> {
             neighbors.push(neighbor);
         }
 
+        // Propagate the result to downstream gates/wires and add them to the
+        // queue for processing.
         for neighbor in neighbors {
-            for w in input.circuit.edge_weight_mut(gate, neighbor) {
+            if let Some(w) = input.circuit.edge_weight_mut(gate, neighbor) {
                 *w = Some(result);
             }
 
