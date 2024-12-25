@@ -1,4 +1,4 @@
-use petgraph::{graph::DiGraph, prelude::DiGraphMap};
+use petgraph::prelude::DiGraphMap;
 use utility_belt::prelude::*;
 
 #[derive(Clone, Debug)]
@@ -35,6 +35,9 @@ fn parse_gate(
     formulas: &mut HashMap<&'static str, (&'static str, &'static str, &'static str)>,
 ) -> GateConnection {
     let (a, gate_type, b, _, out) = gate.splitn(5, ' ').collect_tuple().unwrap();
+
+    // Ensure that the left input is always the smaller one lexicographically.
+    let (a, b) = if a > b { (b, a) } else { (a, b) };
 
     formulas.insert(out, (gate_type, a, b));
 

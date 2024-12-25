@@ -113,7 +113,7 @@ pub fn simulate(input: &PuzzleInput) -> HashMap<&str, bool> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    
 
     const TEST_INPUT: &str = indoc! {"
 x00: 1
