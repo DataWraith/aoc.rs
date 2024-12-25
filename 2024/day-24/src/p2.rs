@@ -34,216 +34,177 @@ const Z_NAMES: [&'static str; 46] = [
     "z39", "z40", "z41", "z42", "z43", "z44", "z45",
 ];
 
-pub fn part2(input: &PuzzleInput) -> String {
-    // I suspected that the circuit is a ripple-carry adder, so I looked at the Wikipedia page and came up with
-    // the following invariants:
-    //
-    // 1. Xor gates either feed into an Output wire or into another Xor gate
-    // 2. Output wires are fed by an XOR gate combining two inputs
-    // 3. AND gates take inputs from X or Y wires and output to OR gates
-    // 4. OR gates output to XOR gates
+// https://www.youtube.com/watch?v=SU6lp6wyd3I
+pub fn verify_intermediate_xor(
+    formulas: &HashMap<&str, (&'static str, &'static str, &'static str)>,
+    wire: &str,
+    num: usize,
+) -> bool {
+    if !formulas.contains_key(wire) {
+        return false;
+    }
 
-    let mut candidates = Vec::new();
+    let (op, left, right) = formulas.get(wire).unwrap();
 
-    for node in input.circuit.nodes() {
-        match node {
-            GateType::Xor(wire) | GateType::And(wire) | GateType::Or(wire) => {
-                if wire.contains("gjp") {
-                    //dbg!(&node);
-                }
-            }
+    let (op, left, right) = if left > right {
+        (op, right, left)
+    } else {
+        (op, left, right)
+    };
 
-            _ => {}
+    if *op != "XOR" {
+        return false;
+    }
+
+    *left == X_NAMES[num] && *right == Y_NAMES[num]
+}
+
+pub fn verify_carry_bit(
+    formulas: &HashMap<&str, (&'static str, &'static str, &'static str)>,
+    wire: &str,
+    num: usize,
+) -> bool {
+    let (op, left, right) = formulas.get(wire).unwrap();
+    let (op, left, right) = if left > right {
+        (op, right, left)
+    } else {
+        (op, left, right)
+    };
+
+    if num == 1 {
+        if *op != "AND" {
+            return false;
         }
 
-        match node {
-            GateType::Origin => {
+        return *left == "x00" && *right == "y00";
+    }
+
+    if *op != "OR" {
+        return false;
+    }
+
+    (verify_direct_carry(formulas, left, num - 1) && verify_recarry(formulas, right, num - 1))
+        || (verify_direct_carry(formulas, right, num - 1)
+            && verify_recarry(formulas, left, num - 1))
+}
+
+fn verify_direct_carry(
+    formulas: &HashMap<&str, (&'static str, &'static str, &'static str)>,
+    wire: &str,
+    num: usize,
+) -> bool {
+    let (op, left, right) = formulas.get(wire).unwrap();
+    let (op, left, right) = if left > right {
+        (op, right, left)
+    } else {
+        (op, left, right)
+    };
+
+    if *op != "AND" {
+        return false;
+    }
+
+    *left == X_NAMES[num] && *right == Y_NAMES[num]
+}
+
+fn verify_recarry(
+    formulas: &HashMap<&str, (&'static str, &'static str, &'static str)>,
+    wire: &str,
+    num: usize,
+) -> bool {
+    let (op, left, right) = formulas.get(wire).unwrap();
+    let (op, left, right) = if left > right {
+        (op, right, left)
+    } else {
+        (op, left, right)
+    };
+
+    if *op != "AND" {
+        return false;
+    }
+
+    (verify_intermediate_xor(formulas, left, num) && verify_carry_bit(formulas, right, num))
+        || (verify_intermediate_xor(formulas, right, num) && verify_carry_bit(formulas, left, num))
+}
+
+pub fn verify_z(
+    formulas: &HashMap<&str, (&'static str, &'static str, &'static str)>,
+    wire: &str,
+    num: usize,
+) -> bool {
+    let (op, left, right) = formulas.get(wire).unwrap();
+    let (op, left, right) = if left > right {
+        (op, right, left)
+    } else {
+        (op, left, right)
+    };
+
+    if *op != "XOR" {
+        return false;
+    }
+
+    if num == 0 {
+        return *left == "x00" && *right == "y00";
+    }
+
+    (verify_intermediate_xor(formulas, left, num) && verify_carry_bit(formulas, right, num))
+        || (verify_intermediate_xor(formulas, right, num) && verify_carry_bit(formulas, left, num))
+}
+
+pub fn part2(input: &PuzzleInput) -> String {
+    for (k, v) in input.formulas.iter() {
+        for (k2, v2) in input.formulas.iter() {
+            if k2 == k {
                 continue;
             }
 
-            GateType::Xor(wire) => {
-                'outer: for neighbor in input
-                    .circuit
-                    .edges_directed(node, petgraph::Direction::Outgoing)
-                {
-                    let (_, neighbor, _) = neighbor;
+            let mut formulas = input.formulas.clone();
 
-                    if wire.contains("x") && !wire.contains("z") {
-                        continue;
-                    }
+            if k.starts_with("x") || k.starts_with("y") {
+                continue;
+            }
 
-                    if wire.contains("z") && !wire.contains("x") {
-                        continue;
-                    }
+            if k2.starts_with("x") || k2.starts_with("y") {
+                continue;
+            }
 
-                    match neighbor {
-                        GateType::Wire(name) => {
-                            for neighbor2 in input
-                                .circuit
-                                .edges_directed(neighbor, petgraph::Direction::Outgoing)
-                            {
-                                let (_, neighbor2, _) = neighbor2;
+            if *k == "fkp"
+                || *k == "z06"
+                || *k == "z11"
+                || *k == "ngr"
+                || *k == "z31"
+                || *k == "mfm"
+            {
+                continue;
+            }
 
-                                if let GateType::Xor(_) = neighbor2 {
-                                    continue 'outer;
-                                }
+            formulas.insert("fkp", ("OR", "bpp", "ghf"));
+            formulas.insert("z06", ("XOR", "wvr", "jgw"));
+            formulas.insert("z11", ("XOR", "jpp", "stv"));
+            formulas.insert("ngr", ("AND", "stv", "jpp"));
+            formulas.insert("z31", ("XOR", "mgq", "tpf"));
+            formulas.insert("mfm", ("AND", "y31", "x31"));
 
-                                candidates.push(node);
-                            }
-                        }
+            formulas.insert(k, *v2);
+            formulas.insert(k2, *v);
 
-                        _ => {
-                            candidates.push(node);
-                        }
-                    }
+            let mut found = false;
+
+            for z in 0..=44 {
+                if !verify_z(&formulas, Z_NAMES[z], z) {
+                    break;
+                }
+
+                if z == 44 {
+                    found = true;
+                    break;
                 }
             }
 
-            GateType::And(wire) => {
-                if wire.contains("x") || wire.contains("y") {
-                    //continue;
-                }
-
-                'outer: for neighbor in input
-                    .circuit
-                    .edges_directed(node, petgraph::Direction::Outgoing)
-                {
-                    let (_, neighbor, _) = neighbor;
-
-                    if let GateType::Wire(_) = neighbor {
-                        for neighbor2 in input
-                            .circuit
-                            .edges_directed(neighbor, petgraph::Direction::Outgoing)
-                        {
-                            let (_, neighbor2, _) = neighbor2;
-
-                            if let GateType::Or(_) = neighbor2 {
-                                continue 'outer;
-                            }
-                        }
-                    }
-
-                    candidates.push(node);
-                }
-            }
-
-            GateType::Or(wire) => {
-                'outer: for neighbor in input
-                    .circuit
-                    .edges_directed(node, petgraph::Direction::Outgoing)
-                {
-                    let (_, neighbor, _) = neighbor;
-
-                    if let GateType::Wire(name) = neighbor {
-                        for neighbor2 in input
-                            .circuit
-                            .edges_directed(neighbor, petgraph::Direction::Outgoing)
-                        {
-                            let (_, neighbor2, _) = neighbor2;
-
-                            if let GateType::Xor(_) = neighbor2 {
-                                continue 'outer;
-                            }
-                        }
-                    }
-
-                    candidates.push(node);
-                }
-            }
-
-            _ => {}
-        }
-    }
-
-    dbg!(&candidates);
-
-    let mut visited = HashSet::new();
-    //let mut investigate = Vec::new();
-    let mut ctr = 0;
-    let mut candidates2 = Vec::new();
-
-    for node in input.circuit.nodes() {
-        if !matches!(node, GateType::Xor(_) | GateType::And(_) | GateType::Or(_)) {
-            continue;
-        }
-
-        if candidates.contains(&node) {
-            continue;
-        }
-
-        if !candidates2.is_empty() {
-            break;
-        }
-
-        candidates2 = candidates.clone();
-
-        //candidates2.push(node);
-
-        for comb in candidates2.iter().combinations(8) {
-            dbg!(&comb);
-
-            'outer: for perm in comb.into_iter().permutations(8) {
-                ctr += 1;
-
-                let a = perm[0].clone();
-                let b = perm[1].clone();
-                let c = perm[2].clone();
-                let d = perm[3].clone();
-                let e = perm[4].clone();
-                let f = perm[5].clone();
-                let g = perm[6].clone();
-                let h = perm[7].clone();
-
-                let mut x = [a, b];
-                let mut y = [c, d];
-                let mut z = [e, f];
-                let mut w = [g, h];
-
-                x.sort();
-                y.sort();
-                z.sort();
-                w.sort();
-
-                let mut swaps = [x, y, z, w];
-                swaps.sort();
-
-                if visited.contains(&swaps) {
-                    continue;
-                }
-
-                visited.insert(swaps);
-
-                let mut input2 = input.clone();
-
-                input2 = swap_gates(&input2, a, b);
-                input2 = swap_gates(&input2, c, d);
-                input2 = swap_gates(&input2, e, f);
-                input2 = swap_gates(&input2, g, h);
-
-                let mut rng = StdRng::from_seed([11; 32]);
-
-                for i in 0..10 {
-                    let x: usize = rng.gen_range(0..=0xffffffffffff);
-                    let y: usize = rng.gen_range(0..=0xffffffffffff);
-                    let x = x & 0b111111111111111111111111111111111111111111111;
-                    let y = y & 0b111111111111111111111111111111111111111111111;
-                    let z = x + y;
-
-                    let (_, _, output_values) = simulate_forward(&input2, x, y);
-                    let result = derive_output_value(&output_values);
-
-                    if result != z {
-                        if result.abs_diff(z) < 100 {
-                            //investigate.push((perm.clone(), z.abs_diff(result)));
-                        }
-
-                        dbg!((ctr, result.abs_diff(z)));
-                        continue 'outer;
-                    }
-                }
-
-                dbg!(&perm);
-                break;
+            if found {
+                dbg!("FOUND");
+                dbg!(k, v, k2, v2);
+                panic!();
             }
         }
     }
@@ -444,8 +405,6 @@ pub fn simulate_forward(
         }
     }
 
-    //dbg!(&tracer_set, tracer_set.len());
-
     (
         input,
         tracer_set,
@@ -454,27 +413,4 @@ pub fn simulate_forward(
             .map(|(k, value)| (*k, value.0.unwrap()))
             .collect(),
     )
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use utility_belt::prelude::*;
-
-    const TEST_INPUT: &str = indoc! {"
-    "};
-
-    // x00 AND y00 -> z05
-    // x01 AND y01 -> z02
-    // x02 AND y02 -> z01
-    // x03 AND y03 -> z03
-    // x04 AND y04 -> z04
-    // x05 AND y05 -> z00
-
-    #[test]
-    fn test_part2_example() {
-        let input = crate::parser::part2(TEST_INPUT);
-        assert_ne!(TEST_INPUT, "TODO\n");
-        assert_eq!(part2(&input), "z00,z01,z02,z05");
-    }
 }

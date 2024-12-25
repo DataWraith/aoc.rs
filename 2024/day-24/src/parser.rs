@@ -6,6 +6,7 @@ pub struct PuzzleInput {
     pub inputs: HashMap<&'static str, bool>,
     pub circuit: DiGraphMap<GateType, Option<bool>>,
     pub num_outputs: usize,
+    pub formulas: HashMap<&'static str, (&'static str, &'static str, &'static str)>,
 }
 
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -29,8 +30,13 @@ pub struct GateConnection {
     gate: Gate,
 }
 
-fn parse_gate(gate: &'static str, idx: usize) -> GateConnection {
+fn parse_gate(
+    gate: &'static str,
+    formulas: &mut HashMap<&'static str, (&'static str, &'static str, &'static str)>,
+) -> GateConnection {
     let (a, gate_type, b, _, out) = gate.splitn(5, ' ').collect_tuple().unwrap();
+
+    formulas.insert(out, (gate_type, a, b));
 
     let gate_type = match gate_type {
         "AND" => GateType::And(gate),
@@ -52,11 +58,12 @@ fn parse_gate(gate: &'static str, idx: usize) -> GateConnection {
 pub fn part1(input: &'static str) -> PuzzleInput {
     let mut input_map = HashMap::new();
     let mut graph: DiGraphMap<GateType, Option<bool>> = DiGraphMap::new();
+    let mut formulas = HashMap::new();
 
     let (inputs, gates) = input.split_once("\n\n").unwrap();
 
     for line in inputs.lines() {
-        parse_input(&mut input_map, line);
+        parse_input(&mut input_map, line.trim());
     }
 
     let origin = graph.add_node(GateType::Origin);
@@ -68,8 +75,7 @@ pub fn part1(input: &'static str) -> PuzzleInput {
 
     let gate_connections = gates
         .lines()
-        .enumerate()
-        .map(|(idx, line)| parse_gate(line, idx))
+        .map(|line| parse_gate(line.trim(), &mut formulas))
         .collect_vec();
 
     let mut num_outputs = 0;
@@ -94,6 +100,7 @@ pub fn part1(input: &'static str) -> PuzzleInput {
         inputs: input_map,
         circuit: graph,
         num_outputs,
+        formulas,
     }
 }
 
