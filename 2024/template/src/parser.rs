@@ -5,7 +5,7 @@ pub struct PuzzleInput {
     // Remember to make the fields pub
 }
 
-pub fn part1(input: &str) -> PuzzleInput {
+pub fn part1(input: &'static str) -> PuzzleInput {
     // Checklist:
     //
     // 1. Can this be parsed using parse_ints(input)
@@ -16,6 +16,6 @@ pub fn part1(input: &str) -> PuzzleInput {
     PuzzleInput{}
 }
 
-pub fn part2(input: &str) -> PuzzleInput {
+pub fn part2(input: &'static str) -> PuzzleInput {
     part1(input)
 }
