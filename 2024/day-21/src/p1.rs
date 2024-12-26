@@ -1,3 +1,5 @@
+use std::collections::{BTreeMap, BTreeSet};
+
 use cached::proc_macro::cached;
 
 use utility_belt::prelude::*;
@@ -58,7 +60,7 @@ fn compute_length(dirpad: &Keypad, pair: (char, char), depth: usize) -> usize {
     // up into pairs of buttons and solving for the length of the path from the
     // first button to the second one recursively, then sum up the costs and
     // find the cheapest one.
-    for seq in dirpad.sequences.get(&pair).unwrap().iter() {
+    for seq in dirpad.find_valid_paths(dirpad.keys[&pair.0], dirpad.keys[&pair.1]) {
         let mut length = 0;
 
         for (a, b) in std::iter::once('A').chain(seq.chars()).tuple_windows() {
@@ -73,51 +75,51 @@ fn compute_length(dirpad: &Keypad, pair: (char, char), depth: usize) -> usize {
 
 #[derive(Clone, Debug)]
 pub struct Keypad {
-    pub pad: Grid2D<char>,
-    pub sequences: HashMap<(char, char), Vec<String>>,
+    pub keys: BTreeMap<char, Coordinate>,
+    pub coordinates: BTreeSet<Coordinate>,
 }
 
 impl Keypad {
     pub fn new_numpad() -> Self {
-        let grid = Grid2D::new(3, 4, '.');
-
         let mut numpad = Self {
-            pad: grid,
-            sequences: HashMap::new(),
+            keys: BTreeMap::new(),
+            coordinates: BTreeSet::new(),
         };
 
-        numpad.pad.set((0, 0).into(), '7');
-        numpad.pad.set((1, 0).into(), '8');
-        numpad.pad.set((2, 0).into(), '9');
-        numpad.pad.set((0, 1).into(), '4');
-        numpad.pad.set((1, 1).into(), '5');
-        numpad.pad.set((2, 1).into(), '6');
-        numpad.pad.set((0, 2).into(), '1');
-        numpad.pad.set((1, 2).into(), '2');
-        numpad.pad.set((2, 2).into(), '3');
-        numpad.pad.set((1, 3).into(), '0');
-        numpad.pad.set((2, 3).into(), 'A');
+        numpad.keys.insert('7', (0, 0).into());
+        numpad.keys.insert('8', (1, 0).into());
+        numpad.keys.insert('9', (2, 0).into());
+        numpad.keys.insert('4', (0, 1).into());
+        numpad.keys.insert('5', (1, 1).into());
+        numpad.keys.insert('6', (2, 1).into());
+        numpad.keys.insert('1', (0, 2).into());
+        numpad.keys.insert('2', (1, 2).into());
+        numpad.keys.insert('3', (2, 2).into());
+        numpad.keys.insert('0', (1, 3).into());
+        numpad.keys.insert('A', (2, 3).into());
 
-        numpad.precalculate_movement_sequence();
+        for (_key, position) in numpad.keys.iter() {
+            numpad.coordinates.insert(*position);
+        }
 
         numpad
     }
 
     pub fn new_dirpad() -> Self {
-        let grid = Grid2D::new(3, 2, '.');
-
         let mut dir_pad = Self {
-            pad: grid,
-            sequences: HashMap::new(),
+            keys: BTreeMap::new(),
+            coordinates: BTreeSet::new(),
         };
 
-        dir_pad.pad.set((1, 0).into(), '^');
-        dir_pad.pad.set((2, 0).into(), 'A');
-        dir_pad.pad.set((0, 1).into(), '<');
-        dir_pad.pad.set((1, 1).into(), 'v');
-        dir_pad.pad.set((2, 1).into(), '>');
+        dir_pad.keys.insert('^', (1, 0).into());
+        dir_pad.keys.insert('A', (2, 0).into());
+        dir_pad.keys.insert('<', (0, 1).into());
+        dir_pad.keys.insert('v', (1, 1).into());
+        dir_pad.keys.insert('>', (2, 1).into());
 
-        dir_pad.precalculate_movement_sequence();
+        for (_key, position) in dir_pad.keys.iter() {
+            dir_pad.coordinates.insert(*position);
+        }
 
         dir_pad
     }
@@ -127,17 +129,13 @@ impl Keypad {
 
         // We start with all robots pointing at the A button, so we need to
         // start by moving from A to the first button in the input, which is
-        // easily accomplished by prepending A to the movement sequence.
+        // easily accomplished by prepending A to the input code.
         let input = std::iter::once('A').chain(input.chars());
 
         // Then we look at each pair of characters and record all possible paths
         // between them.
         for (a, b) in input.tuple_windows() {
-            let seq = self.sequences.get(&(a, b)).unwrap_or_else(|| {
-                panic!("No sequence found for {:?}", (a, b));
-            });
-
-            options.push(seq);
+            options.push(self.find_valid_paths(self.keys[&a], self.keys[&b]));
         }
 
         let mut result = Vec::new();
@@ -150,39 +148,10 @@ impl Keypad {
         // consecutive moves in the same direction), but that wasn't any
         // faster when benchmarking.
         for prod in options.iter().map(|v| v.iter()).multi_cartesian_product() {
-            let path = prod.into_iter().join("");
-            result.push(path);
+            result.push(prod.into_iter().join(""));
         }
 
         result
-    }
-
-    pub fn precalculate_movement_sequence(&mut self) {
-        for x in 0..self.pad.width() {
-            for y in 0..self.pad.height() {
-                let position: Coordinate = (x as i32, y as i32).into();
-
-                if !self.is_valid_position(position) {
-                    continue;
-                }
-
-                for x2 in 0..self.pad.width() {
-                    for y2 in 0..self.pad.height() {
-                        let position2: Coordinate = (x2 as i32, y2 as i32).into();
-
-                        if !self.is_valid_position(position2) {
-                            continue;
-                        }
-
-                        let c1 = self.pad.get(position).unwrap();
-                        let c2 = self.pad.get(position2).unwrap();
-
-                        self.sequences
-                            .insert((*c1, *c2), self.find_valid_paths(position, position2));
-                    }
-                }
-            }
-        }
     }
 
     fn find_valid_paths(&self, position: Coordinate, position2: Coordinate) -> Vec<String> {
@@ -218,9 +187,9 @@ impl Keypad {
             for dir in path {
                 cur = cur.neighbor(*dir);
 
-                if !self.is_valid_position(cur) {
+                if !self.coordinates.contains(&cur) {
                     return false;
-                };
+                }
             }
 
             true
@@ -243,10 +212,6 @@ impl Keypad {
             // Don't forget to press the A button at the end of the sequence
             .map(|path| path + "A")
             .collect_vec()
-    }
-
-    fn is_valid_position(&self, position: Coordinate) -> bool {
-        self.pad.get(position).is_some() && self.pad.get(position).unwrap() != &'.'
     }
 }
 
