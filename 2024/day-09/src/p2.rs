@@ -2,8 +2,6 @@ use std::{cmp::Reverse, collections::BinaryHeap};
 
 use crate::parser::*;
 
-pub type FileId = u64;
-
 #[derive(Debug, Clone, Copy)]
 pub struct Span {
     pub start: u64,

@@ -162,11 +162,15 @@ impl Keypad {
             for y in 0..self.pad.height() {
                 let position: Coordinate = (x as i32, y as i32).into();
 
+                if !self.is_valid_position(position) {
+                    continue;
+                }
+
                 for x2 in 0..self.pad.width() {
                     for y2 in 0..self.pad.height() {
                         let position2: Coordinate = (x2 as i32, y2 as i32).into();
 
-                        if !self.is_valid_position(position) || !self.is_valid_position(position2) {
+                        if !self.is_valid_position(position2) {
                             continue;
                         }
 

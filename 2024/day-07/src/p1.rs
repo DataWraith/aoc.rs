@@ -11,8 +11,6 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 fn can_be_solved(target: i64, remainder: &[i64]) -> bool {
-    dbg!(target, &remainder);
-
     if remainder.len() == 1 {
         return remainder[0] == target;
     }

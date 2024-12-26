@@ -13,7 +13,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         }
     }
 
-    for height in (0..9).rev() {
+    for height in (0..=8).rev() {
         for c in terrain[height].iter() {
             let mut sum = 0;
 

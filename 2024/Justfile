@@ -1,4 +1,4 @@
-default: bacon
+default: test
 
 [no-cd]
 test:

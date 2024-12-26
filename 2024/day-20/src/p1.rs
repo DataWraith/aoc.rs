@@ -21,7 +21,7 @@ pub fn find_cheats(grid: &Grid2D<u32>) -> usize {
             }
 
             // We don't need to check diagonals because there are no diagonally
-            // connected cells in the grid.
+            // connected free cells in the grid.
             for dir in Direction::cardinal() {
                 let neighbor = pos + dir + dir;
 

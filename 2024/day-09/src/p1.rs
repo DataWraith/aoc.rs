@@ -1,16 +1,24 @@
 use crate::parser::*;
 
-pub fn make_disk(input: &PuzzleInput) -> Vec<u64> {
-    let mut disk: Vec<u64> = vec![];
+pub type FileId = u64;
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum Sector {
+    Free,
+    Data(FileId),
+}
+
+pub fn make_disk(input: &PuzzleInput) -> Vec<Sector> {
+    let mut disk: Vec<Sector> = vec![];
 
     for (i, &d) in input.disk.iter().enumerate() {
         if i % 2 == 0 {
             for _ in 0..d {
-                disk.push(i as u64 / 2);
+                disk.push(Sector::Data(i as FileId / 2));
             }
         } else {
             for _ in 0..d {
-                disk.push(u64::MAX);
+                disk.push(Sector::Free);
             }
         }
     }
@@ -26,14 +34,14 @@ pub fn part1(input: &PuzzleInput) -> String {
     let mut defrag = Vec::with_capacity(disk.len());
 
     while fwd <= bwd {
-        if disk[fwd] == u64::MAX {
+        if disk[fwd] == Sector::Free {
             defrag.push(disk[bwd]);
             fwd += 1;
 
             loop {
                 bwd -= 1;
 
-                if disk[bwd] != u64::MAX {
+                if disk[bwd] != Sector::Free {
                     break;
                 }
             }
@@ -46,8 +54,18 @@ pub fn part1(input: &PuzzleInput) -> String {
     checksum(&defrag).to_string()
 }
 
-fn checksum(defrag: &[u64]) -> u64 {
-    defrag.iter().enumerate().map(|(i, &d)| d * i as u64).sum()
+fn checksum(defrag: &[Sector]) -> u64 {
+    defrag
+        .iter()
+        .enumerate()
+        .map(|(i, &d)| {
+            let Sector::Data(data) = d else {
+                return 0;
+            };
+
+            data * i as u64
+        })
+        .sum()
 }
 
 #[cfg(test)]
