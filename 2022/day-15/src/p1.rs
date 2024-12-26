@@ -50,6 +50,10 @@ pub fn row_exclusion_zone(input: &PuzzleInput, row: i32) -> Vec<(isize, isize)> 
 
     intervals.sort();
 
+    merge_intervals(intervals)
+}
+
+pub fn merge_intervals(intervals: Vec<(i32, i32)>) -> Vec<(isize, isize)> {
     let mut q = Vec::new();
 
     for (lo, hi) in intervals {
@@ -70,7 +74,6 @@ pub fn row_exclusion_zone(input: &PuzzleInput, row: i32) -> Vec<(isize, isize)> 
 
         q.push((ql, hi.max(qh)));
     }
-
     q
 }
 
