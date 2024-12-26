@@ -177,66 +177,72 @@ impl Keypad {
                         let c1 = self.pad.get(position).unwrap();
                         let c2 = self.pad.get(position2).unwrap();
 
-                        if c1 == c2 {
-                            // The only way to enter a button when we're already on it is to press A.
-                            self.sequences.insert((*c1, *c2), vec!["A".to_string()]);
-                            continue;
-                        }
-
-                        let paths = self.find_pad_paths(&position, &position2);
-                        self.sequences.insert((*c1, *c2), paths);
+                        self.sequences
+                            .insert((*c1, *c2), self.find_valid_paths(position, position2));
                     }
                 }
             }
         }
     }
 
-    // BFS to find all shortest paths between two positions on the pad.
-    fn find_pad_paths(&self, position: &Coordinate, position2: &Coordinate) -> Vec<String> {
-        let mut q = VecDeque::new();
-        q.push_back((*position, String::new()));
+    fn find_valid_paths(&self, position: Coordinate, position2: Coordinate) -> Vec<String> {
+        let dx = position2.x as isize - position.x as isize;
+        let dy = position2.y as isize - position.y as isize;
 
-        let mut best_len = usize::MAX;
-        let mut result = Vec::new();
+        // We need to find all valid paths between the two positions. We know we need to move
+        // abs(dx) steps in the x direction and abs(dy) steps in the y direction, but we don't
+        // know the order in which to do so, so we need to check all permutations.
+        let mut moves = Vec::new();
 
-        while let Some((current, path)) = q.pop_front() {
-            // We've found a path to the second position.
-            if current == *position2 {
-                best_len = path.len();
-
-                // Press A at the end, to enter the button
-                let mut path = path.clone();
-                path.push('A');
-
-                result.push(path);
-                continue;
-            }
-
-            // All shortest paths have been found.
-            if path.len() > best_len {
-                break;
-            }
-
-            // Otherwise, try all cardinal directions
-            for d in Direction::cardinal() {
-                let next = current.neighbor(d);
-                let mut next_path = path.clone();
-
-                match d {
-                    Direction::Up => next_path.push('^'),
-                    Direction::Down => next_path.push('v'),
-                    Direction::Left => next_path.push('<'),
-                    Direction::Right => next_path.push('>'),
-                    _ => unreachable!(),
-                }
-
-                if self.is_valid_position(next) {
-                    q.push_back((next, next_path));
-                }
-            }
+        if dx > 0 {
+            moves.extend(std::iter::repeat_n(Direction::Right, dx.abs_diff(0)));
+        } else if dx < 0 {
+            moves.extend(std::iter::repeat_n(Direction::Left, dx.abs_diff(0)));
         }
 
-        result
+        if dy > 0 {
+            moves.extend(std::iter::repeat_n(Direction::Down, dy.abs_diff(0)));
+        } else if dy < 0 {
+            moves.extend(std::iter::repeat_n(Direction::Up, dy.abs_diff(0)));
+        }
+
+        // Since we don't know which paths are valid (some will pass over the
+        // forbidden blank spot), we can just check all of them. The following
+        // closure simulates the path and checks if it's valid.
+        //
+        // Doing it this way is twice as fast as using a breadth-first search,
+        // and it's also fewer lines of code.
+        let valid_path = |path: &[Direction]| {
+            let mut cur = position;
+
+            for dir in path {
+                cur = cur.neighbor(*dir);
+
+                if !self.is_valid_position(cur) {
+                    return false;
+                };
+            }
+
+            true
+        };
+
+        let num_moves = moves.len();
+
+        moves
+            .into_iter()
+            // Generate all permutations of the moves.
+            .permutations(num_moves)
+            // And check if they are valid
+            .filter(|perm| valid_path(perm))
+            // Convert the directions to characters
+            .map(|perm| {
+                perm.iter()
+                    .map(|dir| ['^', '>', 'v', '<'][*dir as usize])
+                    .collect::<String>()
+            })
+            // Don't forget to press the A button at the end of the sequence
+            .map(|path| path + "A")
+            .collect_vec()
     }
 
     fn is_valid_position(&self, position: Coordinate) -> bool {
