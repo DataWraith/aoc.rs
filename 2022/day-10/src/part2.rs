@@ -15,7 +15,7 @@ pub fn part2(input: &PuzzleInput) -> String {
             screen[cur] = '#';
         }
 
-        cur += Direction::Right.into();
+        cur += Direction::Right;
 
         if cur.x >= screen.width() as i32 {
             cur = Coordinate::new(0, cur.y + 1);

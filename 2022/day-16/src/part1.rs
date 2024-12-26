@@ -1,5 +1,6 @@
 use crate::structs::*;
 
+use petgraph::graph::NodeIndex;
 use utility_belt::prelude::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
@@ -49,7 +50,7 @@ pub fn idle_until_deadline(myself: &State) -> u16 {
 pub fn open_valve(
     input: &PuzzleInput,
     state: &State,
-    valve: &petgraph::NodeIndex<u8>,
+    valve: &NodeIndex<u8>,
     valve_idx: usize,
 ) -> Option<State> {
     let distance = *input.distances.get(&(state.position, *valve)).unwrap();

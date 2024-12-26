@@ -21,13 +21,13 @@ pub fn part2(input: &PuzzleInput) -> String {
                 return 0;
             }
 
-            for direction in Direction::all() {
+            for direction in Direction::cardinal() {
                 let mut c = coord;
                 let mut d = 0;
 
-                while let Some(tree) = input.grid.get(c + direction.into()) {
+                while let Some(tree) = input.grid.get(c + direction) {
                     d += 1;
-                    c += direction.into();
+                    c += direction;
 
                     if tree >= h {
                         break;

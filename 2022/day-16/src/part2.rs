@@ -11,7 +11,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         open_valves: 0,
     };
 
-    let mut beamsearch = BeamSearch::new(2222, vec![((initial_state, initial_state), 0)]);
+    let mut beamsearch = BeamSearch::new(2500, vec![((initial_state, initial_state), 0)]);
 
     let mut successors = |(myself, elephant): &(State, State)| {
         let mut result = Vec::new();

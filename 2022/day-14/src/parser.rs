@@ -1,3 +1,10 @@
+use nom::{
+    bytes::complete::tag,
+    character::complete::{self, newline},
+    combinator::eof,
+    multi::{many1, separated_list1},
+    IResult,
+};
 use utility_belt::prelude::*;
 
 use crate::structs::*;
@@ -17,9 +24,9 @@ pub fn parse_segment(input: &str) -> IResult<&str, Vec<Coordinate>> {
 }
 
 pub fn parse_coordinate(input: &str) -> IResult<&str, Coordinate> {
-    let (input, x) = i32(input)?;
+    let (input, x) = complete::i32(input)?;
     let (input, _) = tag(",")(input)?;
-    let (input, y) = i32(input)?;
+    let (input, y) = complete::i32(input)?;
 
     Ok((input, Coordinate::new(x, y)))
 }

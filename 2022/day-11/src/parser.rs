@@ -1,6 +1,9 @@
-use utility_belt::prelude::{
-    nom::{combinator::opt, Parser},
-    *,
+use nom::{
+    bytes::complete::tag,
+    character::complete::{digit1, newline},
+    combinator::{eof, opt},
+    multi::{many1, separated_list1},
+    IResult, Parser,
 };
 
 use crate::structs::*;
@@ -18,7 +21,7 @@ pub fn parse(input: &str) -> PuzzleInput {
 
 pub fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
     let (input, _) = tag("Monkey ")(input)?;
-    let (input, id) = digit1(input)?;
+    let (input, _) = digit1(input)?;
     let (input, _) = tag(":\n  Starting items: ")(input)?;
     let (input, first_item) = digit1(input)?;
     let (input, _) = opt(tag(", "))(input)?;
@@ -37,7 +40,6 @@ pub fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
     Ok((
         input,
         Monkey {
-            id: id.parse().unwrap(),
             operation_type,
             items: std::iter::once(vec![first_item])
                 .chain(items)

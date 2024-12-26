@@ -16,7 +16,7 @@ pub fn visited_tiles(input: &PuzzleInput, rope_length: usize) -> HashSet<Coordin
 
     for (direction, length) in input.moves.iter() {
         for _ in 0..*length {
-            rope[0] += (*direction).into();
+            rope[0] += *direction;
 
             for i in 1..rope_length {
                 if rope[i] == rope[i - 1] || rope[i - 1].moore_neighbors().contains(&rope[i]) {

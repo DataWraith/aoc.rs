@@ -1,8 +1,14 @@
 use ::petgraph::algo::floyd_warshall;
 
-use utility_belt::prelude::{
-    nom::{branch::alt, bytes::complete::take_until1, combinator::opt},
-    *,
+use utility_belt::prelude::*;
+
+use nom::{
+    branch::alt,
+    bytes::complete::{tag, take_until1},
+    character::complete::{alpha1, newline},
+    combinator::{eof, opt},
+    multi::{many1, separated_list0},
+    IResult,
 };
 
 use crate::structs::*;
@@ -12,7 +18,7 @@ fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
     let (input, _) = eof(input)?;
 
     let mut valve_pressures = Vec::new();
-    let mut network = petgraph::UnGraph::<u16, u8, u8>::default();
+    let mut network = petgraph::graph::UnGraph::<u16, u8, u8>::default();
     let mut node_ids = HashMap::default();
 
     for valve in valves.iter() {
@@ -42,7 +48,7 @@ fn nom_parser(input: &str) -> IResult<&str, PuzzleInput> {
         PuzzleInput {
             valve_ids: node_ids,
             valve_pressures,
-            distances,
+            distances: distances.into_iter().collect(),
             network,
         },
     ))
@@ -52,7 +58,7 @@ pub fn parse_line(input: &str) -> IResult<&str, (String, u16, Vec<String>)> {
     let (input, _) = tag("Valve ")(input)?;
     let (input, name) = take_until1(" ")(input)?;
     let (input, _) = tag(" has flow rate=")(input)?;
-    let (input, flow_rate) = u16(input)?;
+    let (input, flow_rate) = nom::character::complete::u16(input)?;
     let (input, _) = alt((
         tag("; tunnel leads to valve "),
         tag("; tunnels lead to valves "),

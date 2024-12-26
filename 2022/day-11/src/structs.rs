@@ -12,7 +12,6 @@ pub enum OperationType {
 
 #[derive(Clone, Debug)]
 pub struct Monkey {
-    pub id: usize,
     pub operation_type: OperationType,
     pub items: Vec<usize>,
     pub divisible_by: usize,

@@ -5,4 +5,4 @@ members = ["day-*"]
 default-members = ["day-*"]
 
 [workspace.dependencies]
-utility-belt = { git = "https://github.com/DataWraith/utility-belt.git" }
+utility-belt = { git = "https://github.com/DataWraith/utility-belt.git", rev="f39058c0" }

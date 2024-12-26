@@ -53,7 +53,7 @@ pub fn fall(
     }
 
     loop {
-        let below = current + Direction::Down.into();
+        let below = current + Direction::Down;
 
         if below.y >= abyss {
             return true;
@@ -69,14 +69,14 @@ pub fn fall(
             continue;
         }
 
-        let below_left = below + Direction::Left.into();
+        let below_left = below + Direction::Left;
 
         if !grid.contains(&below_left) {
             current = below_left;
             continue;
         }
 
-        let below_right = below + Direction::Right.into();
+        let below_right = below + Direction::Right;
 
         if !grid.contains(&below_right) {
             current = below_right;

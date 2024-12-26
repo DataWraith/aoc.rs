@@ -1,4 +1,10 @@
-use utility_belt::prelude::*;
+use nom::{
+    bytes::complete::tag,
+    character::complete::{digit1, newline},
+    combinator::eof,
+    multi::many1,
+    IResult,
+};
 
 use crate::structs::*;
 

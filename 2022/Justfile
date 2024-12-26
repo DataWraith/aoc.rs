@@ -1,5 +1,30 @@
+default: test
+
+[no-cd]
 test:
      cargo nextest run --release
+
+[no-cd]
+parser:
+     cargo nextest run --release -F winnow/debug
+
+[no-cd]
+p1:
+     cargo run --release --bin part1
+
+[no-cd]
+p2:
+     cargo run --release --bin part2
+
+run: p1 p2
+
+[no-cd]
+bench:
+     cargo bench
+
+[no-cd]
+bacon:
+     bacon nextest -- --release
 
 generate day:
      cargo generate --vcs none -p template --name day-{{day}}
