@@ -2,6 +2,8 @@ use utility_belt::prelude::*;
 
 use crate::parser::*;
 
+// This is a bit ugly, but since we're working with static string slices, this is the easiest
+// way to get the names of the x, y and z wires without upsetting the borrow checker.
 const X_NAMES: [&str; 45] = [
     "x00", "x01", "x02", "x03", "x04", "x05", "x06", "x07", "x08", "x09", "x10", "x11", "x12",
     "x13", "x14", "x15", "x16", "x17", "x18", "x19", "x20", "x21", "x22", "x23", "x24", "x25",
@@ -24,7 +26,39 @@ const Z_NAMES: [&str; 46] = [
 ];
 
 // https://www.youtube.com/watch?v=SU6lp6wyd3I
-pub fn verify_intermediate_xor(
+//
+// See also: https://en.wikipedia.org/wiki/Carry-lookahead_adder#/media/File:Partial_Full-Adder.svg
+//
+// We simply follow the circuit diagram linked above and verify that the
+// computation graph matches it.
+pub fn verify_z(
+    formulas: &HashMap<&str, (&'static str, &'static str, &'static str)>,
+    wire: &str,
+    num: usize,
+) -> bool {
+    let (op, left, right) = formulas.get(wire).unwrap();
+
+    // The output (S) must be computed via an XOR gate
+    if *op != "XOR" {
+        return false;
+    }
+
+    // Base case for the z00 wire
+    if num == 0 {
+        return *left == "x00" && *right == "y00";
+    }
+
+    // If the output gate is valid by itself, we need to recursively verify that the "ingredients"
+    // are valid:
+    //
+    // - One of the inputs must have been the sum of the corresponding x and y wires.
+    // - The other input must have been a carry bit from the previous step(s).
+    (verify_generates_sum(formulas, left, num) && verify_carry_bit(formulas, right, num))
+        || (verify_generates_sum(formulas, right, num) && verify_carry_bit(formulas, left, num))
+}
+
+// This just checks that the sum of the two current input bits is computed correctly.
+pub fn verify_generates_sum(
     formulas: &HashMap<&str, (&'static str, &'static str, &'static str)>,
     wire: &str,
     num: usize,
@@ -35,13 +69,20 @@ pub fn verify_intermediate_xor(
 
     let (op, left, right) = formulas.get(wire).unwrap();
 
+    // The bitwise sum must be computed via an XOR gate
     if *op != "XOR" {
         return false;
     }
 
+    // And the sum must be the XOR of the corresponding x and y wires.
     *left == X_NAMES[num] && *right == Y_NAMES[num]
 }
 
+// The carry bit is computed from the previous step's sum and carry bit, as well
+// as the potentially propagated carry bit from the step before that.
+//
+// Wikipedia denotes this as C_{i+1} = G_i OR (P_i AND C_i),
+//
 pub fn verify_carry_bit(
     formulas: &HashMap<&str, (&'static str, &'static str, &'static str)>,
     wire: &str,
@@ -49,6 +90,8 @@ pub fn verify_carry_bit(
 ) -> bool {
     let (op, left, right) = formulas.get(wire).unwrap();
 
+    // The carry bit for the second output wire is computed as the AND of the
+    // x00 and y00 wires (base case).
     if num == 1 {
         if *op != "AND" {
             return false;
@@ -57,16 +100,20 @@ pub fn verify_carry_bit(
         return *left == "x00" && *right == "y00";
     }
 
+    // Otherwise, it must be computed as an OR: Either the previous addition generated a carry bit,
+    // or there was a carry bit from the previous step that was propagated.
     if *op != "OR" {
         return false;
     }
 
-    (verify_direct_carry(formulas, left, num - 1) && verify_recarry(formulas, right, num - 1))
-        || (verify_direct_carry(formulas, right, num - 1)
-            && verify_recarry(formulas, left, num - 1))
+    (verify_generated_carry(formulas, left, num) && verify_propagated_carry(formulas, right, num))
+        || (verify_generated_carry(formulas, right, num)
+            && verify_propagated_carry(formulas, left, num))
 }
 
-fn verify_direct_carry(
+// The directly generated carry is easy to verify: It must be the AND of the
+// previous x-wire and the previous y-wire.
+fn verify_generated_carry(
     formulas: &HashMap<&str, (&'static str, &'static str, &'static str)>,
     wire: &str,
     num: usize,
@@ -77,10 +124,14 @@ fn verify_direct_carry(
         return false;
     }
 
-    *left == X_NAMES[num] && *right == Y_NAMES[num]
+    *left == X_NAMES[num - 1] && *right == Y_NAMES[num - 1]
 }
 
-fn verify_recarry(
+// The recarry bit must be the AND of the previous carry bit and the propagation
+// result from the previous step. The propagation result is also the XOR of the
+// previous x and y wires, which means we can re-use our verify_generates_sum
+// function.
+fn verify_propagated_carry(
     formulas: &HashMap<&str, (&'static str, &'static str, &'static str)>,
     wire: &str,
     num: usize,
@@ -91,27 +142,9 @@ fn verify_recarry(
         return false;
     }
 
-    (verify_intermediate_xor(formulas, left, num) && verify_carry_bit(formulas, right, num))
-        || (verify_intermediate_xor(formulas, right, num) && verify_carry_bit(formulas, left, num))
-}
-
-pub fn verify_z(
-    formulas: &HashMap<&str, (&'static str, &'static str, &'static str)>,
-    wire: &str,
-    num: usize,
-) -> bool {
-    let (op, left, right) = formulas.get(wire).unwrap();
-
-    if *op != "XOR" {
-        return false;
-    }
-
-    if num == 0 {
-        return *left == "x00" && *right == "y00";
-    }
-
-    (verify_intermediate_xor(formulas, left, num) && verify_carry_bit(formulas, right, num))
-        || (verify_intermediate_xor(formulas, right, num) && verify_carry_bit(formulas, left, num))
+    (verify_generates_sum(formulas, left, num - 1) && verify_carry_bit(formulas, right, num - 1))
+        || (verify_generates_sum(formulas, right, num - 1)
+            && verify_carry_bit(formulas, left, num - 1))
 }
 
 // Heuristic that returns the number of z-wires that we can verify working.

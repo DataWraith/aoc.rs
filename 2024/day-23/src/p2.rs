@@ -20,7 +20,8 @@ pub fn part2(input: &PuzzleInput) -> String {
     // processing it again -- Once a node is part of a clique, it can't be part
     // of another, larger clique: either the current clique grows to be the
     // largest possible, or another, larger clique is found which will not
-    // contain the node.
+    // contain the node. Note that this is not true in general, but it works
+    // for this problem input.
     //
     // Not sure if this is just fast because the input is benign, or if it's
     // actually a sound algorithm...
