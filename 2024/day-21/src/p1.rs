@@ -154,9 +154,9 @@ impl Keypad {
         result
     }
 
-    fn find_valid_paths(&self, position: Coordinate, position2: Coordinate) -> Vec<String> {
-        let dx = position2.x as isize - position.x as isize;
-        let dy = position2.y as isize - position.y as isize;
+    fn find_valid_paths(&self, a: Coordinate, b: Coordinate) -> Vec<String> {
+        let dx = b.x as isize - a.x as isize;
+        let dy = b.y as isize - a.y as isize;
 
         // We need to find all valid paths between the two positions. We know we need to move
         // abs(dx) steps in the x direction and abs(dy) steps in the y direction, but we don't
@@ -182,7 +182,7 @@ impl Keypad {
         // Doing it this way is twice as fast as using a breadth-first search,
         // and it's also fewer lines of code.
         let valid_path = |path: &[Direction]| {
-            let mut cur = position;
+            let mut cur = a;
 
             for dir in path {
                 cur = cur.neighbor(*dir);
@@ -201,6 +201,8 @@ impl Keypad {
             .into_iter()
             // Generate all permutations of the moves.
             .permutations(num_moves)
+            // Only keep unique paths -- this is an approx. 4x speedup.
+            .unique()
             // And check if they are valid
             .filter(|perm| valid_path(perm))
             // Convert the directions to characters

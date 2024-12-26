@@ -1,9 +1,6 @@
 use utility_belt::prelude::*;
 
-use crate::{
-    p1::{solve, Keypad},
-    parser::*,
-};
+use crate::{p1::solve, parser::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
     let mut sum = 0;
