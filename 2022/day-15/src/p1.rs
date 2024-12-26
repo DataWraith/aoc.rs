@@ -1,7 +1,5 @@
 use std::collections::BTreeSet;
 
-use utility_belt::prelude::*;
-
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
@@ -10,11 +8,9 @@ pub fn part1(input: &PuzzleInput) -> String {
 
     'outer: for (_, beacon) in input.sensors.iter() {
         for (start, end) in ranges.iter() {
-            if beacon.y == 2000000 {
-                if *start <= beacon.x as isize && beacon.x as isize <= *end {
-                    beacons.insert(beacon.x);
-                    continue 'outer;
-                }
+            if beacon.y == 2000000 && *start <= beacon.x as isize && beacon.x as isize <= *end {
+                beacons.insert(beacon.x);
+                continue 'outer;
             }
         }
     }
@@ -80,9 +76,8 @@ pub fn merge_intervals(intervals: Vec<(i32, i32)>) -> Vec<(isize, isize)> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
-    const TEST_INPUT: &str = indoc! {"
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
         Sensor at x=2, y=18: closest beacon is at x=-2, y=15
         Sensor at x=9, y=16: closest beacon is at x=10, y=16
         Sensor at x=13, y=2: closest beacon is at x=15, y=3

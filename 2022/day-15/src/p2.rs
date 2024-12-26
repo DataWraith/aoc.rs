@@ -10,7 +10,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
         for (lo, hi) in row_exclusion.iter() {
             if x < *lo {
-                let coord = Coordinate::new(*lo as i32 - 1, y as i32);
+                let coord = Coordinate::new(*lo as i32 - 1, y);
                 return tuning_frequency(coord).to_string();
             } else {
                 x = (*hi + 1).max(x);
