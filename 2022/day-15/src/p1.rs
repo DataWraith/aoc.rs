@@ -1,32 +1,77 @@
+use std::collections::BTreeSet;
+
 use utility_belt::prelude::*;
 
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    row_exclusion_zone(input, 2000000).to_string()
-}
+    let ranges = row_exclusion_zone(input, 2000000);
+    let mut beacons = BTreeSet::new();
 
-pub fn row_exclusion_zone(input: &PuzzleInput, row: i32) -> usize {
-    let mut exclusion_zone = HashSet::new();
-
-    for (sensor, beacon) in input.sensors.iter() {
-        let distance = sensor.manhattan_distance(*beacon);
-        let y_distance = (sensor.y - row).abs();
-
-        for dx in [-1, 0, 1] {
-            for offset in 0..=(distance - y_distance) {
-                exclusion_zone.insert(Coordinate::new(sensor.x + dx * offset, row));
+    'outer: for (_, beacon) in input.sensors.iter() {
+        for (start, end) in ranges.iter() {
+            if beacon.y == 2000000 {
+                if *start <= beacon.x as isize && beacon.x as isize <= *end {
+                    beacons.insert(beacon.x);
+                    continue 'outer;
+                }
             }
         }
     }
 
-    for (_sensor, beacon) in input.sensors.iter() {
-        if beacon.y == row {
-            exclusion_zone.remove(beacon);
-        }
+    let mut range_count = 0;
+
+    for (start, end) in ranges.into_iter() {
+        range_count += end - start + 1;
     }
 
-    exclusion_zone.len()
+    (range_count - beacons.len() as isize).to_string()
+}
+
+pub fn row_exclusion_zone(input: &PuzzleInput, row: i32) -> Vec<(isize, isize)> {
+    let mut intervals = Vec::new();
+
+    for (sensor, beacon) in input.sensors.iter() {
+        // First, calculate the distance to the beacon
+        let distance = sensor.manhattan_distance(*beacon);
+
+        // When the distance to the row is `y`, the distance along the row maxes out at `distance - y`
+        let y_distance = (sensor.y - row).abs();
+        let offset = distance - y_distance;
+
+        // If the offset is negative, then the y_distance is too large, and the
+        // sensor does not affect the row
+        if offset < 0 {
+            continue;
+        }
+
+        intervals.push((sensor.x - offset, sensor.x + offset));
+    }
+
+    intervals.sort();
+
+    let mut q = Vec::new();
+
+    for (lo, hi) in intervals {
+        let lo = lo as isize;
+        let hi = hi as isize;
+
+        if q.is_empty() {
+            q.push((lo, hi));
+            continue;
+        }
+
+        let (ql, qh) = q.pop().unwrap();
+
+        if lo > qh + 1 {
+            q.push((lo, hi));
+            continue;
+        }
+
+        q.push((ql, hi.max(qh)));
+    }
+
+    q
 }
 
 #[cfg(test)]
@@ -55,6 +100,6 @@ mod tests {
     fn test_part1_example() {
         let input = crate::parser::part1(TEST_INPUT);
         assert_ne!(TEST_INPUT, "TODO\n");
-        assert_eq!(row_exclusion_zone(&input, 10), 26);
+        assert_eq!(row_exclusion_zone(&input, 10), vec![(-2, 24)]);
     }
 }
