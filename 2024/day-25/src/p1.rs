@@ -7,16 +7,14 @@ pub fn part1(input: &PuzzleInput) -> String {
         .grids
         .iter()
         .filter(|grid| *grid.get((0, 0).into()).unwrap() == '#')
-        .map(|grid| count_spaces(grid))
-        .map(|counts| invert_spaces(counts))
+        .map(|grid| count_occupied(grid))
         .collect();
 
     let keys: Vec<_> = input
         .grids
         .iter()
         .filter(|grid| *grid.get((0, 0).into()).unwrap() == '.')
-        .map(|grid| count_spaces(grid))
-        .map(|counts| invert_spaces(counts))
+        .map(|grid| count_occupied(grid))
         .collect();
 
     locks
@@ -31,14 +29,10 @@ fn fits(lock: &[usize], key: &[usize]) -> bool {
     lock.iter().zip(key.iter()).all(|(l, k)| l + k <= 5)
 }
 
-fn count_spaces(grid: &Grid2D<char>) -> Vec<usize> {
+fn count_occupied(grid: &Grid2D<char>) -> Vec<usize> {
     grid.col_iter()
-        .map(|col| col.iter().filter(|c| **c == '.').count() - 1)
+        .map(|col| col.iter().filter(|c| **c == '#').count() - 1)
         .collect::<Vec<_>>()
-}
-
-fn invert_spaces(counts: Vec<usize>) -> Vec<usize> {
-    counts.iter().map(|c| 5 - c).collect::<Vec<_>>()
 }
 
 #[cfg(test)]
