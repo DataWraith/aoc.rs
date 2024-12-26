@@ -160,32 +160,32 @@ impl Keypad {
 
         // We need to find all valid paths between the two positions. We know we need to move
         // abs(dx) steps in the x direction and abs(dy) steps in the y direction, but we don't
-        // know the order in which to do so, so we need to check all permutations.
-        let mut moves = Vec::new();
+        // know the order in which to do so, so we need to check all unique permutations.
+        let a_comb = if dx > 0 {
+            ('>', dx.abs_diff(0))
+        } else {
+            ('<', dx.abs_diff(0))
+        };
 
-        if dx > 0 {
-            moves.extend(std::iter::repeat_n(Direction::Right, dx.abs_diff(0)));
-        } else if dx < 0 {
-            moves.extend(std::iter::repeat_n(Direction::Left, dx.abs_diff(0)));
-        }
+        let b_comb = if dy > 0 {
+            ('v', dy.abs_diff(0))
+        } else {
+            ('^', dy.abs_diff(0))
+        };
 
-        if dy > 0 {
-            moves.extend(std::iter::repeat_n(Direction::Down, dy.abs_diff(0)));
-        } else if dy < 0 {
-            moves.extend(std::iter::repeat_n(Direction::Up, dy.abs_diff(0)));
-        }
+        let moves = unique_path_permutations(a_comb, b_comb);
 
         // Since we don't know which paths are valid (some will pass over the
-        // forbidden blank spot), we can just check all of them. The following
+        // forbidden blank spot), we just check all of them. The following
         // closure simulates the path and checks if it's valid.
         //
         // Doing it this way is twice as fast as using a breadth-first search,
         // and it's also fewer lines of code.
-        let valid_path = |path: &[Direction]| {
+        let valid_path = |path: &String| {
             let mut cur = a;
 
-            for dir in path {
-                cur = cur.neighbor(*dir);
+            for c in path.chars() {
+                cur = cur.neighbor(c.try_into().unwrap());
 
                 if !self.coordinates.contains(&cur) {
                     return false;
@@ -195,26 +195,35 @@ impl Keypad {
             true
         };
 
-        let num_moves = moves.len();
-
         moves
             .into_iter()
-            // Generate all permutations of the moves.
-            .permutations(num_moves)
-            // Only keep unique paths -- this is an approx. 4x speedup.
-            .unique()
-            // And check if they are valid
             .filter(|perm| valid_path(perm))
-            // Convert the directions to characters
-            .map(|perm| {
-                perm.iter()
-                    .map(|dir| ['^', '>', 'v', '<'][*dir as usize])
-                    .collect::<String>()
-            })
             // Don't forget to press the A button at the end of the sequence
             .map(|path| path + "A")
             .collect_vec()
     }
+}
+
+// https://www.youtube.com/watch?v=q5I6ZvJmHEo
+//
+// Finds all possible unique paths between two buttons.
+fn unique_path_permutations(a: (char, usize), b: (char, usize)) -> Vec<String> {
+    let mut result = Vec::new();
+
+    let (a, num_a) = a;
+    let (b, num_b) = b;
+
+    for indices in (0..(num_a + num_b)).combinations(num_a) {
+        let mut path = vec![b; num_a + num_b];
+
+        for index in indices.iter() {
+            path[*index] = a;
+        }
+
+        result.push(path.into_iter().collect::<String>());
+    }
+
+    result
 }
 
 #[cfg(test)]
