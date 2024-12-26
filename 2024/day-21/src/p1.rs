@@ -7,13 +7,10 @@ use utility_belt::prelude::*;
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let numpad = Keypad::new_numpad();
-    let dirpad = Keypad::new_dirpad();
-
     let mut sum = 0;
 
     for code in input.codes.iter() {
-        let solution = solve(code, &numpad, &dirpad, 2);
+        let solution = solve(code, 2);
 
         let num = parse_uints(code)[0];
         sum += num as usize * solution;
@@ -23,7 +20,10 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 // https://www.youtube.com/watch?v=dqzAaj589cM
-pub fn solve(code: &str, numpad: &Keypad, dirpad: &Keypad, depth: usize) -> usize {
+pub fn solve(code: &str, depth: usize) -> usize {
+    let numpad = Keypad::new_numpad();
+    let dirpad = Keypad::new_dirpad();
+
     // First, we find all possible paths between the buttons of the number pad.
     let candidates = numpad.shortest_paths(code);
 
@@ -37,7 +37,7 @@ pub fn solve(code: &str, numpad: &Keypad, dirpad: &Keypad, depth: usize) -> usiz
         let mut length = 0;
 
         for (a, b) in std::iter::once('A').chain(seq.chars()).tuple_windows() {
-            length += compute_length(dirpad, (a, b), depth);
+            length += compute_length(&dirpad, (a, b), depth);
         }
 
         best_length = best_length.min(length);

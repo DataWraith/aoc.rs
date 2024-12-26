@@ -6,13 +6,10 @@ use crate::{
 };
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let codepad = Keypad::new_numpad();
-    let dirpad = Keypad::new_dirpad();
-
     let mut sum = 0;
 
     for code in input.codes.iter() {
-        let solution = solve(code, &codepad, &dirpad, 25);
+        let solution = solve(code, 25);
 
         let num = parse_uints(code)[0];
         sum += num as usize * solution;
