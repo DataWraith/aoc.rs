@@ -3,24 +3,24 @@ use utility_belt::prelude::*;
 use crate::structs::*;
 
 pub fn part1(input: &str) -> PuzzleInput {
-    let mut ruleset = HashSet::new();
-    let mut page_sets = Vec::new();
     let (rules, pages) = input.split_once("\n\n").unwrap();
 
-    for line in rules.lines() {
-        let (p1, p2) = line.split_once("|").unwrap();
-        let p1: u32 = p1.parse().unwrap();
-        let p2: u32 = p2.parse().unwrap();
-        ruleset.insert((p1, p2));
-    }
+    let page_sets = pages.lines().map(|line| parse_uints(line)).collect();
 
-    for line in pages.lines() {
-        let pages: Vec<u32> = line.split(',').map(|s| s.parse().unwrap()).collect();
-        page_sets.push(pages);
+    let page_dependencies = parse_uints(rules);
+    let mut dependencies = HashMap::new();
+
+    for w in page_dependencies.chunks(2) {
+        let (p1, p2) = (w[0], w[1]);
+
+        dependencies
+            .entry(p2)
+            .or_insert_with(HashSet::new)
+            .insert(p1);
     }
 
     PuzzleInput {
-        rules: ruleset,
+        dependencies,
         pages: page_sets,
     }
 }

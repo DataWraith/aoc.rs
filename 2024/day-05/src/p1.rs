@@ -4,13 +4,14 @@ use utility_belt::prelude::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
     let mut sum = 0;
-    let mut dependencies = HashMap::new();
 
-    for (p1, p2) in input.rules.iter() {
-        dependencies.entry(*p2).or_insert_with(Vec::new).push(*p1);
-    }
-
-    let can_precede = |a: &u32, b: &u32| !dependencies.get(a).unwrap_or(&vec![]).contains(b);
+    let can_precede = |a: &u64, b: &u64| {
+        !input
+            .dependencies
+            .get(a)
+            .map(|deps| deps.contains(b))
+            .unwrap_or(false)
+    };
 
     for pages in input.pages.iter() {
         if pages.is_sorted_by(can_precede) {
