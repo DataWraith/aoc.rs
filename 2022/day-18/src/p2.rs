@@ -12,63 +12,39 @@ pub fn part2(input: &PuzzleInput) -> String {
         max = max.max(*cube);
     }
 
-    // Add a border of 2 units to make UnionFind easier
-    min -= IVec3::new(2, 2, 2);
-    max += IVec3::new(2, 2, 2);
+    // Add a 1-wide border around the lava to make the BFS easier
+    min -= IVec3::new(1, 1, 1);
+    max += IVec3::new(1, 1, 1);
 
-    // Prepare UnionFind. We're trying to union all the air spaces to see if
-    // they are connected to the outside.
-    let mut sets = HashMap::new();
-    let mut union_find = UnionFind::default();
+    // Breadth-first search to find all the air spaces surrounding the lava
+    let mut air = HashSet::new();
 
-    for x in min.x..=max.x {
-        for y in min.y..=max.y {
-            for z in min.z..=max.z {
-                let cur = IVec3::new(x, y, z);
+    let mut q = VecDeque::new();
+    q.push_back(min);
 
-                if input.cubes.contains(&cur) {
-                    continue;
-                }
+    while let Some(cur) = q.pop_front() {
+        for offset in NEIGHBOR_OFFSETS {
+            let neighbor = cur + offset;
 
-                sets.insert(cur, union_find.make_set());
+            if neighbor.x < min.x
+                || neighbor.x > max.x
+                || neighbor.y < min.y
+                || neighbor.y > max.y
+                || neighbor.z < min.z
+                || neighbor.z > max.z
+            {
+                continue;
             }
+
+            // Either the neighbor is lava or it's already been visited
+            if input.cubes.contains(&neighbor) || air.contains(&neighbor) {
+                continue;
+            }
+
+            air.insert(neighbor);
+            q.push_back(neighbor);
         }
     }
-
-    // Do the actual unioning
-    for x in min.x..=max.x {
-        for y in min.y..=max.y {
-            for z in min.z..=max.z {
-                let cur = IVec3::new(x, y, z);
-
-                if input.cubes.contains(&cur) {
-                    continue;
-                }
-
-                for offset in NEIGHBOR_OFFSETS {
-                    let neighbor = cur + offset;
-
-                    if neighbor.x < min.x
-                        || neighbor.x > max.x
-                        || neighbor.y < min.y
-                        || neighbor.y > max.y
-                        || neighbor.z < min.z
-                        || neighbor.z > max.z
-                    {
-                        continue;
-                    }
-
-                    if !input.cubes.contains(&neighbor) {
-                        union_find
-                            .union(sets[&cur], sets[&neighbor])
-                            .expect("Union Find failed");
-                    }
-                }
-            }
-        }
-    }
-
-    let outside = union_find.find(sets[&min]);
 
     let mut total_sides = 0;
 
@@ -78,12 +54,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         for offset in NEIGHBOR_OFFSETS {
             let neighbor = *cube + offset;
 
-            if input.cubes.contains(&neighbor) {
-                sides -= 1;
-                continue;
-            }
-
-            if union_find.find(sets[&neighbor]) != outside {
+            if input.cubes.contains(&neighbor) || !air.contains(&neighbor) {
                 sides -= 1;
             }
         }
