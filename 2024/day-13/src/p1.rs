@@ -19,7 +19,7 @@ fn calculate_num_button_presses(claw_game: ClawGame, offset: i64) -> Option<(i64
     let mut answer: Array1<Rational64> = Array1::zeros(2).view().to_owned();
 
     // f64 is not enough precision for this problem apparently, so we need to
-    // use BigRational instead. That's fairly slow, unfortunately.
+    // use Rational64 instead.
     matrix[[0, 0]] = Rational64::from_integer(claw_game.offset_a.x);
     matrix[[0, 1]] = Rational64::from_integer(claw_game.offset_b.x);
     matrix[[0, 2]] = Rational64::from_integer(claw_game.prize.x + offset);
