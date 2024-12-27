@@ -2,21 +2,25 @@ use utility_belt::prelude::*;
 
 use crate::parser::*;
 
+pub const NEIGHBOR_OFFSETS: [IVec3; 6] = [
+    IVec3::X,
+    IVec3::NEG_X,
+    IVec3::Y,
+    IVec3::NEG_Y,
+    IVec3::Z,
+    IVec3::NEG_Z,
+];
+
 pub fn part1(input: &PuzzleInput) -> String {
     let mut total_sides = 0;
 
-    for (x, y, z) in input.cubes.iter() {
+    for cube in input.cubes.iter() {
         let mut sides = 6;
 
-        for (dx, dy, dz) in [
-            (1, 0, 0),
-            (-1, 0, 0),
-            (0, 1, 0),
-            (0, -1, 0),
-            (0, 0, 1),
-            (0, 0, -1),
-        ] {
-            if input.cubes.contains(&(x + dx, y + dy, z + dz)) {
+        for offset in NEIGHBOR_OFFSETS {
+            let cur = cube + offset;
+
+            if input.cubes.contains(&cur) {
                 sides -= 1;
             }
         }
