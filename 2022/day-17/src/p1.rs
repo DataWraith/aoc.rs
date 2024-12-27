@@ -1,16 +1,42 @@
 use std::fmt::Display;
+use std::hash::{Hash, Hasher};
+use std::rc::Rc;
 
 use utility_belt::prelude::*;
 
 use crate::parser::*;
 
+#[derive(Clone, Debug)]
 pub struct Well {
-    lines: VecDeque<[bool; 7]>,
-    max_height: i32,
+    pub lines: VecDeque<[bool; 7]>,
+    pub rocks: Rc<Vec<BoolGrid2D>>,
+    pub jets: Rc<Vec<char>>,
+    pub rock_idx: usize,
+    pub jet_idx: usize,
+    pub base_height: i32,
+    pub max_height: i32,
+}
+
+impl PartialEq for Well {
+    fn eq(&self, other: &Self) -> bool {
+        self.lines == other.lines
+            && self.rock_idx == other.rock_idx
+            && self.jet_idx == other.jet_idx
+    }
+}
+
+impl Eq for Well {}
+
+impl Hash for Well {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.lines.hash(state);
+        self.rock_idx.hash(state);
+        self.jet_idx.hash(state);
+    }
 }
 
 impl Well {
-    pub fn new() -> Self {
+    pub fn new(rocks: Vec<BoolGrid2D>, jets: Vec<char>) -> Self {
         let mut lines = VecDeque::new();
         lines.push_back([false; 7]);
         lines.push_back([false; 7]);
@@ -18,7 +44,12 @@ impl Well {
 
         Self {
             lines,
+            rocks: Rc::new(rocks),
+            jets: Rc::new(jets),
+            rock_idx: 0,
+            jet_idx: 0,
             max_height: 0,
+            base_height: 0,
         }
     }
 
@@ -27,19 +58,52 @@ impl Well {
             return true;
         }
 
-        if self.lines.len() <= coordinate.y as usize {
+        if coordinate.y < self.base_height {
+            return true;
+        }
+
+        let y = coordinate.y - self.base_height;
+
+        if self.lines.len() <= y as usize {
             return false;
         }
 
-        self.lines[coordinate.y as usize][coordinate.x as usize]
+        self.lines[y as usize][coordinate.x as usize]
+    }
+
+    pub fn shrink(&mut self) {
+        let start_y = self.lines.len().max(3) - 3;
+        let end_y = self.lines.len() - 1;
+
+        for y in (start_y..=end_y).rev() {
+            let mut count = 0;
+
+            for x in 0..7 {
+                if self.lines[y][x] {
+                    count += 1;
+                }
+            }
+
+            if count >= 7 {
+                self.base_height += y as i32;
+
+                for _ in 0..y {
+                    self.lines.pop_front();
+                }
+
+                break;
+            }
+        }
     }
 
     pub fn set(&mut self, coordinate: Coordinate) {
-        while self.lines.len() <= coordinate.y as usize {
+        let y = coordinate.y - self.base_height;
+
+        while self.lines.len() <= y as usize {
             self.lines.push_back([false; 7]);
         }
 
-        self.lines[coordinate.y as usize][coordinate.x as usize] = true;
+        self.lines[y as usize][coordinate.x as usize] = true;
         self.max_height = self.max_height.max(coordinate.y);
     }
 
@@ -60,11 +124,54 @@ impl Well {
             }
         })
     }
+
+    pub fn drop_rock(&self) -> Self {
+        let mut well = self.clone();
+
+        let mut coordinate = well.initial_coordinate();
+        let rock = well.rocks[well.rock_idx].clone();
+        well.rock_idx = (well.rock_idx + 1) % well.rocks.len();
+
+        loop {
+            let jet = well.jets[well.jet_idx];
+            well.jet_idx = (well.jet_idx + 1) % well.jets.len();
+
+            if jet == '<' {
+                if !well.collides(&rock, coordinate.neighbor(Direction::Left)) {
+                    coordinate += Direction::Left;
+                }
+            } else if jet == '>' {
+                if !well.collides(&rock, coordinate.neighbor(Direction::Right)) {
+                    coordinate += Direction::Right;
+                }
+            } else {
+                panic!("Invalid jet: {}", jet);
+            }
+
+            if well.collides(&rock, coordinate.neighbor(Direction::Up)) {
+                rock.iter().for_each(|(coord, bool)| {
+                    let x = coord.x + coordinate.x;
+                    let y = coord.y + coordinate.y;
+                    let c = Coordinate::new(x, y);
+
+                    if *bool {
+                        well.set(c);
+                    }
+                });
+                break;
+            }
+
+            coordinate = coordinate.neighbor(Direction::Up);
+        }
+
+        well.shrink();
+        well
+    }
 }
 
 impl Display for Well {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for y in (0..self.max_height + 1).rev() {
+        for y in (self.base_height..self.max_height + 1).rev() {
             for x in 0..7 {
                 write!(
                     f,
@@ -82,48 +189,11 @@ impl Display for Well {
     }
 }
 
-fn drop_rock(well: &mut Well, rock: &BoolGrid2D, mut jets: impl Iterator<Item = char>) {
-    let mut coordinate = well.initial_coordinate();
-
-    loop {
-        let jet = jets.next().unwrap();
-
-        if jet == '<' {
-            if !well.collides(rock, coordinate.neighbor(Direction::Left)) {
-                coordinate += Direction::Left;
-            }
-        } else if jet == '>' {
-            if !well.collides(rock, coordinate.neighbor(Direction::Right)) {
-                coordinate += Direction::Right;
-            }
-        } else {
-            panic!("Invalid jet: {}", jet);
-        }
-
-        if well.collides(rock, coordinate.neighbor(Direction::Up)) {
-            rock.iter().for_each(|(coord, bool)| {
-                let x = coord.x + coordinate.x;
-                let y = coord.y + coordinate.y;
-                let c = Coordinate::new(x, y);
-
-                if *bool {
-                    well.set(c);
-                }
-            });
-            break;
-        }
-
-        coordinate = coordinate.neighbor(Direction::Up);
-    }
-}
-
 pub fn part1(input: &PuzzleInput) -> String {
-    let mut well = Well::new();
-    let mut rocks = input.rocks.iter().cycle();
-    let mut jets = input.jets.clone().into_iter().cycle();
+    let mut well = Well::new(input.rocks.clone().into(), input.jets.clone().into());
 
-    for i in 0..2022 {
-        drop_rock(&mut well, rocks.next().unwrap(), &mut jets);
+    for _ in 0..2022 {
+        well = well.drop_rock();
     }
 
     return well.max_height.to_string();
