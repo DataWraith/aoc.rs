@@ -1,5 +1,7 @@
 #!/usr/bin/env -S cargo +nightly -Zscript
 ---cargo
+[package]
+edition = "2021"
 [dependencies]
 chrono = "0.4"
 reqwest = { version = "0.12", features = ["blocking"] }
@@ -17,6 +19,11 @@ fn main() {
 
     let (year, day) = get_year_and_day();
     let puzzle_input = get_puzzle_input(year, day, &session);
+
+    if puzzle_input.starts_with("Please don't") {
+        eprintln!("Something went wrong while fetching the Input for {year} day {day}.");
+        std::process::exit(1);
+    }
 
     std::fs::write("input.txt", puzzle_input).expect("Failed to write input to file");
 }
