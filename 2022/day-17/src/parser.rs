@@ -30,7 +30,7 @@ pub struct PuzzleInput {
 pub fn part1(input: &'static str) -> PuzzleInput {
     let rocks: Vec<BoolGrid2D> = ROCKS
         .split("\n\n")
-        .map(|r| Grid2D::<char>::from(r))
+        .map(Grid2D::<char>::from)
         .map(|g| g.map(|c| *c == '#'))
         .map(|g| g.into())
         .collect();

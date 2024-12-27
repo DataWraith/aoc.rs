@@ -190,21 +190,20 @@ impl Display for Well {
 }
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let mut well = Well::new(input.rocks.clone().into(), input.jets.clone().into());
+    let mut well = Well::new(input.rocks.clone(), input.jets.clone());
 
     for _ in 0..2022 {
         well = well.drop_rock();
     }
 
-    return well.max_height.to_string();
+    well.max_height.to_string()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
-    const TEST_INPUT: &str = indoc! {"
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
         >>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>
     "};
 
