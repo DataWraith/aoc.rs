@@ -94,9 +94,9 @@ checksum = "8f1fe948ff07f4bd06c30984e69f5b4899c516a3ef74f34df92a2df2ab535495"
 
 [[package]]
 name = "cc"
-version = "1.2.5"
+version = "1.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c31a0499c1dc64f458ad13872de75c0eb7e3fdb0e67964610c914b034fc5956e"
+checksum = "8d6dbb628b8f8555f86d0323c2eb39e3ec81901f4b83e091db8a6a76d316a333"
 dependencies = [
  "shlex",
 ]
@@ -300,6 +300,14 @@ version = "0.1.0"
 dependencies = [
  "nom",
  "petgraph",
+ "utility-belt",
+]
+
+[[package]]
+name = "day-17"
+version = "0.1.0"
+dependencies = [
+ "divan",
  "utility-belt",
 ]
 
@@ -924,12 +932,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rangetools"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6e97ca3dbabd81e6033cfe09f0cef37c89f34f2a9223cab7cf99305d46a9633"
-
-[[package]]
 name = "rawpointer"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1069,9 +1071,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.91"
+version = "2.0.92"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d53cbcb5a243bd33b7858b1d7f4aca2153490815872d86d955d6ea29f743c035"
+checksum = "70ae51629bf965c5c098cc9e87908a3df5301051a9e087d6f9bef5c9771ed126"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1148,8 +1150,8 @@ checksum = "adb9e6ca4f869e1180728b7950e35922a7fc6397f7b641499e8f3ef06e50dc83"
 
 [[package]]
 name = "utility-belt"
-version = "0.2024.9"
-source = "git+https://github.com/DataWraith/utility-belt.git?rev=f39058c0#f39058c075b4073b238019a35d5973a3cdeeb761"
+version = "0.2024.10"
+source = "git+https://github.com/DataWraith/utility-belt.git?rev=fe5b3c2d5e43#fe5b3c2d5e43e091c08f7a7f6d584f6f8c594bff"
 dependencies = [
  "ahash",
  "derive_more 1.0.0",
@@ -1162,7 +1164,6 @@ dependencies = [
  "num",
  "num-modular",
  "rand",
- "rangetools",
  "rstest",
  "tinyvec",
 ]
