@@ -72,27 +72,9 @@ impl Well {
     }
 
     pub fn shrink(&mut self) {
-        let start_y = self.lines.len().max(3) - 3;
-        let end_y = self.lines.len() - 1;
-
-        for y in (start_y..=end_y).rev() {
-            let mut count = 0;
-
-            for x in 0..7 {
-                if self.lines[y][x] {
-                    count += 1;
-                }
-            }
-
-            if count >= 7 {
-                self.base_height += y as i32;
-
-                for _ in 0..y {
-                    self.lines.pop_front();
-                }
-
-                break;
-            }
+        while self.lines.len() > 35 {
+            self.lines.pop_front();
+            self.base_height += 1;
         }
     }
 
