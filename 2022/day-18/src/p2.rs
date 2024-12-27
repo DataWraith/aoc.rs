@@ -12,9 +12,9 @@ pub fn part2(input: &PuzzleInput) -> String {
         max = max.max(*cube);
     }
 
-    // Subtract a border of 2 units to make UnionFind easier
-    min = min - IVec3::new(2, 2, 2);
-    max = max + IVec3::new(2, 2, 2);
+    // Add a border of 2 units to make UnionFind easier
+    min -= IVec3::new(2, 2, 2);
+    max += IVec3::new(2, 2, 2);
 
     // Prepare UnionFind. We're trying to union all the air spaces to see if
     // they are connected to the outside.
@@ -97,7 +97,6 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
         2,2,2
