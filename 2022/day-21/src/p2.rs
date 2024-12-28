@@ -18,8 +18,8 @@ pub fn find_human_value(input: &PuzzleInput, current: &str, target: i64) -> Opti
         Monkey::Operation(left, op, right) => (left, op, right),
     };
 
-    let left_value = evaluate(&input.monkeys[left], &input.monkeys);
-    let right_value = evaluate(&input.monkeys[right], &input.monkeys);
+    let left_value = evaluate(left, &input.monkeys);
+    let right_value = evaluate(right, &input.monkeys);
 
     // Now we need to find the target value for the left and right branches of
     // the operation. This is possible, because there is only one value we can

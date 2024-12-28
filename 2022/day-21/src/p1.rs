@@ -1,17 +1,20 @@
+use cached::proc_macro::cached;
+
 use utility_belt::prelude::*;
 
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    evaluate(&input.monkeys["root"], &input.monkeys).to_string()
+    evaluate("root", &input.monkeys).to_string()
 }
 
-pub fn evaluate(monkey: &Monkey, monkeys: &HashMap<&'static str, Monkey>) -> i64 {
-    match monkey {
+#[cached(key = "&'static str", convert = r#"{ name }"#)]
+pub fn evaluate(name: &'static str, monkeys: &HashMap<&'static str, Monkey>) -> i64 {
+    match &monkeys[name] {
         Monkey::Number(n) => *n,
         Monkey::Operation(left, op, right) => {
-            let left_value = evaluate(&monkeys[left], monkeys);
-            let right_value = evaluate(&monkeys[right], monkeys);
+            let left_value = evaluate(left, monkeys);
+            let right_value = evaluate(right, monkeys);
 
             match op {
                 Operation::Plus => left_value + right_value,
