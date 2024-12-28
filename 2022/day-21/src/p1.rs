@@ -17,6 +17,13 @@ pub fn evaluate(monkey: &Monkey, monkeys: &HashMap<String, Monkey>) -> i64 {
                 Operation::Minus => left_value - right_value,
                 Operation::Times => left_value * right_value,
                 Operation::DividedBy => left_value / right_value,
+                Operation::Matches => {
+                    if left_value == right_value {
+                        1
+                    } else {
+                        0
+                    }
+                }
             }
         }
     }
