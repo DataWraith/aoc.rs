@@ -1,23 +1,19 @@
-use std::collections::BTreeSet;
-
 use rangetools::{BoundedSet, Rangetools};
 
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let ranges = row_exclusion_zone(input, 2000000);
-    let mut beacons = BTreeSet::new();
+    let mut range = row_exclusion_zone(input, 2000000);
 
-    'outer: for (_, beacon) in input.sensors.iter() {
-        if beacon.y == 2000000 && ranges.contains(beacon.x as i32) {
-            beacons.insert(beacon.x);
-            continue 'outer;
+    for (_, beacon) in input.sensors.iter() {
+        if beacon.y == 2000000 {
+            let beacon_range = (beacon.x as i32)..=(beacon.x as i32);
+            let beacon_complement = beacon_range.complement();
+            range = range.intersection(beacon_complement);
         }
     }
 
-    let range_count = ranges.into_iter().count();
-
-    (range_count as isize - beacons.len() as isize).to_string()
+    range.into_iter().count().to_string()
 }
 
 pub fn row_exclusion_zone(input: &PuzzleInput, row: i32) -> BoundedSet<i32> {
