@@ -11,6 +11,7 @@ pub struct State {
 impl State {
     pub fn new(input: &PuzzleInput) -> Self {
         let coord = input.costs.iter().find(|(_coord, c)| **c == 1).unwrap().0;
+
         Self {
             position: coord,
             direction: Direction::Right,
@@ -45,7 +46,12 @@ impl State {
         }
     }
 
-    pub fn step(&mut self, input: &PuzzleInput, instruction: &Instruction) -> Self {
+    pub fn step(
+        &mut self,
+        input: &PuzzleInput,
+        connections: &HashMap<Self, Self>,
+        instruction: &Instruction,
+    ) -> Self {
         match instruction {
             Instruction::TurnLeft => State {
                 direction: self.direction.turn_left_90(),
@@ -58,36 +64,49 @@ impl State {
             },
 
             Instruction::Move(n) => {
-                let mut next_position = self.position;
+                let mut next = self.clone();
                 let mut cost = 0;
 
                 for _ in 0.. {
-                    next_position = next_position.neighbor(self.direction);
-                    let next_cost = input.costs.get_wrap(next_position);
-
-                    if *next_cost == u32::MAX {
-                        while *input.costs.get_wrap(next_position) != 1 {
-                            next_position = next_position.neighbor(self.direction.opposite());
+                    if let Some(connected) = connections.get(&next) {
+                        if connected.position == next.position {
+                            break;
                         }
 
-                        break;
-                    }
+                        next = connected.clone();
+                        cost += 1;
+                    } else {
+                        next = State {
+                            position: next.position.neighbor(next.direction),
+                            direction: next.direction,
+                        };
 
-                    cost += next_cost;
+                        let next_cost = input.costs.get_wrap(next.position);
+
+                        if *next_cost == u32::MAX {
+                            while *input.costs.get_wrap(next.position) != 1 {
+                                next.position = next.position.neighbor(next.direction.opposite());
+                            }
+
+                            break;
+                        }
+
+                        cost += next_cost;
+                    }
 
                     if cost == *n {
                         break;
                     }
                 }
 
-                let next = Coordinate::new(
-                    next_position.x.rem_euclid(input.costs.width() as i32),
-                    next_position.y.rem_euclid(input.costs.height() as i32),
+                let wrap_pos = Coordinate::new(
+                    next.position.x.rem_euclid(input.costs.width() as i32),
+                    next.position.y.rem_euclid(input.costs.height() as i32),
                 );
 
                 State {
-                    position: next,
-                    direction: self.direction,
+                    position: wrap_pos,
+                    ..next
                 }
             }
         }
@@ -98,7 +117,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     let mut state = State::new(input);
 
     for instruction in input.instructions.iter() {
-        state = state.step(input, instruction);
+        state = state.step(input, &HashMap::new(), instruction);
     }
 
     compute_password(state)
