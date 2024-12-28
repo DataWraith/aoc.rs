@@ -1,9 +1,11 @@
 [workspace]
-resolver = "2"
-
-members = ["day-*"]
+members = ["day-*", "day-22"]
 default-members = ["day-*"]
+resolver = "2"
 
 [workspace.dependencies]
 divan = "0.1"
-utility-belt = { git = "https://github.com/DataWraith/utility-belt.git", rev="cd1c5652474e" }
+
+[workspace.dependencies.utility-belt]
+git = "https://github.com/DataWraith/utility-belt.git"
+rev = "3224afaad534"
