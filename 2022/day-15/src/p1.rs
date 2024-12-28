@@ -1,5 +1,7 @@
 use std::collections::BTreeSet;
 
+use rangetools::{BoundedSet, Rangetools};
+
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
@@ -7,25 +9,19 @@ pub fn part1(input: &PuzzleInput) -> String {
     let mut beacons = BTreeSet::new();
 
     'outer: for (_, beacon) in input.sensors.iter() {
-        for (start, end) in ranges.iter() {
-            if beacon.y == 2000000 && *start <= beacon.x as isize && beacon.x as isize <= *end {
-                beacons.insert(beacon.x);
-                continue 'outer;
-            }
+        if beacon.y == 2000000 && ranges.contains(beacon.x as i32) {
+            beacons.insert(beacon.x);
+            continue 'outer;
         }
     }
 
-    let mut range_count = 0;
+    let range_count = ranges.into_iter().count();
 
-    for (start, end) in ranges.into_iter() {
-        range_count += end - start + 1;
-    }
-
-    (range_count - beacons.len() as isize).to_string()
+    (range_count as isize - beacons.len() as isize).to_string()
 }
 
-pub fn row_exclusion_zone(input: &PuzzleInput, row: i32) -> Vec<(isize, isize)> {
-    let mut intervals = Vec::new();
+pub fn row_exclusion_zone(input: &PuzzleInput, row: i32) -> BoundedSet<i32> {
+    let mut intervals = BoundedSet::empty();
 
     for (sensor, beacon) in input.sensors.iter() {
         // First, calculate the distance to the beacon
@@ -41,36 +37,10 @@ pub fn row_exclusion_zone(input: &PuzzleInput, row: i32) -> Vec<(isize, isize)> 
             continue;
         }
 
-        intervals.push((sensor.x - offset, sensor.x + offset));
+        intervals = intervals.union((sensor.x - offset)..=(sensor.x + offset));
     }
 
-    intervals.sort();
-
-    merge_intervals(intervals)
-}
-
-pub fn merge_intervals(intervals: Vec<(i32, i32)>) -> Vec<(isize, isize)> {
-    let mut q = Vec::new();
-
-    for (lo, hi) in intervals {
-        let lo = lo as isize;
-        let hi = hi as isize;
-
-        if q.is_empty() {
-            q.push((lo, hi));
-            continue;
-        }
-
-        let (ql, qh) = q.pop().unwrap();
-
-        if lo > qh + 1 {
-            q.push((lo, hi));
-            continue;
-        }
-
-        q.push((ql, hi.max(qh)));
-    }
-    q
+    intervals
 }
 
 #[cfg(test)]
@@ -97,7 +67,10 @@ mod tests {
     #[test]
     fn test_part1_example() {
         let input = crate::parser::part1(TEST_INPUT);
+        let expected = BoundedSet::empty();
+        let expected = expected.union((-2..=24).into_iter());
+
         assert_ne!(TEST_INPUT, "TODO\n");
-        assert_eq!(row_exclusion_zone(&input, 10), vec![(-2, 24)]);
+        assert_eq!(row_exclusion_zone(&input, 10), expected);
     }
 }

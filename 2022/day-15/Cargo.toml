@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+rangetools = "0.1.4"
 utility-belt.workspace = true
 z3 = { version = "0.12.1", features = ["static-link-z3"] }
 

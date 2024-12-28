@@ -370,6 +370,7 @@ name = "day-15"
 version = "0.1.0"
 dependencies = [
  "divan",
+ "rangetools",
  "utility-belt",
  "z3",
 ]
@@ -1068,6 +1069,12 @@ checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom",
 ]
+
+[[package]]
+name = "rangetools"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6e97ca3dbabd81e6033cfe09f0cef37c89f34f2a9223cab7cf99305d46a9633"
 
 [[package]]
 name = "rawpointer"
