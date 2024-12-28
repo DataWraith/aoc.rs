@@ -12,18 +12,13 @@ pub fn evaluate(monkey: &Monkey, monkeys: &HashMap<&'static str, Monkey>) -> i64
         Monkey::Operation(left, op, right) => {
             let left_value = evaluate(&monkeys[left], monkeys);
             let right_value = evaluate(&monkeys[right], monkeys);
+
             match op {
                 Operation::Plus => left_value + right_value,
                 Operation::Minus => left_value - right_value,
                 Operation::Times => left_value * right_value,
                 Operation::DividedBy => left_value / right_value,
-                Operation::Matches => {
-                    if left_value == right_value {
-                        1
-                    } else {
-                        0
-                    }
-                }
+                Operation::Matches => panic!("Matches operation is invalid for part 1"),
             }
         }
     }

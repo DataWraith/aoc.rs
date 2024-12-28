@@ -22,7 +22,9 @@ pub fn find_human_value(input: &PuzzleInput, current: &str, target: i64) -> Opti
     let right_value = evaluate(&input.monkeys[right], &input.monkeys);
 
     // Now we need to find the target value for the left and right branches of
-    // the operation.
+    // the operation. This is possible, because there is only one value we can
+    // change (humn), so either the left OR right branch will have to change,
+    // but not both.
     let (left_tgt, right_tgt) = match op {
         Operation::Plus => {
             let sum = left_value + right_value;
