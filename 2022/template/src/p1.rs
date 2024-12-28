@@ -3,6 +3,7 @@ use utility_belt::prelude::*;
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
+    dbg!(&input);
     todo!("{{crate_name}}::p1::part1");
 }
 
