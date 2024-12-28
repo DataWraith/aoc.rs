@@ -1,12 +1,10 @@
 use crate::{p1::evaluate, parser::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
-    find_human_value(input, "root".to_string(), 1)
-        .unwrap()
-        .to_string()
+    find_human_value(input, "root", 1).unwrap().to_string()
 }
 
-pub fn find_human_value(input: &PuzzleInput, current: String, target: i64) -> Option<i64> {
+pub fn find_human_value(input: &PuzzleInput, current: &str, target: i64) -> Option<i64> {
     if current == "humn" {
         return Some(target);
     }
@@ -17,11 +15,11 @@ pub fn find_human_value(input: &PuzzleInput, current: String, target: i64) -> Op
             return None;
         }
 
-        Monkey::Operation(left, op, right) => (left.clone(), op, right.clone()),
+        Monkey::Operation(left, op, right) => (left, op, right),
     };
 
-    let left_value = evaluate(&input.monkeys[&left], &input.monkeys);
-    let right_value = evaluate(&input.monkeys[&right], &input.monkeys);
+    let left_value = evaluate(&input.monkeys[left], &input.monkeys);
+    let right_value = evaluate(&input.monkeys[right], &input.monkeys);
 
     // Now we need to find the target value for the left and right branches of
     // the operation.

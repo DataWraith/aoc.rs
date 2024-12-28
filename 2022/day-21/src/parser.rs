@@ -12,12 +12,12 @@ pub enum Operation {
 #[derive(Clone, Debug)]
 pub enum Monkey {
     Number(i64),
-    Operation(String, Operation, String),
+    Operation(&'static str, Operation, &'static str),
 }
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
-    pub monkeys: HashMap<String, Monkey>,
+    pub monkeys: HashMap<&'static str, Monkey>,
 }
 
 pub fn part1(input: &'static str) -> PuzzleInput {
@@ -26,7 +26,7 @@ pub fn part1(input: &'static str) -> PuzzleInput {
     for line in input.lines() {
         let (name, rest) = line.split_once(": ").unwrap();
         let monkey = parse_monkey(rest);
-        monkeys.insert(name.to_string(), monkey);
+        monkeys.insert(name, monkey);
     }
 
     PuzzleInput { monkeys }
@@ -45,19 +45,16 @@ pub fn part2(input: &'static str) -> PuzzleInput {
                 _ => panic!("Root is not an operation"),
             };
 
-            monkeys.insert(
-                name.to_string(),
-                Monkey::Operation(left.to_string(), Operation::Matches, right.to_string()),
-            );
+            monkeys.insert(name, Monkey::Operation(left, Operation::Matches, right));
         } else {
-            monkeys.insert(name.to_string(), monkey);
+            monkeys.insert(name, monkey);
         }
     }
 
     PuzzleInput { monkeys }
 }
 
-pub fn parse_monkey(input: &str) -> Monkey {
+pub fn parse_monkey(input: &'static str) -> Monkey {
     if let Ok(number) = input.parse::<i64>() {
         Monkey::Number(number)
     } else {
@@ -70,6 +67,6 @@ pub fn parse_monkey(input: &str) -> Monkey {
             _ => panic!("Invalid operator: {}", operator),
         };
 
-        Monkey::Operation(left.to_string(), operation, right.to_string())
+        Monkey::Operation(left, operation, right)
     }
 }

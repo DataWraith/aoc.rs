@@ -6,7 +6,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     evaluate(&input.monkeys["root"], &input.monkeys).to_string()
 }
 
-pub fn evaluate(monkey: &Monkey, monkeys: &HashMap<String, Monkey>) -> i64 {
+pub fn evaluate(monkey: &Monkey, monkeys: &HashMap<&'static str, Monkey>) -> i64 {
     match monkey {
         Monkey::Number(n) => *n,
         Monkey::Operation(left, op, right) => {
