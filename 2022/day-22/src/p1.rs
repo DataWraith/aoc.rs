@@ -2,7 +2,7 @@ use utility_belt::prelude::*;
 
 use crate::parser::*;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct State {
     pub position: Coordinate,
     pub direction: Direction,
@@ -14,6 +14,44 @@ impl State {
         Self {
             position: coord,
             direction: Direction::Right,
+        }
+    }
+
+    pub fn step_connections(
+        &self,
+        connections: &HashMap<Self, Self>,
+        instruction: &Instruction,
+        path_grid: &mut Grid2D<char>,
+    ) -> Self {
+        match instruction {
+            Instruction::TurnLeft => State {
+                direction: self.direction.turn_left_90(),
+                ..self.clone()
+            },
+            Instruction::TurnRight => State {
+                direction: self.direction.turn_right_90(),
+                ..self.clone()
+            },
+            Instruction::Move(n) => {
+                let mut next = self.clone();
+
+                for _ in 0..*n {
+                    path_grid.set(
+                        next.position,
+                        match next.direction {
+                            Direction::Right => '>',
+                            Direction::Down => 'v',
+                            Direction::Left => '<',
+                            Direction::Up => '^',
+                            _ => unreachable!(),
+                        },
+                    );
+
+                    next = connections.get(&next).unwrap().clone();
+                }
+
+                next
+            }
         }
     }
 
