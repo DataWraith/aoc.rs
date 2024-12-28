@@ -3,7 +3,7 @@ use utility_belt::prelude::*;
 use crate::parser::*;
 
 pub struct CircularList {
-    pub ring: Vec<(usize, i64)>,
+    pub ring: VecDeque<(usize, i64)>,
 }
 
 impl CircularList {
@@ -15,17 +15,37 @@ impl CircularList {
 
     pub fn mix(&mut self, orig: &[i64]) {
         for (i, value) in orig.iter().enumerate() {
+            // Linear search for the index of the current element. This is
+            // faster than rotating the list to the left until the current
+            // element is at the front because the built-in rotate_left will
+            // actually rotate right if the distance is shorter that way.
             let index = self.ring.iter().position(|&x| x.0 == i).unwrap();
-            self.ring.remove(index);
-            let new_index = (index as i64 + *value).rem_euclid(self.ring.len() as i64) as usize;
-            self.ring.insert(new_index, (i, *value));
+            self.ring.rotate_left(index);
+
+            // Move the element by popping it, rotating the list, and then
+            // pushing it back.
+            let _ = self.ring.pop_front();
+
+            if *value < 0 {
+                self.ring
+                    .rotate_right((-value % self.ring.len() as i64) as usize);
+            } else {
+                self.ring
+                    .rotate_left((*value % self.ring.len() as i64) as usize);
+            }
+
+            self.ring.push_front((i, *value));
+        }
+    }
+
+    pub fn reset(&mut self) {
+        while self.ring.front().unwrap().1 != 0 {
+            self.ring.rotate_left(1);
         }
     }
 
     pub fn get(&self, index: usize) -> i64 {
-        let zero_index = self.ring.iter().position(|&x| x.1 == 0).unwrap();
-        let index = (zero_index + index) % self.ring.len();
-        self.ring[index].1
+        self.ring[index % self.ring.len()].1
     }
 }
 
@@ -33,8 +53,10 @@ pub fn part1(input: &PuzzleInput) -> String {
     let mut list = CircularList::new(&input.sequence);
 
     list.mix(&input.sequence);
+    list.reset();
 
     let mut sum = 0;
+
     for i in 1..=3 {
         sum += list.get(1000 * i);
     }

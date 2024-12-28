@@ -7,7 +7,7 @@ pub struct PuzzleInput {
 }
 
 pub fn part1(input: &'static str) -> PuzzleInput {
-    PuzzleInput{
+    PuzzleInput {
         sequence: parse_ints(input),
     }
 }
