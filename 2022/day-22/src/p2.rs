@@ -6,8 +6,9 @@ use crate::{
 };
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let regions = find_connected_regions(input, 50);
+    let faces = find_top_left_corners(input, 50);
 
+    // Manually built a cube from the input and found the connections between the faces :-(
     let face_connections = [
         // Face 0
         (0, 2, Direction::Down, Direction::Down),
@@ -41,7 +42,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         (5, 3, Direction::Up, Direction::Up),
     ];
 
-    let connections = make_connections(input, 50, regions, face_connections);
+    let connections = make_connections(input, 50, faces, face_connections);
 
     let mut state = State::new(input);
 
@@ -53,7 +54,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 }
 
 pub fn part2_example(input: &PuzzleInput) -> String {
-    let regions = find_connected_regions(input, 4);
+    let faces = find_top_left_corners(input, 4);
 
     let face_connections = [
         // Face 0
@@ -88,7 +89,7 @@ pub fn part2_example(input: &PuzzleInput) -> String {
         (5, 3, Direction::Up, Direction::Left),
     ];
 
-    let connections = make_connections(input, 4, regions, face_connections);
+    let connections = make_connections(input, 4, faces, face_connections);
 
     let mut state = State::new(input);
 
@@ -99,35 +100,52 @@ pub fn part2_example(input: &PuzzleInput) -> String {
     compute_password(state)
 }
 
-pub fn find_connected_regions(input: &PuzzleInput, size: usize) -> [Coordinate; 6] {
-    let mut regions = [Coordinate::new(0, 0); 6];
-    let mut region_index = 0;
+// Since every face is a perfect square, we can just find the faces by iterating
+// over the grid in chunks of the given size.
+pub fn find_top_left_corners(input: &PuzzleInput, size: usize) -> [Coordinate; 6] {
+    let mut faces = [Coordinate::new(0, 0); 6];
+    let mut face_index = 0;
 
     for y in (0..input.costs.height()).step_by(size) {
         for x in (0..input.costs.width()).step_by(size) {
             let coordinate = Coordinate::new(x as i32, y as i32);
 
             if input.costs.get(coordinate).unwrap_or(&0) != &0 {
-                regions[region_index] = coordinate;
-                region_index += 1;
+                faces[face_index] = coordinate;
+                face_index += 1;
             }
         }
     }
 
-    regions
+    faces
 }
 
+// This stitches the cube together by making connections between the faces.
+//
+// The connections are stored in a HashMap for use by the
+// State::step_connections method.
 fn make_connections(
     input: &PuzzleInput,
     size: i32,
-    regions: [Coordinate; 6],
+    faces: [Coordinate; 6],
     face_connections: [(usize, usize, Direction, Direction); 6 * 4],
 ) -> HashMap<State, State> {
     let mut connections = HashMap::new();
 
-    for (region_index, region) in regions.iter().enumerate() {
-        for x in (region.x)..(region.x + size) {
-            for y in (region.y)..(region.y + size) {
+    for (face_index, face) in faces.iter().enumerate() {
+        // Intra-face connections.
+        //
+        // Here we just iterate over the face and make connections between all
+        // neighboring positions. This is technically not necessary, because we
+        // could just directly query the neighbors inside a face region, but it
+        // is convenient...
+        //
+        // We also make sure not to walk into or over wall tiles and instead
+        // reset to the current state. This is somewhat inefficient when walking
+        // into a wall repeatedly, but the entire part 2 runs in 3ms, so
+        // whatever.
+        for x in (face.x)..(face.x + size) {
+            for y in (face.y)..(face.y + size) {
                 let position = Coordinate::new(x, y);
 
                 for dir in Direction::cardinal() {
@@ -157,14 +175,18 @@ fn make_connections(
             }
         }
 
+        // Inter-face connections. This section of code was mostly derived by
+        // trial and error...
         for (c1, c2, dir1, dir2) in face_connections {
-            if c1 != region_index {
+            if c1 != face_index {
                 continue;
             }
 
-            let (xa_1, xa_2, ya_1, ya_2) = face_border(size, region, dir1);
-            let (xb_1, xb_2, yb_1, yb_2) = face_border(size, &regions[c2], dir2.opposite());
+            // Get the border of the current face and adjacent face.
+            let (xa_1, xa_2, ya_1, ya_2) = face_border(size, face, dir1);
+            let (xb_1, xb_2, yb_1, yb_2) = face_border(size, &faces[c2], dir2.opposite());
 
+            // Get all coordinates on the border of the current face.
             let mut coordinates1 = Vec::new();
 
             for x in xa_1..=xa_2 {
@@ -173,6 +195,7 @@ fn make_connections(
                 }
             }
 
+            // Get all coordinates on the border of the adjacent face.
             let mut coordinates2 = Vec::new();
 
             for x in xb_1..=xb_2 {
@@ -181,6 +204,12 @@ fn make_connections(
                 }
             }
 
+            // Adjust the coordinates based on the direction of the border
+            // crossing.
+            //
+            // - dir is is the direction we're leaving the current face in
+            // - dir2 is the direction we're facing once we've crossed the border
+            //   (relative to that face)
             match (dir1, dir2) {
                 (Direction::Right, Direction::Left)
                 | (Direction::Left, Direction::Right)
@@ -198,6 +227,7 @@ fn make_connections(
                 _ => {}
             }
 
+            // Now we make connections between the matching coordinates.
             for (c1, c2) in coordinates1.clone().iter().zip(coordinates2.clone().iter()) {
                 let start = State {
                     position: *c1,
@@ -209,10 +239,8 @@ fn make_connections(
                     direction: dir2,
                 };
 
-                if c1 == c2 {
-                    continue;
-                }
-
+                // If the end position is a wall, we just reset to the start
+                // position.
                 if input.costs.get(end.position).unwrap_or(&0) == &u32::MAX {
                     connections.insert(start.clone(), start);
                     continue;
@@ -226,21 +254,28 @@ fn make_connections(
     connections
 }
 
-fn face_border(size: i32, region: &Coordinate, direction: Direction) -> (i32, i32, i32, i32) {
+// Get the border of a face.
+//
+// `direction` is the direction we're leaving the face in, so if we're moving
+// right, this function returns the coordinates of the right border of the face.
+//
+// I guess we could return Coordinates here instead of a 4-tuple, but this is
+// more convenient for the make_connections function.
+fn face_border(size: i32, face: &Coordinate, direction: Direction) -> (i32, i32, i32, i32) {
     match direction {
         Direction::Right => (
-            region.x + size - 1,
-            region.x + size - 1,
-            region.y,
-            region.y + size - 1,
+            face.x + size - 1,
+            face.x + size - 1,
+            face.y,
+            face.y + size - 1,
         ),
-        Direction::Left => (region.x, region.x, region.y, region.y + size - 1),
-        Direction::Up => (region.x, region.x + size - 1, region.y, region.y),
+        Direction::Left => (face.x, face.x, face.y, face.y + size - 1),
+        Direction::Up => (face.x, face.x + size - 1, face.y, face.y),
         Direction::Down => (
-            region.x,
-            region.x + size - 1,
-            region.y + size - 1,
-            region.y + size - 1,
+            face.x,
+            face.x + size - 1,
+            face.y + size - 1,
+            face.y + size - 1,
         ),
         _ => unreachable!(),
     }

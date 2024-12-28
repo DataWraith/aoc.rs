@@ -15,5 +15,5 @@ fn part1() {
 #[divan::bench]
 fn part2() {
     let puzzle_input = parser::part2(include_str!("../input.txt"));
-    p2::part2_example(divan::black_box(&puzzle_input));
+    p2::part2(divan::black_box(&puzzle_input));
 }
