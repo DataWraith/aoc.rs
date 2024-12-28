@@ -32,7 +32,6 @@ pub fn evaluate(monkey: &Monkey, monkeys: &HashMap<String, Monkey>) -> i64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
         root: pppw + sjmn
