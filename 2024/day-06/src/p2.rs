@@ -36,7 +36,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         }
 
         // Can't place an obstacle outside the lab
-        if input.grid.get(obstacle).is_none() {
+        if !input.grid.contains(obstacle) {
             continue;
         }
 
