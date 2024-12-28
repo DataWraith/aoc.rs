@@ -7,9 +7,9 @@ pub struct CircularList {
 }
 
 impl CircularList {
-    pub fn new(input: &PuzzleInput) -> Self {
+    pub fn new(orig: &[i64]) -> Self {
         Self {
-            ring: input.sequence.iter().cloned().enumerate().collect(),
+            ring: orig.iter().cloned().enumerate().collect(),
         }
     }
 
@@ -40,9 +40,9 @@ impl CircularList {
             assert_eq!(v.1, *value);
 
             if *value < 0 {
-                self.rotate_right(-value as usize);
+                self.rotate_right((-value % self.ring.len() as i64) as usize);
             } else {
-                self.rotate_left(*value as usize);
+                self.rotate_left((*value % self.ring.len() as i64) as usize);
             }
 
             self.ring.push_front((i, *value));
@@ -60,7 +60,7 @@ impl CircularList {
 }
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let mut list = CircularList::new(input);
+    let mut list = CircularList::new(&input.sequence);
 
     list.mix(&input.sequence);
     list.reset();
@@ -76,7 +76,6 @@ pub fn part1(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
         1
