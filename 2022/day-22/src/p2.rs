@@ -1,6 +1,9 @@
 use utility_belt::prelude::*;
 
-use crate::{p1::State, parser::*};
+use crate::{
+    p1::{compute_password, State},
+    parser::*,
+};
 
 pub fn part2(input: &PuzzleInput) -> String {
     let regions = find_connected_regions(input, 50);
@@ -42,35 +45,11 @@ pub fn part2(input: &PuzzleInput) -> String {
 
     let mut state = State::new(input);
 
-    let mut path_grid = input.costs.map(|c| {
-        if c == &0 {
-            ' '
-        } else if c == &255 {
-            '#'
-        } else {
-            '.'
-        }
-    });
-
     for instruction in input.instructions.iter() {
-        state = state.step_connections(&connections, instruction, &mut path_grid);
+        state = state.step_connections(&connections, instruction);
     }
 
-    let final_column = state.position.x + 1;
-    let final_row = state.position.y + 1;
-    let final_facing = match state.direction {
-        Direction::Right => 0,
-        Direction::Down => 1,
-        Direction::Left => 2,
-        Direction::Up => 3,
-        _ => unreachable!(),
-    };
-
-    dbg!(&final_row, &final_column, &final_facing);
-
-    let password = final_row * 1000 + final_column * 4 + final_facing;
-
-    password.to_string()
+    compute_password(state)
 }
 
 pub fn part2_example(input: &PuzzleInput) -> String {
@@ -112,37 +91,12 @@ pub fn part2_example(input: &PuzzleInput) -> String {
     let connections = make_connections(input, 4, regions, face_connections);
 
     let mut state = State::new(input);
-    let mut path_grid = input.costs.map(|c| {
-        if c == &0 {
-            ' '
-        } else if c == &255 {
-            '#'
-        } else {
-            '.'
-        }
-    });
 
     for instruction in input.instructions.iter() {
-        state = state.step_connections(&connections, instruction, &mut path_grid);
+        state = state.step_connections(&connections, instruction);
     }
 
-    println!("{}", path_grid);
-
-    let final_column = state.position.x + 1;
-    let final_row = state.position.y + 1;
-    let final_facing = match state.direction {
-        Direction::Right => 0,
-        Direction::Down => 1,
-        Direction::Left => 2,
-        Direction::Up => 3,
-        _ => unreachable!(),
-    };
-
-    dbg!(&final_row, &final_column, &final_facing);
-
-    let password = final_row * 1000 + final_column * 4 + final_facing;
-
-    password.to_string()
+    compute_password(state)
 }
 
 pub fn find_connected_regions(input: &PuzzleInput, size: usize) -> [Coordinate; 6] {
@@ -174,7 +128,7 @@ fn make_connections(
     for (region_index, region) in regions.iter().enumerate() {
         for x in (region.x)..(region.x + size) {
             for y in (region.y)..(region.y + size) {
-                let position = Coordinate::new(x as i32, y as i32);
+                let position = Coordinate::new(x, y);
 
                 for dir in Direction::cardinal() {
                     let start = State {
@@ -184,7 +138,7 @@ fn make_connections(
 
                     let neighbor = position.neighbor(dir);
 
-                    if input.costs.get(neighbor).unwrap_or(&0) == &255 {
+                    if input.costs.get(neighbor).unwrap_or(&0) == &u32::MAX {
                         connections.insert(start.clone(), start);
                         continue;
                     }
@@ -208,14 +162,14 @@ fn make_connections(
                 continue;
             }
 
-            let (xa_1, xa_2, ya_1, ya_2) = border(size, region, dir1);
-            let (xb_1, xb_2, yb_1, yb_2) = border(size, &regions[c2], dir2.opposite());
+            let (xa_1, xa_2, ya_1, ya_2) = face_border(size, region, dir1);
+            let (xb_1, xb_2, yb_1, yb_2) = face_border(size, &regions[c2], dir2.opposite());
 
             let mut coordinates1 = Vec::new();
 
             for x in xa_1..=xa_2 {
                 for y in ya_1..=ya_2 {
-                    coordinates1.push(Coordinate::new(x as i32, y as i32));
+                    coordinates1.push(Coordinate::new(x, y));
                 }
             }
 
@@ -223,7 +177,7 @@ fn make_connections(
 
             for x in xb_1..=xb_2 {
                 for y in yb_1..=yb_2 {
-                    coordinates2.push(Coordinate::new(x as i32, y as i32));
+                    coordinates2.push(Coordinate::new(x, y));
                 }
             }
 
@@ -245,22 +199,13 @@ fn make_connections(
             }
 
             for (c1, c2) in coordinates1.clone().iter().zip(coordinates2.clone().iter()) {
-                let mut c1 = c1.clone();
-                let mut c2 = c2.clone();
-
-                if c1 == Coordinate::new(4, 4) {
-                    dbg!(&c1, &c2, dir1, dir2);
-                    dbg!(&coordinates1);
-                    dbg!(&coordinates2);
-                }
-
                 let start = State {
-                    position: c1,
+                    position: *c1,
                     direction: dir1,
                 };
 
                 let end = State {
-                    position: c2,
+                    position: *c2,
                     direction: dir2,
                 };
 
@@ -268,14 +213,7 @@ fn make_connections(
                     continue;
                 }
 
-                if start.position == Coordinate::new(11, 5) {
-                    dbg!(&start);
-                    dbg!(&end);
-                    dbg!(&coordinates1);
-                    dbg!(&coordinates2);
-                }
-
-                if input.costs.get(end.position).unwrap_or(&0) == &255 {
+                if input.costs.get(end.position).unwrap_or(&0) == &u32::MAX {
                     connections.insert(start.clone(), start);
                     continue;
                 }
@@ -288,8 +226,8 @@ fn make_connections(
     connections
 }
 
-fn border(size: i32, region: &Coordinate, dir1: Direction) -> (i32, i32, i32, i32) {
-    match dir1 {
+fn face_border(size: i32, region: &Coordinate, direction: Direction) -> (i32, i32, i32, i32) {
+    match direction {
         Direction::Right => (
             region.x + size - 1,
             region.x + size - 1,
@@ -311,7 +249,6 @@ fn border(size: i32, region: &Coordinate, dir1: Direction) -> (i32, i32, i32, i3
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
                 ...#

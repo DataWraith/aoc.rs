@@ -34,7 +34,7 @@ fn parse_map(input: &str) -> Grid2D<u32> {
                 coord,
                 match c {
                     '.' => 1,
-                    '#' => 255,
+                    '#' => u32::MAX,
                     _ => 0,
                 },
             );

@@ -21,32 +21,22 @@ impl State {
         &self,
         connections: &HashMap<Self, Self>,
         instruction: &Instruction,
-        path_grid: &mut Grid2D<char>,
     ) -> Self {
         match instruction {
             Instruction::TurnLeft => State {
                 direction: self.direction.turn_left_90(),
                 ..self.clone()
             },
+
             Instruction::TurnRight => State {
                 direction: self.direction.turn_right_90(),
                 ..self.clone()
             },
+
             Instruction::Move(n) => {
                 let mut next = self.clone();
 
                 for _ in 0..*n {
-                    path_grid.set(
-                        next.position,
-                        match next.direction {
-                            Direction::Right => '>',
-                            Direction::Down => 'v',
-                            Direction::Left => '<',
-                            Direction::Up => '^',
-                            _ => unreachable!(),
-                        },
-                    );
-
                     next = connections.get(&next).unwrap().clone();
                 }
 
@@ -61,10 +51,12 @@ impl State {
                 direction: self.direction.turn_left_90(),
                 ..self.clone()
             },
+
             Instruction::TurnRight => State {
                 direction: self.direction.turn_right_90(),
                 ..self.clone()
             },
+
             Instruction::Move(n) => {
                 let mut next_position = self.position;
                 let mut cost = 0;
@@ -73,7 +65,7 @@ impl State {
                     next_position = next_position.neighbor(self.direction);
                     let next_cost = input.costs.get_wrap(next_position);
 
-                    if *next_cost == 255 {
+                    if *next_cost == u32::MAX {
                         while *input.costs.get_wrap(next_position) != 1 {
                             next_position = next_position.neighbor(self.direction.opposite());
                         }
@@ -109,8 +101,14 @@ pub fn part1(input: &PuzzleInput) -> String {
         state = state.step(input, instruction);
     }
 
+    compute_password(state)
+}
+
+pub fn compute_password(state: State) -> String {
+    // One-based indexing
     let final_column = state.position.x + 1;
     let final_row = state.position.y + 1;
+
     let final_facing = match state.direction {
         Direction::Right => 0,
         Direction::Down => 1,
@@ -119,15 +117,12 @@ pub fn part1(input: &PuzzleInput) -> String {
         _ => unreachable!(),
     };
 
-    let password = final_row * 1000 + final_column * 4 + final_facing;
-
-    password.to_string()
+    (final_row * 1000 + final_column * 4 + final_facing).to_string()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
                 ...#
