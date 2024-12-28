@@ -3,7 +3,7 @@ use utility_belt::prelude::*;
 use crate::parser::*;
 
 pub struct CircularList {
-    pub ring: VecDeque<(usize, i64)>,
+    pub ring: Vec<(usize, i64)>,
 }
 
 impl CircularList {
@@ -13,49 +13,19 @@ impl CircularList {
         }
     }
 
-    pub fn rotate_left(&mut self, amount: usize) {
-        for _ in 0..amount {
-            let value = self.ring.pop_front().unwrap();
-            self.ring.push_back(value);
-        }
-    }
-
-    pub fn rotate_right(&mut self, amount: usize) {
-        for _ in 0..amount {
-            let value = self.ring.pop_back().unwrap();
-            self.ring.push_front(value);
-        }
-    }
-
     pub fn mix(&mut self, orig: &[i64]) {
         for (i, value) in orig.iter().enumerate() {
-            if value == &0 {
-                continue;
-            }
-
             let index = self.ring.iter().position(|&x| x.0 == i).unwrap();
-            self.rotate_left(index);
-
-            let v = self.ring.pop_front().unwrap();
-            assert_eq!(v.1, *value);
-
-            if *value < 0 {
-                self.rotate_right((-value % self.ring.len() as i64) as usize);
-            } else {
-                self.rotate_left((*value % self.ring.len() as i64) as usize);
-            }
-
-            self.ring.push_front((i, *value));
+            self.ring.remove(index);
+            let new_index = (index as i64 + *value).rem_euclid(self.ring.len() as i64) as usize;
+            self.ring.insert(new_index, (i, *value));
         }
-    }
-
-    pub fn reset(&mut self) {
-        let zero_index = self.ring.iter().position(|&x| x.1 == 0).unwrap();
-        self.rotate_left(zero_index);
     }
 
     pub fn get(&self, index: usize) -> i64 {
-        self.ring[index % self.ring.len()].1
+        let zero_index = self.ring.iter().position(|&x| x.1 == 0).unwrap();
+        let index = (zero_index + index) % self.ring.len();
+        self.ring[index].1
     }
 }
 
@@ -63,7 +33,6 @@ pub fn part1(input: &PuzzleInput) -> String {
     let mut list = CircularList::new(&input.sequence);
 
     list.mix(&input.sequence);
-    list.reset();
 
     let mut sum = 0;
     for i in 1..=3 {

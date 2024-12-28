@@ -12,8 +12,6 @@ pub fn part2(input: &PuzzleInput) -> String {
         list.mix(&seq);
     }
 
-    list.reset();
-
     let mut sum = 0;
     for i in 1..=3 {
         sum += list.get(1000 * i);
