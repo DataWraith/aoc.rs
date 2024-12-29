@@ -18,34 +18,6 @@ impl State {
         }
     }
 
-    pub fn step_connections(
-        &self,
-        connections: &HashMap<Self, Self>,
-        instruction: &Instruction,
-    ) -> Self {
-        match instruction {
-            Instruction::TurnLeft => State {
-                direction: self.direction.turn_left_90(),
-                ..self.clone()
-            },
-
-            Instruction::TurnRight => State {
-                direction: self.direction.turn_right_90(),
-                ..self.clone()
-            },
-
-            Instruction::Move(n) => {
-                let mut next = self.clone();
-
-                for _ in 0..*n {
-                    next = connections.get(&next).unwrap().clone();
-                }
-
-                next
-            }
-        }
-    }
-
     pub fn step(
         &mut self,
         input: &PuzzleInput,
