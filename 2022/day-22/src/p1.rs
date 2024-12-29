@@ -71,13 +71,8 @@ impl State {
                     }
                 }
 
-                let wrap_pos = Coordinate::new(
-                    next.position.x.rem_euclid(input.costs.width() as i32),
-                    next.position.y.rem_euclid(input.costs.height() as i32),
-                );
-
                 State {
-                    position: wrap_pos,
+                    position: next.position % input.costs.dims(),
                     ..next
                 }
             }
