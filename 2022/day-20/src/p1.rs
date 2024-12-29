@@ -25,15 +25,8 @@ impl CircularList {
             // Move the element by popping it, rotating the list, and then
             // pushing it back.
             let _ = self.ring.pop_front();
-
-            if *value < 0 {
-                self.ring
-                    .rotate_right((-value % self.ring.len() as i64) as usize);
-            } else {
-                self.ring
-                    .rotate_left((*value % self.ring.len() as i64) as usize);
-            }
-
+            let distance = value.rem_euclid(self.ring.len() as i64) as usize;
+            self.ring.rotate_left(distance);
             self.ring.push_front((i, *value));
         }
     }
