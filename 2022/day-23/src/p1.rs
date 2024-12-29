@@ -25,6 +25,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     free_tiles.to_string()
 }
 
+#[allow(unused)]
 fn debug_elves(elves: &HashSet<Coordinate>) {
     let bounding_box = compute_bounding_box(elves);
 
@@ -109,7 +110,6 @@ pub fn compute_bounding_box(elves: &HashSet<Coordinate>) -> (Coordinate, Coordin
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
         ....#..
