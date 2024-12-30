@@ -80,7 +80,7 @@ pub fn part1(input: &PuzzleInput) -> String {
     (path.unwrap().1).to_string()
 }
 
-fn start_coord(input: &PuzzleInput) -> Coordinate {
+pub fn start_coord(input: &PuzzleInput) -> Coordinate {
     for x in 0..input.grid.width() {
         if input.grid.get((x as i32, 0i32).into()).unwrap() == &'.' {
             return Coordinate::new(x as i32, 0);
@@ -90,7 +90,7 @@ fn start_coord(input: &PuzzleInput) -> Coordinate {
     unreachable!()
 }
 
-fn end_coord(input: &PuzzleInput) -> Coordinate {
+pub fn end_coord(input: &PuzzleInput) -> Coordinate {
     for x in (0..input.grid.width()).rev() {
         if input
             .grid
