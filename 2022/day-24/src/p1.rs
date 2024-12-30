@@ -7,7 +7,7 @@ use crate::parser::*;
 pub struct State {
     // The current position of the expedition
     pub position: Coordinate,
-    // The index of the applicable blizzard grid
+    // The distance a blizzard would have to travel to get to us
     pub blizzard_index: usize,
     // The index of the current goal
     pub goal_index: usize,
@@ -17,11 +17,17 @@ pub fn part1(input: &PuzzleInput) -> String {
     // Find the cycle length of the blizzard grid and make a BoolGrid2D for each step.
     // The grid tells us whether it is safe to be in a cell at a given time.
     let cycle_length = blizzard_cycle_length(input);
-    let blizzard_grids = make_blizzard_grids(input, cycle_length);
+    let blizzard_grid = make_blizzard_grid(input);
 
     // Find the start and end coordinates and define our goals
     let start_coord = find_start_coord(input);
     let end_coord = find_end_coord(input);
+
+    // Account for the fact that we cut off the outer ring of walls.
+    let start_coord = start_coord - Coordinate::new(1, 1);
+    let end_coord = end_coord - Coordinate::new(1, 1);
+
+    // Define our goals
     let goals = [end_coord, start_coord, end_coord];
 
     // And then, it's just Dijkstra's
@@ -33,14 +39,17 @@ pub fn part1(input: &PuzzleInput) -> String {
 
     let path = pathfinding::directed::bfs::bfs(
         &start,
-        |state| successor_states(&blizzard_grids, state, &goals),
+        |state| successor_states(&blizzard_grid, cycle_length, state, &goals),
         |state| state.position == end_coord,
     );
 
-    // Subtract 1 because we don't count the start state
+    // Subtract one to account for the start state being included in the path.
     (path.unwrap().len() - 1).to_string()
 }
 
+// The horizontal and vertical blizzards cycle every (width - 2) and (height - 2)
+// steps respectively. For both cycles to align, we need to find the least common
+// multiple of the two numbers.
 pub fn blizzard_cycle_length(input: &PuzzleInput) -> usize {
     let width = input.grid.width() - 2;
     let height = input.grid.height() - 2;
@@ -48,68 +57,75 @@ pub fn blizzard_cycle_length(input: &PuzzleInput) -> usize {
     lcm(width, height)
 }
 
-pub fn make_blizzard_grids(input: &PuzzleInput, cycle_length: usize) -> Vec<BoolGrid2D> {
-    std::iter::successors(Some(make_blizzard_grid(input)), |grid| {
-        Some(blizzard_step(grid))
-    })
-    .take(cycle_length)
-    .map(|grid| grid.map(|ds| !ds.is_empty()))
-    .map(|grid| grid.into())
-    .collect::<Vec<BoolGrid2D>>()
-}
-
 // Given a state, returns all the states we can move to
 pub fn successor_states(
-    blizzard_grids: &[BoolGrid2D],
+    blizzard_grid: &Grid2D<Option<Direction>>,
+    cycle_length: usize,
     current_state: &State,
     goals: &[Coordinate; 3],
 ) -> Vec<State> {
-    let blizzard_grid = &blizzard_grids[current_state.blizzard_index % blizzard_grids.len()];
-
     let mut successors = Vec::new();
 
-    for n in current_state.position.neighbors() {
-        // Check if we're about to walk into a wall
-        if n != goals[current_state.goal_index]
-            && (n.x == 0
-                    || n.x == blizzard_grid.width() as i32 - 1
-                    // Can walk off the top edge and bottom edge, so this needs to be <= and >=
-                    || n.y <= 0
-                    || n.y >= blizzard_grid.height() as i32 - 1)
-        {
-            continue;
-        }
+    // Chain the four neighbors with the current position to allow for staying
+    // in place.
+    'outer: for n in current_state
+        .position
+        .neighbors()
+        .chain([current_state.position])
+    {
+        // Check if we've reached the start or goal
+        if goals.contains(&n) {
+            // Is it our current goal?
+            if n == goals[current_state.goal_index] {
+                let new_state = State {
+                    position: n,
+                    blizzard_index: (current_state.blizzard_index + 1) % cycle_length,
+                    goal_index: current_state.goal_index + 1,
+                };
 
-        // Check if we're about to walk into a blizzard
-        if blizzard_grid[n] {
-            continue;
-        }
+                successors.push(new_state);
+                continue;
+            }
 
-        // Check if we've reached a goal
-        if n == goals[current_state.goal_index] {
-            let new_state = State {
+            // Nope. But we're safe at the start and goal, so we can move or stay there.
+            successors.push(State {
                 position: n,
-                blizzard_index: current_state.blizzard_index + 1,
-                goal_index: current_state.goal_index + 1,
-            };
+                blizzard_index: (current_state.blizzard_index + 1) % cycle_length,
+                ..current_state.clone()
+            });
 
-            successors.push(new_state);
             continue;
+        }
+
+        // Check if we would move out of bounds / into a wall.
+        if !blizzard_grid.contains(n) {
+            continue;
+        }
+
+        // Check if we're about to walk into a blizzard.
+        for direction in Direction::cardinal() {
+            // Figure out how far the blizzard would have to travel from the
+            // start to get to us.
+            let distance = current_state.blizzard_index;
+
+            // Move `distance` steps in the assumed direction of the blizzard.
+            let blizzard_coord = n + direction * distance as i32;
+
+            // Wrap around the grid if necessary
+            let blizzard_coord = blizzard_coord % blizzard_grid.dims();
+
+            // If there is a blizzard at `blizzard_coord` at T=0, and it's
+            // moving towards us, we can't move to `n` because the blizzard
+            // would hit us at the current timestep.
+            if blizzard_grid.get(blizzard_coord) == Some(&Some(direction.opposite())) {
+                continue 'outer;
+            }
         }
 
         // Otherwise we can move to that position
         successors.push(State {
             position: n,
-            blizzard_index: current_state.blizzard_index + 1,
-            ..current_state.clone()
-        });
-    }
-
-    // If we would not be hit by a blizzard, we can stay in the same position
-    if !blizzard_grid[current_state.position] {
-        successors.push(State {
-            position: current_state.position,
-            blizzard_index: current_state.blizzard_index + 1,
+            blizzard_index: (current_state.blizzard_index + 1) % cycle_length,
             ..current_state.clone()
         });
     }
@@ -142,58 +158,20 @@ pub fn find_end_coord(input: &PuzzleInput) -> Coordinate {
     unreachable!()
 }
 
-// Simulate one minute of blizzard movement
-pub fn blizzard_step(grid: &Grid2D<DirectionSet>) -> Grid2D<DirectionSet> {
-    let mut new_grid = Grid2D::new(grid.width(), grid.height(), DirectionSet::empty());
+// Given the puzzle input, make the blizzard grid. The blizzard grid has all the
+// blizzards at T=0, and we also cut off the outer ring of walls for convenience.
+pub fn make_blizzard_grid(input: &PuzzleInput) -> Grid2D<Option<Direction>> {
+    let mut grid = Grid2D::new(input.grid.width() - 2, input.grid.height() - 2, None);
 
-    for y in 1..(grid.height() - 1) {
-        for x in 1..(grid.width() - 1) {
-            let cell = grid[(x as i32, y as i32).into()];
-
-            for direction in cell.iter() {
-                let mut new_coord = Coordinate::new(x as i32, y as i32) + direction;
-
-                // Wrap around the grid if the blizzard hits a wall.
-                //
-                // Thankfully, there are no blizzards that can move off the edge
-                // of the grid through the start and goal locations.
-                if new_coord.x == 0
-                    || new_coord.x == grid.width() as i32 - 1
-                    || new_coord.y == 0
-                    || new_coord.y == grid.height() as i32 - 1
-                {
-                    new_coord += 2 * direction;
-                    new_coord %= grid.dims();
-                }
-
-                new_grid[new_coord].insert(direction);
-            }
-        }
-    }
-
-    new_grid
-}
-
-// Given the puzzle input, make the initial blizzard grid.
-//
-// Since blizzards can overlap, using a single direction is inadequate, so we
-// use a DirectionSet.
-pub fn make_blizzard_grid(input: &PuzzleInput) -> Grid2D<DirectionSet> {
-    let mut grid = Grid2D::new(
-        input.grid.width(),
-        input.grid.height(),
-        DirectionSet::empty(),
-    );
-
-    for y in 0..input.grid.height() {
-        for x in 0..input.grid.width() {
+    for y in 1..(input.grid.height() - 1) {
+        for x in 1..(input.grid.width() - 1) {
             let cell = input.grid.get((x as i32, y as i32).into()).unwrap();
 
             match cell {
-                '^' => grid[(x as i32, y as i32).into()] = Direction::Up.into(),
-                'v' => grid[(x as i32, y as i32).into()] = Direction::Down.into(),
-                '<' => grid[(x as i32, y as i32).into()] = Direction::Left.into(),
-                '>' => grid[(x as i32, y as i32).into()] = Direction::Right.into(),
+                '^' => grid[(x as i32 - 1, y as i32 - 1).into()] = Some(Direction::Up),
+                'v' => grid[(x as i32 - 1, y as i32 - 1).into()] = Some(Direction::Down),
+                '<' => grid[(x as i32 - 1, y as i32 - 1).into()] = Some(Direction::Left),
+                '>' => grid[(x as i32 - 1, y as i32 - 1).into()] = Some(Direction::Right),
                 _ => {}
             }
         }
