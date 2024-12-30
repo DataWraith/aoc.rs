@@ -20,6 +20,8 @@ fn main() {
     let (year, day) = get_year_and_day();
     let puzzle_input = get_puzzle_input(year, day, &session);
 
+    println!("Downloading puzzle input for {year} day {day}...")
+
     if puzzle_input.starts_with("Please don't") {
         eprintln!("Something went wrong while fetching the Input for {year} day {day}.");
         std::process::exit(1);
