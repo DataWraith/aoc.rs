@@ -31,13 +31,14 @@ pub fn part1(input: &PuzzleInput) -> String {
         goal_index: 0,
     };
 
-    let path = pathfinding::directed::dijkstra::dijkstra(
+    let path = pathfinding::directed::bfs::bfs(
         &start,
         |state| successor_states(&blizzard_grids, state, &goals),
         |state| state.position == end_coord,
     );
 
-    (path.unwrap().1).to_string()
+    // Subtract 1 because we don't count the start state
+    (path.unwrap().len() - 1).to_string()
 }
 
 pub fn blizzard_cycle_length(input: &PuzzleInput) -> usize {
@@ -62,7 +63,7 @@ pub fn successor_states(
     blizzard_grids: &[BoolGrid2D],
     current_state: &State,
     goals: &[Coordinate; 3],
-) -> Vec<(State, usize)> {
+) -> Vec<State> {
     let blizzard_grid = &blizzard_grids[current_state.blizzard_index % blizzard_grids.len()];
 
     let mut successors = Vec::new();
@@ -92,31 +93,25 @@ pub fn successor_states(
                 goal_index: current_state.goal_index + 1,
             };
 
-            successors.push((new_state, 1));
+            successors.push(new_state);
             continue;
         }
 
         // Otherwise we can move to that position
-        successors.push((
-            State {
-                position: n,
-                blizzard_index: current_state.blizzard_index + 1,
-                ..current_state.clone()
-            },
-            1,
-        ));
+        successors.push(State {
+            position: n,
+            blizzard_index: current_state.blizzard_index + 1,
+            ..current_state.clone()
+        });
     }
 
     // If we would not be hit by a blizzard, we can stay in the same position
     if !blizzard_grid[current_state.position] {
-        successors.push((
-            State {
-                position: current_state.position,
-                blizzard_index: current_state.blizzard_index + 1,
-                ..current_state.clone()
-            },
-            1,
-        ));
+        successors.push(State {
+            position: current_state.position,
+            blizzard_index: current_state.blizzard_index + 1,
+            ..current_state.clone()
+        });
     }
 
     successors

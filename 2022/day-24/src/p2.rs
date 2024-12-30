@@ -20,13 +20,14 @@ pub fn part2(input: &PuzzleInput) -> String {
         goal_index: 0,
     };
 
-    let path = pathfinding::directed::dijkstra::dijkstra(
+    let path = pathfinding::directed::bfs::bfs(
         &start,
         |state| successor_states(&blizzard_grids, state, &goals),
         |state| state.goal_index == 3,
     );
 
-    (path.unwrap().1).to_string()
+    // Subtract 1 because we don't count the start state
+    (path.unwrap().len() - 1).to_string()
 }
 
 #[cfg(test)]
