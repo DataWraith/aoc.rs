@@ -18,8 +18,9 @@ pub fn part1(input: &'static str) -> PuzzleInput {
 
 fn parse_snafu(s: &str) -> i64 {
     let mut result = 0;
+    let mut coef = 1;
 
-    for (i, c) in s.chars().rev().enumerate() {
+    for c in s.chars().rev() {
         let digit = match c {
             '2' => 2,
             '1' => 1,
@@ -29,7 +30,8 @@ fn parse_snafu(s: &str) -> i64 {
             _ => panic!("Invalid character: {}", c),
         };
 
-        result += digit * 5_i64.pow(i as u32);
+        result += digit * coef;
+        coef *= 5;
     }
 
     result

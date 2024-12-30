@@ -11,9 +11,14 @@ fn to_snafu(mut n: i64) -> String {
         let digit = n % 5;
 
         match digit {
+            // 0, 1, 2 are normal digits
             0 => result.push('0'),
             1 => result.push('1'),
             2 => result.push('2'),
+
+            // 3, 4 are negative digits. They essentially borrow from the
+            // remainder of the number, so we can make things work out by just
+            // adding that back.
             3 => {
                 result.push('=');
                 n += 2;
