@@ -18,7 +18,7 @@ fn to_snafu(mut n: i64) -> String {
 
             // 3, 4 are negative digits. They essentially borrow from the
             // remainder of the number, so we can make things work out by just
-            // adding that back.
+            // adding the difference back.
             3 => {
                 result.push('=');
                 n += 2;
