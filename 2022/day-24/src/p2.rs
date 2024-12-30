@@ -1,13 +1,13 @@
 use crate::{
     p1::{
-        find_blizzard_cycle, find_end_coord, find_start_coord, make_blizzard_grids,
+        blizzard_cycle_length, find_end_coord, find_start_coord, make_blizzard_grids,
         successor_states, State,
     },
     parser::*,
 };
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let cycle_length = find_blizzard_cycle(input);
+    let cycle_length = blizzard_cycle_length(input);
     let blizzard_grids = make_blizzard_grids(input, cycle_length);
 
     let start_coord = find_start_coord(input);

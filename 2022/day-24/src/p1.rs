@@ -16,7 +16,7 @@ pub struct State {
 pub fn part1(input: &PuzzleInput) -> String {
     // Find the cycle length of the blizzard grid and make a BoolGrid2D for each step.
     // The grid tells us whether it is safe to be in a cell at a given time.
-    let cycle_length = find_blizzard_cycle(input);
+    let cycle_length = blizzard_cycle_length(input);
     let blizzard_grids = make_blizzard_grids(input, cycle_length);
 
     // Find the start and end coordinates and define our goals
@@ -40,15 +40,11 @@ pub fn part1(input: &PuzzleInput) -> String {
     (path.unwrap().1).to_string()
 }
 
-pub fn find_blizzard_cycle(input: &PuzzleInput) -> usize {
-    let (cycle_length, _, cycle_start) =
-        pathfinding::directed::cycle_detection::brent(make_blizzard_grid(input), |grid| {
-            blizzard_step(&grid)
-        });
+pub fn blizzard_cycle_length(input: &PuzzleInput) -> usize {
+    let width = input.grid.width() - 2;
+    let height = input.grid.height() - 2;
 
-    assert_eq!(cycle_start, 0);
-
-    cycle_length
+    lcm(width, height)
 }
 
 pub fn make_blizzard_grids(input: &PuzzleInput, cycle_length: usize) -> Vec<BoolGrid2D> {
