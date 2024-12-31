@@ -1,0 +1,35 @@
+default: test
+
+[no-cd]
+aoc-load:
+     ../../scripts/aoc-load.rs
+
+[no-cd]
+test: aoc-load
+     cargo nextest run --release
+
+[no-cd]
+parser:
+     cargo nextest run --release -F winnow/debug
+
+[no-cd]
+p1: aoc-load
+     cargo run --release --bin part1
+
+[no-cd]
+p2: aoc-load
+     cargo run --release --bin part2
+
+run: p1 p2
+
+[no-cd]
+bench:
+     cargo bench
+
+[no-cd]
+bacon: aoc-load
+     bacon nextest -- --release
+
+generate day:
+     cargo generate --vcs none -p template --name day-{{day}}
+
