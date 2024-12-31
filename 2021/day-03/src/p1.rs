@@ -1,31 +1,29 @@
-use utility_belt::prelude::*;
-
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let gamma = input
-        .report
-        .col_iter()
-        .map(|col| {
-            if col.iter().filter(|&&b| b).count() > col.len() / 2 {
-                '1'
-            } else {
-                '0'
-            }
-        })
-        .collect::<String>();
+    let mut gamma = String::new();
+    let mut epsilon = String::new();
 
-    let epsilon = input
-        .report
-        .col_iter()
-        .map(|col| {
-            if col.iter().filter(|&&b| b).count() > col.len() / 2 {
-                '0'
+    for i in 0..input.report[0].len() {
+        let mut ones_count = 0;
+        let mut zeros_count = 0;
+
+        for j in 0..input.report.len() {
+            if input.report[j].chars().nth(i).unwrap() == '1' {
+                ones_count += 1;
             } else {
-                '1'
+                zeros_count += 1;
             }
-        })
-        .collect::<String>();
+        }
+
+        if ones_count > zeros_count {
+            gamma.push('1');
+            epsilon.push('0');
+        } else {
+            gamma.push('0');
+            epsilon.push('1');
+        }
+    }
 
     let gamma = u32::from_str_radix(&gamma, 2).unwrap();
     let epsilon = u32::from_str_radix(&epsilon, 2).unwrap();

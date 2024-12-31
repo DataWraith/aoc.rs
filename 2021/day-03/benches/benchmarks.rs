@@ -1,6 +1,6 @@
-use day_03::parser;
 use day_03::p1;
 use day_03::p2;
+use day_03::parser;
 
 fn main() {
     divan::main();

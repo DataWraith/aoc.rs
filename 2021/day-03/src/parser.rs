@@ -1,15 +1,16 @@
-use utility_belt::prelude::*;
-
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
-    pub report: Grid2D<bool>,
+    pub report: Vec<&'static str>,
 }
 
 pub fn part1(input: &'static str) -> PuzzleInput {
-    let grid: Grid2D<char> = input.into();
-    let grid: Grid2D<bool> = grid.map(|c| *c == '1');
+    let mut report = Vec::new();
 
-    PuzzleInput { report: grid }
+    for row in input.lines() {
+        report.push(row);
+    }
+
+    PuzzleInput { report }
 }
 
 pub fn part2(input: &'static str) -> PuzzleInput {
