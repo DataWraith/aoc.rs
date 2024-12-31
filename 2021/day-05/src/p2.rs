@@ -11,8 +11,8 @@ pub fn part2(input: &PuzzleInput) -> String {
             let mut x = a.x;
             let mut y = a.y;
 
-            let dx = if a.x != b.x { (b.x - a.x).signum() } else { 0 };
-            let dy = if a.y != b.y { (b.y - a.y).signum() } else { 0 };
+            let dx = (b.x - a.x).signum();
+            let dy = (b.y - a.y).signum();
 
             // Go from a to b
             while x != b.x || y != b.y {
