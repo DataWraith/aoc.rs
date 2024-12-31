@@ -3,23 +3,25 @@ use utility_belt::prelude::*;
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let mut counter = Counter::from_iter(input.lanternfish.iter().cloned());
+    lanternfish_after_days(&input.lanternfish, 80).to_string()
+}
 
-    for _ in 0..80 {
-        counter = state_iteration(
-            &counter,
-            |fish, _| {
-                if *fish == 0 {
-                    vec![6, 8]
-                } else {
-                    vec![fish - 1]
-                }
-            },
-            (),
-        );
+pub fn lanternfish_after_days(fish: &[u64], days: usize) -> usize {
+    let mut counter = Counter::from_iter(fish.iter().cloned());
+
+    for _ in 0..days {
+        counter = state_iteration(&counter, |fish, _| lanternfish_spawning(fish), ());
     }
 
-    counter.values().sum::<usize>().to_string()
+    counter.values().sum::<usize>()
+}
+
+pub fn lanternfish_spawning(fish: &u64) -> Vec<u64> {
+    if *fish == 0 {
+        vec![6, 8]
+    } else {
+        vec![fish - 1]
+    }
 }
 
 #[cfg(test)]
