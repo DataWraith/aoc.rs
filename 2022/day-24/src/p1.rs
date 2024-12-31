@@ -14,8 +14,8 @@ pub struct State {
 }
 
 pub fn part1(input: &PuzzleInput) -> String {
-    // Find the cycle length of the blizzard grid and make a BoolGrid2D for each step.
-    // The grid tells us whether it is safe to be in a cell at a given time.
+    // Find the cycle length of the blizzard grid and make a map of the blizzard
+    // locations and orientations.
     let cycle_length = blizzard_cycle_length(input);
     let blizzard_grid = make_blizzard_grid(input);
 
