@@ -10,4 +10,4 @@ divan = "0.1"
 
 [workspace.dependencies.utility-belt]
 git = "https://github.com/DataWraith/utility-belt.git"
-rev = "8482ea98f00b"
+rev = "79dd0bc1bbd5"

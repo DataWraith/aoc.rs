@@ -789,8 +789,8 @@ checksum = "adb9e6ca4f869e1180728b7950e35922a7fc6397f7b641499e8f3ef06e50dc83"
 
 [[package]]
 name = "utility-belt"
-version = "0.2024.14"
-source = "git+https://github.com/DataWraith/utility-belt.git?rev=8482ea98f00b#8482ea98f00bb7a80627dc9a9179c8e6deda3f42"
+version = "0.2024.15"
+source = "git+https://github.com/DataWraith/utility-belt.git?rev=79dd0bc1bbd5#79dd0bc1bbd51cd89b5297b17736627214d81e9d"
 dependencies = [
  "ahash",
  "bitvec",
@@ -891,9 +891,9 @@ checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
 
 [[package]]
 name = "winnow"
-version = "0.6.20"
+version = "0.6.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36c1fec1a2bb5866f07c25f68c26e565c4c200aebb96d7e55710c19d3e8ac49b"
+checksum = "e6f5bb5257f2407a5425c6e749bfd9692192a73e70a6060516ac04f889087d68"
 dependencies = [
  "memchr",
 ]
