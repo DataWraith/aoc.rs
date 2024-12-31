@@ -6,6 +6,7 @@ pub struct PuzzleInput {
     pub numbers: Vec<i64>,
     pub boards: Vec<Grid2D<i64>>,
     pub marked: Vec<BoolGrid2D>,
+    pub ongoing: HashSet<usize>,
 }
 
 pub fn part1(input: &'static str) -> PuzzleInput {
@@ -25,6 +26,7 @@ pub fn part1(input: &'static str) -> PuzzleInput {
     PuzzleInput {
         numbers,
         boards,
+        ongoing: HashSet::from_iter(0..marked.len()),
         marked,
     }
 }
