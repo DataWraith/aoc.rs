@@ -1,12 +1,12 @@
 use utility_belt::prelude::*;
 
+use crate::p1::Board;
+
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
     // Remember to make the fields pub
     pub numbers: Vec<i64>,
-    pub boards: Vec<Grid2D<i64>>,
-    pub marked: Vec<BoolGrid2D>,
-    pub ongoing: HashSet<usize>,
+    pub boards: Vec<Board>,
 }
 
 pub fn part1(input: &'static str) -> PuzzleInput {
@@ -18,16 +18,15 @@ pub fn part1(input: &'static str) -> PuzzleInput {
         .map(|chunk| Grid2D::from_shape_vec(5, 5, chunk.to_vec()))
         .collect();
 
-    let marked = boards
-        .iter()
-        .map(|grid| grid.map(|_| false).into())
-        .collect_vec();
-
     PuzzleInput {
         numbers,
-        boards,
-        ongoing: HashSet::from_iter(0..marked.len()),
-        marked,
+        boards: boards
+            .into_iter()
+            .map(|grid| Board {
+                marked: grid.map(|_| false).into(),
+                numbers: grid,
+            })
+            .collect(),
     }
 }
 

@@ -4,47 +4,20 @@ use crate::parser::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
     let mut state = input.clone();
+    let mut ongoing: HashSet<usize> = (0..state.boards.len()).collect();
 
     for number in state.numbers {
-        for (i, board) in state.boards.iter().enumerate() {
-            if let Some(coord) = board
-                .iter()
-                .find(|(_, x)| *x == &number)
-                .map(|(coord, _)| coord)
-            {
-                state.marked[i].set(coord, true);
+        for (i, board) in state.boards.iter_mut().enumerate() {
+            if !ongoing.contains(&i) {
+                continue;
+            }
 
-                for row in state.marked[i].row_iter() {
-                    if row.iter().all(|x| *x) {
-                        state.ongoing.remove(&i);
+            if board.mark(number) {
+                ongoing.remove(&i);
+            }
 
-                        if state.ongoing.is_empty() {
-                            let unmarked_sum = board
-                                .iter()
-                                .filter(|(coord, _)| !state.marked[i][*coord])
-                                .map(|(_, x)| x)
-                                .sum::<i64>();
-
-                            return format!("{}", unmarked_sum * number);
-                        }
-                    }
-                }
-
-                for col in state.marked[i].col_iter() {
-                    if col.iter().all(|x| *x) {
-                        state.ongoing.remove(&i);
-
-                        if state.ongoing.is_empty() {
-                            let unmarked_sum = board
-                                .iter()
-                                .filter(|(coord, _)| !state.marked[i][*coord])
-                                .map(|(_, x)| x)
-                                .sum::<i64>();
-
-                            return format!("{}", unmarked_sum * number);
-                        }
-                    }
-                }
+            if ongoing.is_empty() {
+                return format!("{}", board.score() * number);
             }
         }
     }
@@ -55,7 +28,6 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
         7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
