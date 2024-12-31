@@ -6,17 +6,17 @@ pub fn part1(input: &PuzzleInput) -> String {
     lanternfish_after_days(&input.lanternfish, 80).to_string()
 }
 
-pub fn lanternfish_after_days(fish: &[u64], days: usize) -> usize {
+pub fn lanternfish_after_days(fish: &[u8], days: usize) -> usize {
     let mut counter = Counter::from_iter(fish.iter().cloned());
 
     for _ in 0..days {
-        counter = state_iteration(&counter, |fish, _| lanternfish_spawning(fish), ());
+        counter = state_iteration(&counter, |fish, _| lanternfish_sim(fish), ());
     }
 
     counter.values().sum::<usize>()
 }
 
-pub fn lanternfish_spawning(fish: &u64) -> Vec<u64> {
+pub fn lanternfish_sim(fish: &u8) -> Vec<u8> {
     if *fish == 0 {
         vec![6, 8]
     } else {
