@@ -1,5 +1,3 @@
-use utility_belt::prelude::*;
-
 use crate::parser::*;
 
 pub struct State {
@@ -32,9 +30,8 @@ pub fn part2(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
-    const TEST_INPUT: &str = indoc! {"
+    const TEST_INPUT: &str = utility_belt::prelude::indoc! {"
         forward 5
         down 5
         forward 8

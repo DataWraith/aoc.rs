@@ -1,5 +1,3 @@
-use utility_belt::prelude::*;
-
 #[derive(Clone, Debug)]
 pub enum Command {
     Forward(i32),
@@ -27,7 +25,7 @@ pub struct PuzzleInput {
 
 pub fn part1(input: &'static str) -> PuzzleInput {
     PuzzleInput {
-        commands: input.lines().map(|line| Command::from(line)).collect(),
+        commands: input.lines().map(Command::from).collect(),
     }
 }
 
