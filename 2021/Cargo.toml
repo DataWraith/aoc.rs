@@ -2,6 +2,7 @@
 members = [
     "day-*",
     "day-08",
+    "day-09",
 ]
 default-members = ["day-*"]
 resolver = "2"
