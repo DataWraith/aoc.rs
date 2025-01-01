@@ -1,26 +1,20 @@
-use utility_belt::prelude::*;
-
-use crate::parser::*;
+use crate::{p1::find_optimum, parser::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
     let min_x = *input.positions.iter().min().unwrap();
     let max_x = *input.positions.iter().max().unwrap();
+    let ideal_x = find_optimum(input, min_x, max_x, fuel_cost);
 
-    let fuel_cost = (min_x..=max_x)
-        .map(|x| {
-            input
-                .positions
-                .iter()
-                .map(|y| {
-                    let dist = (x - y).abs();
-                    dist * (dist + 1) / 2
-                })
-                .sum::<i64>()
-        })
-        .min()
-        .unwrap();
+    fuel_cost(input, ideal_x).to_string()
+}
 
-    fuel_cost.to_string()
+fn fuel_cost(input: &PuzzleInput, x: usize) -> usize {
+    input
+        .positions
+        .iter()
+        .map(|y| x.abs_diff(*y as usize))
+        .map(|dist| dist * (dist + 1) / 2)
+        .sum::<usize>()
 }
 
 #[cfg(test)]
