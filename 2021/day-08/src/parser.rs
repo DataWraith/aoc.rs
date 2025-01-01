@@ -1,14 +1,14 @@
 use utility_belt::prelude::*;
 
 #[derive(Clone, Debug)]
-pub struct Segments<'a> {
-    pub calibration: Vec<&'a str>,
-    pub output: Vec<&'a str>,
+pub struct Segments {
+    pub calibration: Vec<String>,
+    pub output: Vec<String>,
 }
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
-    pub segments: Vec<Segments<'static>>,
+    pub segments: Vec<Segments>,
 }
 
 pub fn part1(input: &'static str) -> PuzzleInput {
@@ -17,8 +17,14 @@ pub fn part1(input: &'static str) -> PuzzleInput {
     for line in input.lines() {
         let (calibration, output) = line.split_once(" | ").unwrap();
         segments.push(Segments {
-            calibration: calibration.split_whitespace().collect(),
-            output: output.split_whitespace().collect(),
+            calibration: calibration
+                .split_whitespace()
+                .map(|s| s.chars().sorted().collect::<String>())
+                .collect(),
+            output: output
+                .split_whitespace()
+                .map(|s| s.chars().sorted().collect::<String>())
+                .collect(),
         });
     }
 

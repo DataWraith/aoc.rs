@@ -1,9 +1,8 @@
-use utility_belt::prelude::*;
-
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
     let mut count = 0;
+
     for segment in input.segments.iter() {
         for output in segment.output.iter() {
             if [2, 3, 4, 7].contains(&output.len()) {
@@ -18,6 +17,7 @@ pub fn part1(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
