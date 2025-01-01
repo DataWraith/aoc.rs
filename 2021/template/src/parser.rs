@@ -13,9 +13,13 @@ pub fn part1(input: &'static str) -> PuzzleInput {
     // 3. Winnow parser?
     // 4. ???
 
-    PuzzleInput{}
+    PuzzleInput {}
 }
 
 pub fn part2(input: &'static str) -> PuzzleInput {
     part1(input)
 }
+
+pub const TEST_INPUT: &str = indoc! {"
+    TODO
+"};

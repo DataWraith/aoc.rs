@@ -10,16 +10,13 @@ pub fn part1(input: &PuzzleInput) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser;
     use utility_belt::prelude::*;
-
-    const TEST_INPUT: &str = indoc! {"
-        TODO
-    "};
 
     #[test]
     fn test_part1_example() {
-        let input = crate::parser::part1(TEST_INPUT);
-        assert_ne!(TEST_INPUT.trim(), "TODO");
+        let input = parser::part1(parser::TEST_INPUT);
+        assert_ne!(parser::TEST_INPUT.trim(), "TODO");
         assert_eq!(part1(&input), "TODO");
     }
 }
