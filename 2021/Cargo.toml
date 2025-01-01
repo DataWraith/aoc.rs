@@ -1,7 +1,6 @@
 [workspace]
 members = [
     "day-*",
-    "day-10",
 ]
 default-members = ["day-*"]
 resolver = "2"

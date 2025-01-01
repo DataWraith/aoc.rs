@@ -1,5 +1,3 @@
-use utility_belt::prelude::*;
-
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
@@ -8,7 +6,7 @@ pub fn part1(input: &PuzzleInput) -> String {
         .iter()
         .cloned()
         .filter_map(first_illegal_character)
-        .map(|(c, top, i)| match c {
+        .map(|c| match c {
             ')' => 3,
             ']' => 57,
             '}' => 1197,
@@ -19,10 +17,10 @@ pub fn part1(input: &PuzzleInput) -> String {
         .to_string()
 }
 
-pub fn first_illegal_character(line: &str) -> Option<(char, char, usize)> {
+pub fn first_illegal_character(line: &str) -> Option<char> {
     let mut stack = Vec::new();
 
-    for (i, c) in line.chars().enumerate() {
+    for c in line.chars() {
         match c {
             '(' | '[' | '{' | '<' => stack.push(c),
             ')' | ']' | '}' | '>' => {
@@ -30,7 +28,7 @@ pub fn first_illegal_character(line: &str) -> Option<(char, char, usize)> {
 
                 match (top, c) {
                     ('(', ')') | ('[', ']') | ('{', '}') | ('<', '>') => (),
-                    _ => return Some((c, top, i)),
+                    _ => return Some(c),
                 }
             }
 
@@ -44,7 +42,7 @@ pub fn first_illegal_character(line: &str) -> Option<(char, char, usize)> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
+    use utility_belt::prelude::indoc;
 
     const TEST_INPUT: &str = indoc! {"
         [({(<(())[]>[[{[]{<()<>>

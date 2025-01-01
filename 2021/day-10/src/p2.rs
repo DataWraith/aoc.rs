@@ -1,5 +1,3 @@
-use utility_belt::prelude::*;
-
 use crate::{p1::first_illegal_character, parser::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
@@ -8,12 +6,14 @@ pub fn part2(input: &PuzzleInput) -> String {
         .iter()
         .cloned()
         .filter(|line| first_illegal_character(line).is_none())
-        .map(|line| completion_score(line))
+        .map(completion_score)
         .collect::<Vec<_>>();
 
-    scores.sort();
+    let middle_idx = scores.len() / 2;
 
-    scores[scores.len() / 2].to_string()
+    let (_, middle, _) = scores.select_nth_unstable(middle_idx);
+
+    middle.to_string()
 }
 
 fn completion_score(line: &str) -> usize {
