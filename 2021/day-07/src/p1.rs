@@ -27,6 +27,6 @@ mod tests {
     fn test_part1_example() {
         let input = crate::parser::part1(TEST_INPUT);
         assert_ne!(TEST_INPUT.trim(), "TODO");
-        assert_eq!(part1(&input), "TODO");
+        assert_eq!(part1(&input), "41");
     }
 }
