@@ -2,61 +2,51 @@ use std::cmp::Reverse;
 
 use utility_belt::prelude::*;
 
-use crate::parser::*;
+use crate::{p1::get_low_points, parser::*};
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let low_points = input
-        .map
-        .iter()
-        .filter_map(|(coord, height)| {
-            let is_low_point = coord
-                .neighbors()
-                .filter(|neighbor| input.map.contains(*neighbor))
-                .all(|neighbor| input.map[neighbor] > *height);
+    let low_points = get_low_points(input);
 
-            if is_low_point {
-                Some(coord)
-            } else {
-                None
-            }
-        })
+    let mut basin_sizes = low_points
+        .iter()
+        .map(|low_point| basin_size(input, *low_point))
         .collect::<Vec<_>>();
 
-    let mut basins = Vec::new();
-
-    for low_point in low_points {
-        let mut size = 0;
-
-        let mut q = VecDeque::new();
-        let mut visited = HashSet::new();
-        q.push_back(low_point);
-
-        while let Some(coord) = q.pop_front() {
-            if !visited.insert(coord) {
-                continue;
-            }
-
-            size += 1;
-
-            for neighbor in coord.neighbors() {
-                if input.map.contains(neighbor) && input.map[neighbor] < 9 {
-                    q.push_back(neighbor);
-                }
-            }
-        }
-
-        basins.push(size);
-    }
-
-    let (basins, _, _) = basins.select_nth_unstable_by_key(3, |&size| Reverse(size));
+    // Find the top 3 basins by size
+    let (basins, _, _) = basin_sizes.select_nth_unstable_by_key(3, |&size| Reverse(size));
 
     basins.iter().product::<usize>().to_string()
+}
+
+// Floodfill the basin from the low point to get the size
+fn basin_size(input: &PuzzleInput, low_point: Coordinate) -> usize {
+    let mut size = 0;
+
+    let mut q = VecDeque::new();
+    let mut visited = BoolGrid2D::new(input.map.width(), input.map.height());
+    q.push_back(low_point);
+
+    while let Some(coord) = q.pop_front() {
+        if visited[coord] {
+            continue;
+        }
+
+        visited[coord] = true;
+        size += 1;
+
+        for neighbor in coord.neighbors() {
+            if input.map.contains(neighbor) && input.map[neighbor] < 9 {
+                q.push_back(neighbor);
+            }
+        }
+    }
+
+    size
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use utility_belt::prelude::*;
 
     const TEST_INPUT: &str = indoc! {"
         2199943210
