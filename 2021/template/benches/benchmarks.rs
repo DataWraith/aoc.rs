@@ -1,6 +1,6 @@
-use {{crate_name}}::parser;
 use {{crate_name}}::p1;
 use {{crate_name}}::p2;
+use {{crate_name}}::parser;
 
 fn main() {
     divan::main();

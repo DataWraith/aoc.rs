@@ -52,7 +52,6 @@ pub fn step(octopi: &mut Grid2D<u16>) -> usize {
 mod tests {
     use super::*;
     use crate::parser;
-    use utility_belt::prelude::*;
 
     #[test]
     fn test_part1_example() {
