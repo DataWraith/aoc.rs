@@ -8,13 +8,13 @@ pub fn part2(input: &PuzzleInput) -> String {
     fuel_cost(input, ideal_x).to_string()
 }
 
-fn fuel_cost(input: &PuzzleInput, x: usize) -> usize {
+fn fuel_cost(input: &PuzzleInput, x: i64) -> u64 {
     input
         .positions
         .iter()
-        .map(|y| x.abs_diff(*y as usize))
+        .map(|y| x.abs_diff(*y))
         .map(|dist| dist * (dist + 1) / 2)
-        .sum::<usize>()
+        .sum::<u64>()
 }
 
 #[cfg(test)]
