@@ -1,4 +1,4 @@
-use utility_belt::grid::Grid2D;
+use utility_belt::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {

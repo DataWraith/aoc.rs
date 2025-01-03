@@ -28,12 +28,10 @@ pub fn generate_border(region: &HashSet<Coordinate>) -> Vec<Coordinate> {
 }
 
 pub fn find_regions(input: &Grid2D<char>) -> Vec<HashSet<Coordinate>> {
-    let mut sets = input.map(|_| 0);
-    let mut union_find = UnionFind::default();
+    let area = input.area();
 
-    for (coord, _) in input.iter() {
-        sets[coord] = union_find.make_set();
-    }
+    let mut union_find = UnionFind::with_capacity(area);
+    let sets = Grid2D::from_shape_vec(input.width(), input.height(), union_find.extend(area));
 
     for (coord, &plant) in input.iter() {
         for neighbor in [

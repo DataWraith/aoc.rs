@@ -61,6 +61,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b048fb63fd8b5923fc5aa7b340d8e156aec7ec02f0c78fa8a6ddc2613f6f71de"
 
 [[package]]
+name = "bittle"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6ed4940d50ad35b979a4f2119316e5c9033589ba2c34b4949264b6f74ca54de"
+
+[[package]]
 name = "bumpalo"
 version = "3.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -472,26 +478,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "semver",
- "syn",
-]
-
-[[package]]
-name = "derive_more"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a9b99b9cbbe49445b21764dc0625032a89b145a2642e67603e1c936f5458d05"
-dependencies = [
- "derive_more-impl",
-]
-
-[[package]]
-name = "derive_more-impl"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb7330aeadfbe296029522e6c40f315320aba36fc43a5b3632f3795348f3bd22"
-dependencies = [
- "proc-macro2",
- "quote",
  "syn",
 ]
 
@@ -1075,12 +1061,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rangetools"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6e97ca3dbabd81e6033cfe09f0cef37c89f34f2a9223cab7cf99305d46a9633"
-
-[[package]]
 name = "rawpointer"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1294,21 +1274,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tinyvec"
-version = "1.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "022db8904dfa342efe721985167e9fcd16c29b226db4397ed752a761cfce81e8"
-dependencies = [
- "tinyvec_macros",
-]
-
-[[package]]
-name = "tinyvec_macros"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
-
-[[package]]
 name = "toml_datetime"
 version = "0.6.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1339,12 +1304,11 @@ checksum = "1fc81956842c57dac11422a97c3b8195a1ff727f06e85c84ed2e8aa277c9a0fd"
 
 [[package]]
 name = "utility-belt"
-version = "0.2024.9"
-source = "git+https://github.com/DataWraith/utility-belt.git?rev=f39058c0#f39058c075b4073b238019a35d5973a3cdeeb761"
+version = "0.2025.1"
+source = "git+https://github.com/DataWraith/utility-belt.git?rev=e3d6776f14a0#e3d6776f14a0c78f0b3b94452eb09c245f782881"
 dependencies = [
  "ahash",
- "derive_more",
- "glam",
+ "bittle",
  "hsv",
  "image",
  "indoc",
@@ -1352,10 +1316,7 @@ dependencies = [
  "ndarray",
  "num",
  "num-modular",
- "rand",
- "rangetools",
  "rstest",
- "tinyvec",
 ]
 
 [[package]]

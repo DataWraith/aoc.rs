@@ -5,13 +5,13 @@ use crate::parser::*;
 pub fn part1(input: &PuzzleInput) -> String {
     let x_center = 101 / 2;
     let y_center = 103 / 2;
-    let map_size = IVec2::new(101, 103);
+    let map_size = Coordinate::new(101, 103);
 
     let mut counts = [0; 4];
 
     for robot in input.robots.iter() {
         let pos = robot.position + robot.velocity * 100;
-        let pos = pos.rem_euclid(map_size);
+        let pos = pos % map_size;
 
         if pos.x < x_center && pos.y < y_center {
             counts[0] += 1;

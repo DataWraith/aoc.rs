@@ -36,7 +36,7 @@ pub fn part2(input: &PuzzleInput) -> String {
         }
 
         // Can't place an obstacle outside the lab
-        if !input.grid.contains(obstacle) {
+        if !input.grid.contains_coord(obstacle) {
             continue;
         }
 
@@ -58,21 +58,23 @@ pub fn part2(input: &PuzzleInput) -> String {
             direction: Direction::Up,
         };
 
-        let mut visited = g2.map(|_| DirectionSet::empty());
+        let mut visited = g2.map(|_| Set::new(0u8));
 
-        let initial_dirset: DirectionSet = state.direction.into();
+        let initial_dirset: Set<u8> = Set::new(state.direction.into());
         visited.set(state.coordinate, initial_dirset);
 
         while let Some(next_state) = state.next_state(&g2) {
             state = next_state;
 
             if let Some(dirs) = visited.get_mut(state.coordinate) {
-                if dirs.contains(state.direction) {
+                let dir: u32 = state.direction.into();
+
+                if dirs.test_bit(dir) {
                     loops_found.insert(obstacle);
                     break;
                 }
 
-                dirs.insert(state.direction);
+                dirs.set_bit(dir);
             }
         }
 

@@ -16,12 +16,9 @@ pub fn part2(input: &PuzzleInput) -> String {
     }
 
     // Step 2: Prepare the UnionFind datastructure
-    let mut union_find = UnionFind::default();
-    let mut sets = grid.map(|_| 0);
-
-    for (c, _) in grid.iter() {
-        sets[c] = union_find.make_set();
-    }
+    let area = grid.area();
+    let mut union_find = UnionFind::with_capacity(area);
+    let sets = Grid2D::from_shape_vec(grid.width(), grid.height(), union_find.extend(area));
 
     // Step 3: Union all coordinates that never have obstacles
     for (c, _) in grid.iter() {
@@ -33,7 +30,7 @@ pub fn part2(input: &PuzzleInput) -> String {
             let n = c.neighbor(dir);
 
             if grid.get(n) == Some(&'.') {
-                union_find.union(sets[c], sets[n]).unwrap();
+                union_find.union(sets[c], sets[n]);
             }
         }
     }
@@ -50,7 +47,7 @@ pub fn part2(input: &PuzzleInput) -> String {
 
         for n in b.neighbors() {
             if grid.get(n) == Some(&'.') {
-                union_find.union(sets[*b], sets[n]).unwrap();
+                union_find.union(sets[*b], sets[n]);
             }
         }
 
