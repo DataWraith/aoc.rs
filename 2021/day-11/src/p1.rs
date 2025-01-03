@@ -31,7 +31,7 @@ pub fn step(octopi: &mut Grid2D<u16>) -> usize {
         flash_count += 1;
 
         for neighbor in coord.moore_neighbors() {
-            if !octopi.contains(neighbor) {
+            if !octopi.contains_coord(neighbor) {
                 continue;
             }
 

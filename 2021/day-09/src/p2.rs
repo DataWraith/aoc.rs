@@ -35,7 +35,7 @@ fn basin_size(input: &PuzzleInput, low_point: Coordinate) -> usize {
         size += 1;
 
         for neighbor in coord.neighbors() {
-            if input.map.contains(neighbor) && input.map[neighbor] < 9 {
+            if input.map.contains_coord(neighbor) && input.map[neighbor] < 9 {
                 q.push_back(neighbor);
             }
         }

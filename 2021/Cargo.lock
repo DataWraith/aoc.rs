@@ -761,9 +761,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.93"
+version = "2.0.94"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c786062daee0d6db1132800e623df74274a0a87322d8e183338e01b3d98d058"
+checksum = "987bc0be1cdea8b10216bd06e2ca407d40b9543468fafd3ddfb02f36e77f71f3"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -805,8 +805,8 @@ checksum = "adb9e6ca4f869e1180728b7950e35922a7fc6397f7b641499e8f3ef06e50dc83"
 
 [[package]]
 name = "utility-belt"
-version = "0.2024.15"
-source = "git+https://github.com/DataWraith/utility-belt.git?rev=a226316e3420#a226316e342006258ae63bf9b446544270007e2a"
+version = "0.2025.0"
+source = "git+https://github.com/DataWraith/utility-belt.git?rev=cfc813d23f80#cfc813d23f80936a71e8622d26b1a8b8e83adfdb"
 dependencies = [
  "ahash",
  "bittle",

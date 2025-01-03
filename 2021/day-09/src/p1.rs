@@ -19,7 +19,7 @@ pub fn get_low_points(input: &PuzzleInput) -> Vec<Coordinate> {
         .filter_map(|(coord, height)| {
             if coord
                 .neighbors()
-                .filter(|neighbor| input.map.contains(*neighbor))
+                .filter(|neighbor| input.map.contains_coord(*neighbor))
                 .all(|neighbor| input.map[neighbor] > *height)
             {
                 Some(coord)
