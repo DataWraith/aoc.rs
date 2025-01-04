@@ -1,4 +1,4 @@
-use utility_belt::prelude::*;
+use bitreader::BitReader;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum PacketType {
@@ -15,26 +15,12 @@ pub struct Packet {
     pub subpackets: Vec<Packet>,
 }
 
-fn read_bits(input: &mut VecDeque<bool>, n: usize) -> u64 {
-    let mut ans = 0;
+fn read_literal_value(input: &mut BitReader, ans: &mut Vec<u8>) {
+    let v = input.read_u8(5).unwrap();
 
-    for _ in 0..n {
-        ans = (ans << 1) | input.pop_front().unwrap() as u64;
-    }
+    ans.push(v & 0b1111);
 
-    ans
-}
-
-fn read_literal_value(input: &mut VecDeque<bool>, ans: &mut Vec<u8>) {
-    let b1 = input.pop_front().unwrap() as u8;
-    let b2 = input.pop_front().unwrap() as u8;
-    let b3 = input.pop_front().unwrap() as u8;
-    let b4 = input.pop_front().unwrap() as u8;
-    let b5 = input.pop_front().unwrap() as u8;
-
-    ans.push((b2 << 3) | (b3 << 2) | (b4 << 1) | b5);
-
-    if b1 == 1 {
+    if v & 0b10000 != 0 {
         read_literal_value(input, ans);
     }
 }
@@ -52,30 +38,22 @@ fn convert_literal_value(nibbles: &[u8]) -> PacketType {
     PacketType::Literal(value)
 }
 
-fn read_operator_packet_length(input: &mut VecDeque<bool>) -> PacketType {
-    let length_type_id = input.pop_front().unwrap();
+fn read_operator_packet_length(input: &mut BitReader) -> PacketType {
+    let length_type_id = input.read_bool().unwrap();
 
     if length_type_id {
-        let length = read_bits(input, 11);
+        let length = input.read_64(11).unwrap();
         PacketType::OperatorSubpackets(length)
     } else {
-        let length = read_bits(input, 15);
+        let length = input.read_u64(15).unwrap();
         PacketType::OperatorLength(length)
     }
 }
 
 impl Packet {
-    pub fn read(input: &mut VecDeque<bool>) -> Self {
-        let b1 = input.pop_front().unwrap() as u8;
-        let b2 = input.pop_front().unwrap() as u8;
-        let b3 = input.pop_front().unwrap() as u8;
-
-        let b4 = input.pop_front().unwrap() as u8;
-        let b5 = input.pop_front().unwrap() as u8;
-        let b6 = input.pop_front().unwrap() as u8;
-
-        let version = (b1 << 2) | (b2 << 1) | b3;
-        let type_id = (b4 << 2) | (b5 << 1) | b6;
+    pub fn read(input: &mut BitReader) -> Self {
+        let version = input.read_u8(3).unwrap();
+        let type_id = input.read_u8(3).unwrap();
 
         if type_id == 4 {
             let mut ans = vec![];
@@ -93,15 +71,14 @@ impl Packet {
             PacketType::Literal(_) => unreachable!("We already checked for literals"),
 
             PacketType::OperatorLength(length) => {
-                let remainder = input.split_off(length as usize);
+                let mut subpacket_data = input.relative_reader_atmost(length as u64);
+                input.skip(length as u64).unwrap();
 
                 let mut subpackets = vec![];
 
-                while !input.is_empty() {
-                    subpackets.push(Packet::read(input));
+                while subpacket_data.remaining() > 0 {
+                    subpackets.push(Packet::read(&mut subpacket_data));
                 }
-
-                *input = remainder;
 
                 Self {
                     version,
@@ -135,17 +112,16 @@ pub struct PuzzleInput {
 }
 
 pub fn part1(input: &'static str) -> PuzzleInput {
-    let mut bits = VecDeque::new();
+    let mut bits = Vec::new();
 
-    input.chars().filter_map(|c| c.to_digit(16)).for_each(|d| {
-        for i in (0..4).rev() {
-            if d & (1 << i) != 0 {
-                bits.push_back(true);
-            } else {
-                bits.push_back(false);
-            }
-        }
+    input.trim().as_bytes().chunks(2).for_each(|chunk| {
+        let a = (chunk[0] as char).to_digit(16).unwrap() as u8;
+        let b = (chunk[1] as char).to_digit(16).unwrap() as u8;
+
+        bits.push((a << 4) | b);
     });
+
+    let mut bits = BitReader::new(&bits);
 
     PuzzleInput {
         packets: Packet::read(&mut bits),
