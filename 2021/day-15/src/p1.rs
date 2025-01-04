@@ -10,22 +10,22 @@ pub fn part1(input: &PuzzleInput) -> String {
             .map(|c| (c, input.grid[c]))
     };
 
-    dijkstra(&Coordinate::new(0, 0), successors, |p| {
-        *p == Coordinate::new(
-            input.grid.width() as i32 - 1,
-            input.grid.height() as i32 - 1,
-        )
-    })
-    .unwrap()
-    .1
-    .to_string()
+    let start = Coordinate::new(0, 0);
+    let goal = Coordinate::new(
+        input.grid.width() as i32 - 1,
+        input.grid.height() as i32 - 1,
+    );
+
+    dijkstra(&start, successors, |p| *p == goal)
+        .unwrap()
+        .1
+        .to_string()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser;
-    use utility_belt::prelude::*;
 
     #[test]
     fn test_part1_example() {

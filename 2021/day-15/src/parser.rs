@@ -7,7 +7,7 @@ pub struct PuzzleInput {
 
 pub fn part1(input: &'static str) -> PuzzleInput {
     let grid: Grid2D<char> = input.into();
-    let grid: Grid2D<u32> = grid.map(|c| c.to_digit(10).unwrap() as u32);
+    let grid: Grid2D<u32> = grid.map(|c| c.to_digit(10).unwrap());
 
     PuzzleInput { grid }
 }

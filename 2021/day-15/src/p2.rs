@@ -12,12 +12,13 @@ pub fn part2(input: &PuzzleInput) -> String {
             .map(|c| (c, grid[c]))
     };
 
-    dijkstra(&Coordinate::new(0, 0), successors, |p| {
-        *p == Coordinate::new(grid.width() as i32 - 1, grid.height() as i32 - 1)
-    })
-    .unwrap()
-    .1
-    .to_string()
+    let start = Coordinate::new(0, 0);
+    let goal = Coordinate::new(grid.width() as i32 - 1, grid.height() as i32 - 1);
+
+    dijkstra(&start, successors, |p| *p == goal)
+        .unwrap()
+        .1
+        .to_string()
 }
 
 fn enlarge_grid(input_grid: &Grid2D<u32>) -> Grid2D<u32> {
@@ -39,7 +40,6 @@ fn enlarge_grid(input_grid: &Grid2D<u32>) -> Grid2D<u32> {
 mod tests {
     use super::*;
     use crate::parser;
-    use utility_belt::prelude::*;
 
     #[test]
     fn test_part2_example() {
