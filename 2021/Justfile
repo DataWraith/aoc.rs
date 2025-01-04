@@ -5,6 +5,11 @@ aoc-load:
      ../../scripts/aoc-load.rs
 
 [no-cd]
+clippy: aoc-load
+     cargo clippy --all-features --all-targets --fix --allow-dirty
+     cargo fmt
+
+[no-cd]
 test: aoc-load
      cargo nextest run --release
 
