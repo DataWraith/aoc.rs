@@ -8,6 +8,6 @@ mod tests {
     #[test]
     fn test_part2() {
         let puzzle_input = day_14::parser::part2(include_str!("../../input.txt"));
-        assert_eq!(day_14::p2::part2(&puzzle_input), "TODO");
+        assert_eq!(day_14::p2::part2(&puzzle_input), "3420801168962");
     }
 }

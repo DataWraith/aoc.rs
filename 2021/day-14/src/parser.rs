@@ -15,7 +15,7 @@ pub fn part1(input: &'static str) -> PuzzleInput {
         .map(|line| {
             let (pattern, result) = line.split_once(" -> ").unwrap();
             let (a, b) = (
-                pattern.chars().nth(0).unwrap(),
+                pattern.chars().next().unwrap(),
                 pattern.chars().nth(1).unwrap(),
             );
 
