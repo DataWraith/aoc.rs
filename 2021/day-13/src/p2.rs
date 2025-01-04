@@ -18,19 +18,26 @@ pub fn part2(input: &PuzzleInput) -> String {
         }
     }
 
+    let grid = display_grid(grid);
+    format!("{}", grid)
+}
+
+fn display_grid(grid: HashSet<Coordinate>) -> BoolGrid2D {
     let bounding_box = bounding_box(grid.iter().cloned());
-    let mut dbg_grid: Grid2D<bool> = Grid2D::new(
+
+    let mut result_grid: Grid2D<bool> = Grid2D::new(
         bounding_box.1.x as usize + 1,
         bounding_box.1.y as usize + 1,
         false,
     );
 
     for coord in grid {
-        dbg_grid[coord] = true;
+        result_grid[coord] = true;
     }
 
-    let grid: BoolGrid2D = dbg_grid.into();
-    format!("{}", grid)
+    let grid: BoolGrid2D = result_grid.into();
+
+    grid
 }
 
 #[cfg(test)]
