@@ -1,8 +1,7 @@
 use crate::parser::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let packet = Packet::read(&mut input.packets.clone());
-    evaluate_packet(&packet).to_string()
+    evaluate_packet(&input.packets).to_string()
 }
 
 pub fn evaluate_packet(packet: &Packet) -> u64 {
@@ -11,9 +10,9 @@ pub fn evaluate_packet(packet: &Packet) -> u64 {
         1 => packet.subpackets.iter().map(evaluate_packet).product(),
         2 => packet.subpackets.iter().map(evaluate_packet).min().unwrap(),
         3 => packet.subpackets.iter().map(evaluate_packet).max().unwrap(),
-        4 => match packet.value {
+        4 => match packet.packet_type {
             PacketType::Literal(value) => value,
-            _ => unreachable!("Invalid packet type: {:?}", packet.value),
+            _ => unreachable!("Invalid packet type: {:?}", packet.packet_type),
         },
         5 => {
             if evaluate_packet(&packet.subpackets[0]) > evaluate_packet(&packet.subpackets[1]) {
@@ -36,7 +35,7 @@ pub fn evaluate_packet(packet: &Packet) -> u64 {
                 0
             }
         }
-        _ => unreachable!("Invalid type id: {}", packet.type_id),
+        _ => unreachable!("Type ID has more than three bits: {}", packet.type_id),
     }
 }
 

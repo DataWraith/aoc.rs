@@ -1,8 +1,7 @@
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let packet = Packet::read(&mut input.packets.clone());
-    add_version_sum(&packet).to_string()
+    add_version_sum(&input.packets).to_string()
 }
 
 pub fn add_version_sum(packet: &Packet) -> u64 {
