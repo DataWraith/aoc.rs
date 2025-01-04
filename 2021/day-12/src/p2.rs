@@ -3,12 +3,11 @@ use utility_belt::prelude::*;
 use crate::parser::*;
 
 pub fn part2(input: &PuzzleInput) -> String {
-    let paths = cave_paths(input);
-    paths.len().to_string()
+    num_cave_paths(input).to_string()
 }
 
-pub fn cave_paths(input: &PuzzleInput) -> Vec<Vec<&str>> {
-    let mut paths = Vec::new();
+pub fn num_cave_paths(input: &PuzzleInput) -> usize {
+    let mut paths = 0;
     let mut q = VecDeque::new();
 
     q.push_back((vec!["start"], false));
@@ -17,12 +16,13 @@ pub fn cave_paths(input: &PuzzleInput) -> Vec<Vec<&str>> {
         let last = current.last().unwrap();
 
         if *last == "end" {
-            paths.push(current);
+            paths += 1;
             continue;
         }
 
         for neighbor in input.cave.neighbors(last) {
-            if neighbor.chars().all(|c| c.is_ascii_lowercase()) && current.contains(&neighbor) {
+            if neighbor.starts_with(|c: char| c.is_ascii_lowercase()) && current.contains(&neighbor)
+            {
                 if small_cave_visited_twice || neighbor == "start" {
                     continue;
                 }
