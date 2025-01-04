@@ -32,7 +32,7 @@ fn read_literal_value(input: &mut VecDeque<char>, ans: &mut Vec<u8>) {
     let b4 = (input.pop_front().unwrap() == '1') as u8;
     let b5 = (input.pop_front().unwrap() == '1') as u8;
 
-    ans.push((b2 << 3) | (b3 << 2) | (b4 << 1) | (b5 << 0));
+    ans.push((b2 << 3) | (b3 << 2) | (b4 << 1) | b5);
 
     if b1 == 1 {
         read_literal_value(input, ans);
@@ -44,10 +44,10 @@ fn read_operator_packet_length(input: &mut VecDeque<char>) -> PacketType {
 
     if length_type_id == '0' {
         let length = read_bits(input, 15);
-        return PacketType::OperatorLength(length);
+        PacketType::OperatorLength(length)
     } else {
         let length = read_bits(input, 11);
-        return PacketType::OperatorSubpackets(length);
+        PacketType::OperatorSubpackets(length)
     }
 }
 
@@ -102,12 +102,12 @@ impl Packet {
 
                 *input = remainder;
 
-                return Self {
+                Self {
                     version,
                     type_id,
                     value: PacketType::OperatorLength(length),
                     subpackets,
-                };
+                }
             }
 
             PacketType::OperatorSubpackets(length) => {
@@ -117,12 +117,12 @@ impl Packet {
                     subpackets.push(Packet::read(input));
                 }
 
-                return Self {
+                Self {
                     version,
                     type_id,
                     value: PacketType::OperatorSubpackets(length),
                     subpackets,
-                };
+                }
             }
         }
     }
@@ -130,7 +130,6 @@ impl Packet {
 
 #[derive(Clone, Debug)]
 pub struct PuzzleInput {
-    // Remember to make the fields pub
     pub packets: VecDeque<char>,
 }
 
@@ -147,7 +146,7 @@ pub fn part1(input: &'static str) -> PuzzleInput {
         }
     });
 
-    PuzzleInput { packets: packets }
+    PuzzleInput { packets }
 }
 
 pub fn part2(input: &'static str) -> PuzzleInput {

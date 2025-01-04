@@ -7,24 +7,10 @@ pub fn part2(input: &PuzzleInput) -> String {
 
 pub fn evaluate_packet(packet: &Packet) -> u64 {
     match packet.type_id {
-        0 => packet.subpackets.iter().map(|p| evaluate_packet(p)).sum(),
-        1 => packet
-            .subpackets
-            .iter()
-            .map(|p| evaluate_packet(p))
-            .product(),
-        2 => packet
-            .subpackets
-            .iter()
-            .map(|p| evaluate_packet(p))
-            .min()
-            .unwrap(),
-        3 => packet
-            .subpackets
-            .iter()
-            .map(|p| evaluate_packet(p))
-            .max()
-            .unwrap(),
+        0 => packet.subpackets.iter().map(evaluate_packet).sum(),
+        1 => packet.subpackets.iter().map(evaluate_packet).product(),
+        2 => packet.subpackets.iter().map(evaluate_packet).min().unwrap(),
+        3 => packet.subpackets.iter().map(evaluate_packet).max().unwrap(),
         4 => match packet.value {
             PacketType::Literal(value) => value,
             _ => unreachable!("Invalid packet type: {:?}", packet.value),

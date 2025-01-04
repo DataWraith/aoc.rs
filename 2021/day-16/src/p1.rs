@@ -6,12 +6,7 @@ pub fn part1(input: &PuzzleInput) -> String {
 }
 
 pub fn add_version_sum(packet: &Packet) -> u64 {
-    packet.version as u64
-        + packet
-            .subpackets
-            .iter()
-            .map(|p| add_version_sum(p))
-            .sum::<u64>()
+    packet.version as u64 + packet.subpackets.iter().map(add_version_sum).sum::<u64>()
 }
 
 #[cfg(test)]
