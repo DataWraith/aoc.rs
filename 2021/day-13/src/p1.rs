@@ -21,11 +21,7 @@ pub fn fold_up_along_row(grid: HashSet<Coordinate>, row: i32) -> HashSet<Coordin
     let mut new_grid = HashSet::new();
 
     for coord in grid {
-        if coord.y < row {
-            new_grid.insert(coord);
-        } else {
-            new_grid.insert(Coordinate::new(coord.x, 2 * row - coord.y));
-        }
+        new_grid.insert(coord.fold_up_along_row(row));
     }
 
     new_grid
@@ -35,11 +31,7 @@ pub fn fold_left_along_column(grid: HashSet<Coordinate>, column: i32) -> HashSet
     let mut new_grid = HashSet::new();
 
     for coord in grid {
-        if coord.x < column {
-            new_grid.insert(coord);
-        } else {
-            new_grid.insert(Coordinate::new(2 * column - coord.x, coord.y));
-        }
+        new_grid.insert(coord.fold_left_along_column(column));
     }
 
     new_grid
