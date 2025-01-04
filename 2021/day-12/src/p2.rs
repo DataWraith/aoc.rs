@@ -47,7 +47,6 @@ pub fn num_cave_paths(input: &PuzzleInput) -> usize {
 mod tests {
     use super::*;
     use crate::parser;
-    use utility_belt::prelude::*;
 
     #[test]
     fn test_part2_example() {

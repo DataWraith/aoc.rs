@@ -40,7 +40,6 @@ pub fn num_cache_paths(input: &PuzzleInput) -> usize {
 mod tests {
     use super::*;
     use crate::parser;
-    use utility_belt::prelude::*;
 
     #[test]
     fn test_part1_example() {
