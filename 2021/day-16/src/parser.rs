@@ -137,19 +137,15 @@ pub struct PuzzleInput {
 pub fn part1(input: &'static str) -> PuzzleInput {
     let mut packets = VecDeque::new();
 
-    input
-        .chars()
-        .filter_map(|c| c.to_digit(16))
-        .enumerate()
-        .for_each(|(i, d)| {
-            for i in (0..4).rev() {
-                if d & (1 << i) != 0 {
-                    packets.push_back('1');
-                } else {
-                    packets.push_back('0');
-                }
+    input.chars().filter_map(|c| c.to_digit(16)).for_each(|d| {
+        for i in (0..4).rev() {
+            if d & (1 << i) != 0 {
+                packets.push_back('1');
+            } else {
+                packets.push_back('0');
             }
-        });
+        }
+    });
 
     PuzzleInput { packets: packets }
 }

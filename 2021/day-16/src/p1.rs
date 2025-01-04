@@ -1,5 +1,3 @@
-use utility_belt::prelude::*;
-
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
@@ -20,7 +18,6 @@ pub fn add_version_sum(packet: &Packet) -> u64 {
 mod tests {
     use super::*;
     use crate::parser;
-    use utility_belt::prelude::*;
 
     #[test]
     fn test_part1_example() {
