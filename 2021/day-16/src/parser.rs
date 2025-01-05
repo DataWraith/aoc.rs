@@ -15,34 +15,26 @@ pub struct Packet {
     pub subpackets: Vec<Packet>,
 }
 
-fn read_literal_value(input: &mut BitReader, ans: &mut Vec<u8>) {
-    let v = input.read_u8(5).unwrap();
+fn read_literal_value(input: &mut BitReader) -> u64 {
+    let mut v = 0u64;
 
-    ans.push(v & 0b1111);
+    loop {
+        let segment = input.read_u8(5).unwrap();
+        v = (v << 4) | (segment as u64 & 0b1111);
 
-    if v & 0b10000 != 0 {
-        read_literal_value(input, ans);
-    }
-}
-
-fn convert_literal_value(nibbles: &[u8]) -> PacketType {
-    let mut value = 0u64;
-
-    assert!(nibbles.len() <= 64 / 4);
-
-    for b in nibbles.iter() {
-        assert!(*b < 16);
-        value = (value << 4) | *b as u64;
+        if segment & 0b10000 == 0 {
+            break;
+        }
     }
 
-    PacketType::Literal(value)
+    v
 }
 
 fn read_operator_packet_length(input: &mut BitReader) -> PacketType {
     let length_type_id = input.read_bool().unwrap();
 
     if length_type_id {
-        let length = input.read_64(11).unwrap();
+        let length = input.read_u64(11).unwrap();
         PacketType::OperatorSubpackets(length)
     } else {
         let length = input.read_u64(15).unwrap();
@@ -56,13 +48,10 @@ impl Packet {
         let type_id = input.read_u8(3).unwrap();
 
         if type_id == 4 {
-            let mut ans = vec![];
-            read_literal_value(input, &mut ans);
-
             return Self {
                 version,
                 type_id,
-                packet_type: convert_literal_value(&ans),
+                packet_type: PacketType::Literal(read_literal_value(input)),
                 subpackets: vec![],
             };
         }
