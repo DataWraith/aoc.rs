@@ -6,3 +6,7 @@ input.txt
 
 # Added by cargo
 target
+
+# Devenv
+.devenv*
+devenv.local.nix
