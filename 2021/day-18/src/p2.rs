@@ -9,10 +9,9 @@ pub fn part2(input: &PuzzleInput) -> String {
     let result = input
         .numbers
         .iter()
-        .cloned()
         .permutations(2)
         .map(|numbers| addition(numbers[0].clone(), numbers[1].clone()))
-        .map(|result| magnitude(result))
+        .map(magnitude)
         .max()
         .unwrap();
 
@@ -23,7 +22,6 @@ pub fn part2(input: &PuzzleInput) -> String {
 mod tests {
     use super::*;
     use crate::parser;
-    use utility_belt::prelude::*;
 
     #[test]
     fn test_part2_example() {

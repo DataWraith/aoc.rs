@@ -19,7 +19,7 @@ impl FromStr for SnailfishNumber {
 }
 
 fn snailfish_literal(input: &mut &str) -> PResult<SnailfishNumber> {
-    dec_uint(input).map(|num| SnailfishNumber::Literal(num))
+    dec_uint(input).map(SnailfishNumber::Literal)
 }
 
 fn snailfish_number(input: &mut &str) -> PResult<SnailfishNumber> {

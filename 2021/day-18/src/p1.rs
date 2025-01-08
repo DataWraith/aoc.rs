@@ -1,12 +1,7 @@
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    let result = input
-        .numbers
-        .iter()
-        .cloned()
-        .reduce(|acc, number| addition(acc, number))
-        .unwrap();
+    let result = input.numbers.iter().cloned().reduce(addition).unwrap();
 
     magnitude(result).to_string()
 }
@@ -59,7 +54,7 @@ pub fn explode(
     prev_right: Option<&mut u64>,
 ) -> bool {
     match input {
-        SnailfishNumber::Literal(_) => return false,
+        SnailfishNumber::Literal(_) => false,
         SnailfishNumber::Pair(left, right) => {
             if nesting == 4 {
                 if let Some(prev_left) = prev_left {
@@ -75,8 +70,8 @@ pub fn explode(
                 return true;
             }
 
-            return explode(left, nesting + 1, prev_left, Some(first(right)))
-                || explode(right, nesting + 1, Some(last(left)), prev_right);
+            explode(left, nesting + 1, prev_left, Some(first(right)))
+                || explode(right, nesting + 1, Some(last(left)), prev_right)
         }
     }
 }
@@ -135,7 +130,7 @@ mod tests {
     fn test_explode(#[case] input: &'static str, #[case] expected: &'static str) {
         let mut number = parser::part1(input).clone().numbers[0].clone();
         let result = explode(&mut number, 0, None, None);
-        assert_eq!(result, true);
+        assert!(result);
         assert_eq!(number, parser::part1(expected).numbers[0]);
     }
 }
