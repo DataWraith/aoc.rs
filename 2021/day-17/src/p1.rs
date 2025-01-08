@@ -3,12 +3,10 @@ use utility_belt::prelude::*;
 use crate::parser::*;
 
 pub fn part1(input: &PuzzleInput) -> String {
-    dbg!(&input);
-
     let mut ans = 0;
 
     for vx in 1..=input.target_area.1.x {
-        for vy in input.target_area.1.y..=1000 {
+        for vy in input.target_area.0.y..=1000 {
             if let Some(max_y) = simulate_trajectory(input, Coordinate::new(vx, vy)) {
                 ans = ans.max(max_y);
             }
@@ -50,7 +48,7 @@ pub fn simulate_trajectory(input: &PuzzleInput, velocity: Coordinate) -> Option<
         }
 
         // Did we overshoot vertically?
-        if cur.y < input.target_area.1.y && cur_velocity.y <= 0 {
+        if cur.y < input.target_area.0.y && cur_velocity.y <= 0 {
             return None;
         }
     }
@@ -77,5 +75,6 @@ mod tests {
         assert!(simulate_trajectory(&input, Coordinate::new(9, 0)).is_some());
         assert!(simulate_trajectory(&input, Coordinate::new(17, -4)).is_none());
         assert!(simulate_trajectory(&input, Coordinate::new(6, 9)).is_some());
+        assert!(simulate_trajectory(&input, Coordinate::new(7, -1)).is_some());
     }
 }
