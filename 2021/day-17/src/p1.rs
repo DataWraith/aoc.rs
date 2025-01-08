@@ -23,7 +23,7 @@ pub fn x_velocity_bounds(input: &PuzzleInput) -> (i32, i32) {
     // Because the x-velocity reduces by one at each step, for an initial
     // x-velocity vx, the x-position after n steps is:
     //
-    // x(n) = vx + (vx - 1) + (vx - 2) + ... + (vx - n - 1)
+    // x(n) = vx + (vx - 1) + (vx - 2) + ... + (vx - (n - 1))
     // x(n) = n * vx - (0 + 1 + 2 + ... + n - 1)
     // x(n) = n * vx - n * (n - 1) / 2
     //
@@ -74,7 +74,8 @@ pub fn y_velocity_bounds(input: &PuzzleInput) -> (i32, i32) {
     // This means we take a total of 2 * vy + 1 steps to reach the peak and fall
     // back to y=0, so our final velocity at y=0 is vy - (2 * vy + 1) = -vy - 1.
     //
-    // We need -vy - 1 to be at least as large as the minimum y-value, so
+    // We need -vy - 1 to be at least as large as the minimum y-value, otherwise
+    // we overshoot the target area when taking a step from y=0.
     //
     //  => -vy - 1 >= input.target_area.0.y
     //  => -vy >= input.target_area.0.y + 1
